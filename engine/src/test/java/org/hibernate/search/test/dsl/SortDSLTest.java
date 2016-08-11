@@ -31,7 +31,6 @@ import org.hibernate.search.engine.service.spi.ServiceReference;
 import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.Unit;
-import org.hibernate.search.query.dsl.sort.DistanceMethod;
 import org.hibernate.search.query.engine.impl.LuceneQueryTranslator;
 import org.hibernate.search.query.engine.spi.EntityInfo;
 import org.hibernate.search.query.engine.spi.HSQuery;
@@ -448,50 +447,6 @@ public class SortDSLTest {
 		assertThat(
 				query( query, sort ),
 				returnsIDsInOrder( 2, 3, 1, 0 )
-		);
-	}
-
-	@Test
-	public void distanceWithPlaneComputeMethod() throws Exception {
-
-		Query query = builder().all().createQuery();
-
-		Sort sort = builder().sort()
-				.byField( "location_hash" )
-						.fromLatitude( 24 ).andLongitude( 32 )
-						.withComputeMethod( DistanceMethod.PLANE )
-				.andByField( "idSort" )
-						.desc()
-				.createSort();
-		assertThat(
-				query( query, sort ),
-				returnsIDsInOrder( 1, 0, 3, 2 )
-		);
-
-		sort = builder().sort()
-				.byField( "location_hash" )
-						.fromLatitude( 24 ).andLongitude( 32 )
-						.withComputeMethod( DistanceMethod.PLANE )
-						.asc()
-				.andByField( "idSort" )
-						.desc()
-				.createSort();
-		assertThat(
-				query( query, sort ),
-				returnsIDsInOrder( 1, 0, 3, 2 )
-		);
-
-		sort = builder().sort()
-				.byField( "location_hash" )
-						.fromLatitude( 24 ).andLongitude( 32 )
-						.withComputeMethod( DistanceMethod.PLANE )
-						.desc()
-				.andByField( "idSort" )
-						.asc()
-				.createSort();
-		assertThat(
-				query( query, sort ),
-				returnsIDsInOrder( 2, 3, 0, 1 )
 		);
 	}
 
