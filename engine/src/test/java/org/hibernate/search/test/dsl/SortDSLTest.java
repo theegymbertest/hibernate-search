@@ -10,22 +10,27 @@ import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Spatial;
 import org.hibernate.search.annotations.SpatialMode;
 import org.hibernate.search.backend.spi.Work;
 import org.hibernate.search.backend.spi.WorkType;
+import org.hibernate.search.bridge.LuceneOptions;
+import org.hibernate.search.bridge.StringBridge;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.engine.service.spi.ServiceReference;
 import org.hibernate.search.exception.SearchException;
@@ -205,17 +210,11 @@ public class SortDSLTest {
 
 	@Test
 	public void singleField_missingValue_use() throws Exception {
-		// TODO YR add the relevant API methods and code this test OR remove this test
-		Assert.fail( "Missing API for defining missing value replacement without ignoring field bridge." );
-	}
-
-	@Test
-	public void singleField_missingValue_useIgnoreFieldBridge() throws Exception {
 		Query query = builder().all().createQuery();
 
 		Sort sort = builder().sort()
 				.byField( "uniqueNumericField" )
-						.onMissingValue().use( String.valueOf( 1.5d) ).ignoreFieldBridge()
+						.onMissingValue().use( 1.5d )
 				.createSort();
 		assertThat(
 				query( query, sort ),
@@ -225,7 +224,7 @@ public class SortDSLTest {
 		sort = builder().sort()
 				.byField( "uniqueNumericField" )
 						.asc()
-						.onMissingValue().use( String.valueOf( Calendar.APRIL) ).ignoreFieldBridge()
+						.onMissingValue().use( 1.5d )
 				.createSort();
 		assertThat(
 				query( query, sort ),
@@ -235,7 +234,209 @@ public class SortDSLTest {
 		sort = builder().sort()
 				.byField( "uniqueNumericField" )
 						.desc()
-						.onMissingValue().use( String.valueOf( Calendar.APRIL) ).ignoreFieldBridge()
+						.onMissingValue().use( 1.5d )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 3, 0, 2, 1 )
+		);
+	}
+
+	@Test
+	public void singleField_fieldBridge() throws Exception {
+		Query query = builder().all().createQuery();
+
+		// Missing value is not provided; the missing values should be considered as 0
+
+		Sort sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 2, 1, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.asc()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 2, 1, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.desc()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 3, 0, 1, 2 )
+		);
+	}
+
+	@Test
+	public void singleField_fieldBridge_missingValue_use() throws Exception {
+		Query query = builder().all().createQuery();
+
+		Sort sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.onMissingValue().use( new WrappedDoubleValue( 1.5d ) )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.asc()
+						.onMissingValue().use( new WrappedDoubleValue( 1.5d ) )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.desc()
+						.onMissingValue().use( new WrappedDoubleValue( 1.5d ) )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 3, 0, 2, 1 )
+		);
+	}
+
+	@Test
+	public void singleField_fieldBridge_missingValue_useIgnoreFieldBridge() throws Exception {
+		Query query = builder().all().createQuery();
+
+		Sort sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.onMissingValue().use( 1.5d ).ignoreFieldBridge()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.asc()
+						.onMissingValue().use( 1.5d ).ignoreFieldBridge()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedStringField" )
+						.desc()
+						.onMissingValue().use( 1.5d ).ignoreFieldBridge()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 3, 0, 2, 1 )
+		);
+	}
+
+	@Test
+	public void singleField_numericFieldBridge() throws Exception {
+		Query query = builder().all().createQuery();
+
+		// Missing value is not provided; the missing values should be considered as 0
+
+		Sort sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 2, 1, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.asc()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 2, 1, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.desc()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 3, 0, 1, 2 )
+		);
+	}
+
+	@Test
+	public void singleField_numericFieldBridge_missingValue_use() throws Exception {
+		Query query = builder().all().createQuery();
+
+		Sort sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.onMissingValue().use( new WrappedDoubleValue( 1.5d ) )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.asc()
+						.onMissingValue().use( new WrappedDoubleValue( 1.5d ) )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.desc()
+						.onMissingValue().use( new WrappedDoubleValue( 1.5d ) )
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 3, 0, 2, 1 )
+		);
+	}
+
+	@Test
+	public void singleField_numericFieldBridge_missingValue_useIgnoreFieldBridge() throws Exception {
+		Query query = builder().all().createQuery();
+
+		Sort sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.onMissingValue().use( 1.5d ).ignoreFieldBridge()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.asc()
+						.onMissingValue().use( 1.5d ).ignoreFieldBridge()
+				.createSort();
+		assertThat(
+				query( query, sort ),
+				returnsIDsInOrder( 1, 2, 0, 3 )
+		);
+
+		sort = builder().sort()
+				.byField( "fieldBridgedNumericField", SortField.Type.DOUBLE )
+						.desc()
+						.onMissingValue().use( 1.5d ).ignoreFieldBridge()
 				.createSort();
 		assertThat(
 				query( query, sort ),
@@ -337,7 +538,7 @@ public class SortDSLTest {
 		sort = builder().sort()
 				.byField( "nonUniqueNumericField" )
 				.andByField( "uniqueNumericField" )
-						.desc()
+				.desc()
 				.createSort();
 		assertThat(
 				query( query, sort ),
@@ -350,7 +551,7 @@ public class SortDSLTest {
 		Query query = builder().all().createQuery();
 
 		Sort sort = builder().sort()
-				.byField( "location_hash" )
+				.byDistance( "location_hash" )
 						.fromLatitude( 24 ).andLongitude( 32 )
 				.createSort();
 		assertThat(
@@ -359,7 +560,7 @@ public class SortDSLTest {
 		);
 
 		sort = builder().sort()
-				.byField( "location_hash" )
+				.byDistance( "location_hash" )
 						.fromLatitude( 24 ).andLongitude( 32 )
 						.asc()
 				.createSort();
@@ -369,7 +570,7 @@ public class SortDSLTest {
 		);
 
 		sort = builder().sort()
-				.byField( "location_hash" )
+				.byDistance( "location_hash" )
 						.fromLatitude( 24 ).andLongitude( 32 )
 						.desc()
 				.createSort();
@@ -420,7 +621,7 @@ public class SortDSLTest {
 		Query query = builder().all().createQuery();
 
 		Sort sort = builder().sort()
-				.byField( "location_hash" )
+				.byDistance( "location_hash" )
 						.fromLatitude( 24 ).andLongitude( 32 )
 						.in( Unit.KM )
 				.createSort();
@@ -430,7 +631,7 @@ public class SortDSLTest {
 		);
 
 		sort = builder().sort()
-				.byField( "location_hash" )
+				.byDistance( "location_hash" )
 						.fromLatitude( 24 ).andLongitude( 32 )
 						.asc()
 				.createSort();
@@ -440,7 +641,7 @@ public class SortDSLTest {
 		);
 
 		sort = builder().sort()
-				.byField( "location_hash" )
+				.byDistance( "location_hash" )
 						.fromLatitude( 24 ).andLongitude( 32 )
 						.desc()
 				.createSort();
@@ -564,6 +765,76 @@ public class SortDSLTest {
 		tc.end();
 	}
 
+	public static class WrappedDoubleValue {
+		final Double value;
+
+		public WrappedDoubleValue(Double value) {
+			super();
+			this.value = value;
+		}
+	}
+
+	public static class WrappedDoubleValueFieldBridge implements org.hibernate.search.bridge.FieldBridge, StringBridge {
+
+		@Override
+		public String objectToString(Object object) {
+			if ( object == null ) {
+				return null;
+			}
+			return object.toString();
+		}
+
+		@Override
+		public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
+			if ( value == null ) {
+				return;
+			}
+
+			Double doubleValue = ((WrappedDoubleValue) value).value;
+			if ( doubleValue == null ) {
+				return;
+			}
+
+			luceneOptions.addNumericFieldToDocument( name, doubleValue, document );
+		}
+
+	}
+
+	public static class WrappedStringValue {
+		final String value;
+
+		public WrappedStringValue(String value) {
+			super();
+			this.value = value;
+		}
+	}
+
+	public static class WrappedStringValueFieldBridge implements org.hibernate.search.bridge.FieldBridge, StringBridge {
+
+		@Override
+		public String objectToString(Object object) {
+			if ( object == null ) {
+				return null;
+			}
+			return object.toString();
+		}
+
+		@Override
+		public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
+			if ( value == null ) {
+				return;
+			}
+
+			String stringValue = ((WrappedStringValue) value).value;
+			if ( stringValue == null ) {
+				return;
+			}
+
+			luceneOptions.addFieldToDocument( name, stringValue, document );
+		}
+
+	}
+
 	@Indexed
 	@Spatial(name = "location_hash", spatialMode = SpatialMode.HASH)
 	public static class IndexedEntry implements Coordinates {
@@ -583,6 +854,15 @@ public class SortDSLTest {
 		@Field
 		@SortableField
 		Double uniqueNumericField;
+
+		@Field(bridge = @FieldBridge(impl = WrappedStringValueFieldBridge.class))
+		@SortableField
+		WrappedStringValue fieldBridgedStringField;
+
+		@Field(bridge = @FieldBridge(impl = WrappedDoubleValueFieldBridge.class))
+		@SortableField
+		@NumericField
+		WrappedDoubleValue fieldBridgedNumericField;
 
 		Double latitude;
 
@@ -610,6 +890,10 @@ public class SortDSLTest {
 			this.textField = textField;
 			this.nonUniqueNumericField = nonUniqueNumericField;
 			this.uniqueNumericField = uniqueNumericField;
+			this.fieldBridgedNumericField = new WrappedDoubleValue( uniqueNumericField );
+			this.fieldBridgedStringField = new WrappedStringValue(
+					uniqueNumericField == null ? null : String.valueOf( uniqueNumericField )
+			);
 			return this;
 		}
 
