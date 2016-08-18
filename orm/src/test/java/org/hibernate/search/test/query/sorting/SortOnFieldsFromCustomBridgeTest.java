@@ -143,7 +143,7 @@ public class SortOnFieldsFromCustomBridgeTest extends SearchTestBase {
 		List<Book> result = fullTextSession.createFullTextQuery( new MatchAllDocsQuery(), Explorer.class )
 			.setSort(
 					new Sort(
-							new SortField( "favoriteTerritory", SortField.Type.INT )
+							new SortField( "favoriteTerritoryId", SortField.Type.INT )
 					)
 			)
 			.list();

@@ -32,7 +32,7 @@ public class Territory {
 	/**
 	 * @author Yoann Rodiere
 	 */
-	public static class IdFieldBridge implements FieldBridge, StringBridge {
+	public static class IdFieldBridge implements FieldBridge, StringBridge, MetadataProvidingFieldBridge {
 
 		@Override
 		public String objectToString(Object object) {
@@ -50,6 +50,11 @@ public class Territory {
 			}
 			int id = ( (Territory) value ).getId();
 			luceneOptions.addNumericFieldToDocument( name, id, document );
+		}
+
+		@Override
+		public void configureFieldMetadata(String name, FieldMetadataBuilder builder) {
+			builder.field( name, FieldType.INTEGER );
 		}
 
 	}
