@@ -49,12 +49,12 @@ public class Territory {
 				throw new IllegalStateException( "This field bridge only supports Territory values" );
 			}
 			int id = ( (Territory) value ).getId();
-			luceneOptions.addNumericFieldToDocument( name, id, document );
+			luceneOptions.addNumericFieldToDocument( name + "Id", id, document );
 		}
 
 		@Override
 		public void configureFieldMetadata(String name, FieldMetadataBuilder builder) {
-			builder.field( name, FieldType.INTEGER );
+			builder.field( name + "Id", FieldType.INTEGER ).sortable( true );
 		}
 
 	}

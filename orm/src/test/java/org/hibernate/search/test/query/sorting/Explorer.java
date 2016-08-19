@@ -50,9 +50,9 @@ public class Explorer {
 
 	@ManyToOne
 	@IndexedEmbedded
-	@Field(name = "favoriteTerritoryId", bridge = @FieldBridge(impl = Territory.IdFieldBridge.class))
-	@NumericField(forField = "favoriteTerritoryId")
-	@SortableField(forField = "favoriteTerritoryId")
+	@Field(bridge = @FieldBridge(impl = Territory.IdFieldBridge.class))
+	@NumericField
+	@SortableField
 	private Territory favoriteTerritory;
 
 	public Explorer() {
