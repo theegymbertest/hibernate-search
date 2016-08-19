@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.util.BytesRef;
 import org.hibernate.search.annotations.ClassBridge;
@@ -49,12 +50,12 @@ public class Territory {
 				throw new IllegalStateException( "This field bridge only supports Territory values" );
 			}
 			int id = ( (Territory) value ).getId();
-			luceneOptions.addNumericFieldToDocument( name + "Id", id, document );
+			document.add( new NumericDocValuesField( name, id ));
 		}
 
 		@Override
 		public void configureFieldMetadata(String name, FieldMetadataBuilder builder) {
-			builder.field( name + "Id", FieldType.INTEGER ).sortable( true );
+			builder.field( name, FieldType.INTEGER ).sortable( true );
 		}
 
 	}
