@@ -390,12 +390,12 @@ public class FullTextQueryImpl<R> extends AbstractProducedQuery<R> implements Fu
 	}
 
 	@Override
-	public Query setEntity(int position, Object val) {
+	public org.hibernate.query.Query<R> setEntity(int position, Object val) {
 		throw new UnsupportedOperationException( "setEntity(int,Object) is not implemented in Hibernate Search queries" );
 	}
 
 	@Override
-	public Query setEntity(String name, Object val) {
+	public org.hibernate.query.Query<R> setEntity(String name, Object val) {
 		throw new UnsupportedOperationException( "setEntity(String,Object) is not implemented in Hibernate Search queries" );
 	}
 
