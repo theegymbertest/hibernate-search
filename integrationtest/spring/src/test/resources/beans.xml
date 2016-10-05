@@ -70,7 +70,7 @@
                 <!-- 2 is TRANSACTION_READ_COMMITTED -->
                 <entry key="hibernate.connection.isolation" value="2"/>
                 <!-- http://docs.jboss.org/hibernate/core/3.3/reference/en/html/architecture.html#architecture-current-session -->
-                <entry key="hibernate.current_session_context_class" value="org.hibernate.context.JTASessionContext"/>
+                <entry key="hibernate.current_session_context_class" value="org.hibernate.context.internal.JTASessionContext"/>
 
                 <!--  trying things to make Oracle happy -->
                 <entry key="hibernate.jdbc.batch_size" value="0"/>
