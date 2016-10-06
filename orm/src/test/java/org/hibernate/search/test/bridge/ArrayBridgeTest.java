@@ -85,7 +85,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 
 	@Test
 	public void testSearchNullEntry() throws Exception {
-		List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", ArrayBridgeTestEntity.NULL_TOKEN, true );
+		List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", null );
 
 		assertNotNull( "No result found for an indexed collection", results );
 		assertEquals( "Unexpected number of results in a collection", 1, results.size() );
@@ -114,7 +114,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 	@Test
 	public void testSearchNullNumericEntry() throws Exception {
 		List<ArrayBridgeTestEntity> results =
-				findResults( "numericNullIndexed", ArrayBridgeTestEntity.NULL_NUMERIC_TOKEN, true );
+				findResults( "numericNullIndexed", null );
 
 		assertNotNull( "No result found for an indexed collection", results );
 		assertEquals( "Unexpected number of results in a collection", 1, results.size() );
@@ -124,7 +124,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 	@Test
 	public void testSearchNotNullEntry() throws Exception {
 		{
-			List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", KLINGON, false );
+			List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", KLINGON );
 
 			assertNotNull( "No result found for an indexed collection", results );
 			assertEquals( "Wrong number of results returned for an indexed collection", 1, results.size() );
@@ -132,7 +132,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 					.getName() );
 		}
 		{
-			List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", ITALIAN, false );
+			List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", ITALIAN );
 
 			assertNotNull( "No result found for an indexed collection", results );
 			assertEquals( "Wrong number of results returned for an indexed collection", 1, results.size() );
@@ -140,7 +140,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 					.getName() );
 		}
 		{
-			List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", ENGLISH, false );
+			List<ArrayBridgeTestEntity> results = findResults( "nullIndexed", ENGLISH );
 
 			assertNotNull( "No result found for an indexed collection", results );
 			assertEquals( "Wrong number of results returned for an indexed collection", 2, results.size() );
@@ -150,7 +150,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 	@Test
 	public void testSearchEntryWhenNullEntryNotIndexed() throws Exception {
 		{
-			List<ArrayBridgeTestEntity> results = findResults( "nullNotIndexed", "DaltoValue", false );
+			List<ArrayBridgeTestEntity> results = findResults( "nullNotIndexed", "DaltoValue" );
 
 			assertNotNull( "No result found for an indexed array", results );
 			assertEquals( "Wrong number of results returned for an indexed array", 1, results.size() );
@@ -158,7 +158,7 @@ public class ArrayBridgeTest extends SearchTestBase {
 					.getName() );
 		}
 		{
-			List<ArrayBridgeTestEntity> results = findResults( "nullNotIndexed", "WorfValue", false );
+			List<ArrayBridgeTestEntity> results = findResults( "nullNotIndexed", "WorfValue" );
 
 			assertNotNull( "No result found for an indexed array", results );
 			assertEquals( "Wrong number of results returned for an indexed array", 1, results.size() );
@@ -235,14 +235,10 @@ public class ArrayBridgeTest extends SearchTestBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<ArrayBridgeTestEntity> findResults(String fieldName, Object value, boolean checkNullToken) {
+	private List<ArrayBridgeTestEntity> findResults(String fieldName, Object value) {
 		QueryBuilder queryBuilder = fullTextSession.getSearchFactory().buildQueryBuilder()
 				.forEntity( ArrayBridgeTestEntity.class ).get();
 		TermMatchingContext termMatchingContext = queryBuilder.keyword().onField( fieldName );
-		if ( checkNullToken ) {
-			termMatchingContext.ignoreFieldBridge();
-			termMatchingContext.ignoreAnalyzer();
-		}
 		Query query = termMatchingContext.matching( value ).createQuery();
 		return fullTextSession.createFullTextQuery( query, ArrayBridgeTestEntity.class ).list();
 	}

@@ -258,7 +258,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			fieldBridge = null;
 		}
 		else {
-			fieldBridge = bridgeFactory.buildFieldBridge(
+			fieldBridge = bridgeFactory.buildElementFieldBridge(
 					member,
 					true,
 					numericFields.isNumericField( unprefixedFieldName ),
@@ -266,6 +266,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 					reflectionManager,
 					configContext.getServiceManager()
 			);
+			fieldBridge = bridgeFactory.wrapContainerBridgeIfNecessary( member, reflectionManager, fieldBridge );
 		}
 
 		DocumentFieldMetadata fieldMetadata =
@@ -328,7 +329,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			idBridge = null;
 		}
 		else {
-			idBridge = bridgeFactory.buildFieldBridge(
+			idBridge = bridgeFactory.buildElementFieldBridge(
 					member,
 					true,
 					numericFieldAnnotation != null,
@@ -336,6 +337,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 					reflectionManager,
 					configContext.getServiceManager()
 			);
+			idBridge = bridgeFactory.wrapContainerBridgeIfNecessary( member, reflectionManager, idBridge );
 			if ( !( idBridge instanceof TwoWayFieldBridge ) ) {
 				throw new SearchException(
 						"Bridge for document id does not implement TwoWayFieldBridge: " + member.getName()
@@ -726,7 +728,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		Store store = spatialAnnotation.store();
 		Field.Index index = AnnotationProcessingHelper.getIndex( Index.YES, Analyze.NO, Norms.NO );
 		Field.TermVector termVector = Field.TermVector.NO;
-		FieldBridge fieldBridge = bridgeFactory.buildFieldBridge(
+		FieldBridge fieldBridge = bridgeFactory.buildElementFieldBridge(
 				member,
 				false,
 				false,
@@ -734,6 +736,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 				reflectionManager,
 				configContext.getServiceManager()
 		);
+		fieldBridge = bridgeFactory.wrapContainerBridgeIfNecessary( member, reflectionManager, fieldBridge );
 
 		DocumentFieldMetadata fieldMetadata = new DocumentFieldMetadata.Builder( fieldName, store, index, termVector )
 				.boost( AnnotationProcessingHelper.getBoost( member, spatialAnnotation ) )
@@ -1196,7 +1199,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			fieldBridge = null;
 		}
 		else {
-			fieldBridge = bridgeFactory.buildFieldBridge(
+			fieldBridge = bridgeFactory.buildElementFieldBridge(
 					fieldAnnotation,
 					member,
 					false,
@@ -1212,6 +1215,19 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		if ( nullTokenCodec != NotEncodingCodec.SINGLETON && fieldBridge instanceof TwoWayFieldBridge ) {
 			fieldBridge = new NullEncodingTwoWayFieldBridge( (TwoWayFieldBridge) fieldBridge, nullTokenCodec );
 		}
+
+		if ( !parseContext.skipFieldBridges() ) {
+			/*
+			 * This wrapping must be done after the null-encoding wrapping,
+			 * otherwise null elements would not be properly handled.
+			 */
+			fieldBridge = bridgeFactory.wrapContainerBridgeIfNecessary(
+					member,
+					reflectionManager,
+					fieldBridge
+			);
+		}
+
 		AnalyzerReference analyzerReference = determineAnalyzer( fieldAnnotation, member, configContext, parseContext );
 
 		// adjust the type analyzer
