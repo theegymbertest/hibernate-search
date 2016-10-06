@@ -21,6 +21,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.hibernate.search.analyzer.impl.LuceneAnalyzerReference;
 import org.hibernate.search.analyzer.impl.RemoteAnalyzerReference;
+import org.hibernate.search.bridge.ContainerBridge;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.builtin.impl.NullEncodingTwoWayFieldBridge;
 import org.hibernate.search.bridge.spi.ConversionContext;
@@ -94,8 +95,12 @@ public class ConnectedMultiFieldsTermQueryBuilder implements TermTermination {
 		}
 		else {
 			applyTokenization = false;
-			if ( fieldBridge instanceof NullEncodingTwoWayFieldBridge ) {
-				NullEncodingTwoWayFieldBridge nullEncodingBridge = (NullEncodingTwoWayFieldBridge) fieldBridge;
+			FieldBridge nullEncodingBridgeCandidate = fieldBridge;
+			if ( nullEncodingBridgeCandidate instanceof ContainerBridge ) {
+				nullEncodingBridgeCandidate = ( (ContainerBridge) nullEncodingBridgeCandidate ).getElementBridge();
+			}
+			if ( nullEncodingBridgeCandidate instanceof NullEncodingTwoWayFieldBridge ) {
+				NullEncodingTwoWayFieldBridge nullEncodingBridge = (NullEncodingTwoWayFieldBridge) nullEncodingBridgeCandidate;
 				validateNullValueIsSearchable( fieldContext );
 				return nullEncodingBridge.buildNullQuery( fieldContext.getField() );
 			}
@@ -104,9 +109,7 @@ public class ConnectedMultiFieldsTermQueryBuilder implements TermTermination {
 		validateNullValueIsSearchable( fieldContext );
 		final String searchTerm = buildSearchTerm( fieldContext, documentBuilder, conversionContext );
 
-		if ( !applyTokenization || fieldBridge instanceof IgnoreAnalyzerBridge ||
-				(fieldBridge instanceof NullEncodingTwoWayFieldBridge
-						&& ((NullEncodingTwoWayFieldBridge) fieldBridge).unwrap() instanceof IgnoreAnalyzerBridge ) ) {
+		if ( !applyTokenization || isIgnoreAnalyzerBridge( fieldBridge ) ) {
 			perFieldQuery = createTermQuery( fieldContext, searchTerm );
 		}
 		else {
@@ -120,6 +123,29 @@ public class ConnectedMultiFieldsTermQueryBuilder implements TermTermination {
 			}
 		}
 		return fieldContext.getFieldCustomizer().setWrappedQuery( perFieldQuery ).createQuery();
+	}
+
+	/**
+	 * @param fieldBridge
+	 * @return
+	 */
+	private boolean isIgnoreAnalyzerBridge(FieldBridge fieldBridge) {
+		if ( fieldBridge instanceof IgnoreAnalyzerBridge ) {
+			return true;
+		}
+		if ( fieldBridge instanceof ContainerBridge ) {
+			fieldBridge = ( (ContainerBridge) fieldBridge ).getElementBridge();
+		}
+		if ( fieldBridge instanceof IgnoreAnalyzerBridge ) {
+			return true;
+		}
+		if ( fieldBridge instanceof NullEncodingTwoWayFieldBridge ) {
+			fieldBridge = ( (NullEncodingTwoWayFieldBridge) fieldBridge ).unwrap();
+		}
+		if ( fieldBridge instanceof IgnoreAnalyzerBridge ) {
+			return true;
+		}
+		return false;
 	}
 
 	private void validateNullValueIsSearchable(FieldContext fieldContext) {

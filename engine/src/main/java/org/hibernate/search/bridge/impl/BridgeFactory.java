@@ -166,18 +166,18 @@ public final class BridgeFactory {
 		return bridge;
 	}
 
-	public FieldBridge buildFieldBridge(XMember member,
+	public FieldBridge buildElementFieldBridge(XMember member,
 			boolean isId,
 			boolean isExplicitlyMarkedAsNumeric,
 			IndexManagerType indexManagerType,
 			ReflectionManager reflectionManager,
 			ServiceManager serviceManager
 	) {
-		return buildFieldBridge( null, member, isId, isExplicitlyMarkedAsNumeric, indexManagerType,
+		return buildElementFieldBridge( null, member, isId, isExplicitlyMarkedAsNumeric, indexManagerType,
 				reflectionManager, serviceManager );
 	}
 
-	public FieldBridge buildFieldBridge(Field field,
+	public FieldBridge buildElementFieldBridge(Field field,
 			XMember member,
 			boolean isId,
 			boolean isExplicitlyMarkedAsNumeric,
@@ -199,7 +199,6 @@ public final class BridgeFactory {
 		ExtendedBridgeProvider.ExtendedBridgeProviderContext context = new XMemberBridgeProviderContext(
 				member, isId, isExplicitlyMarkedAsNumeric, reflectionManager, serviceManager
 		);
-		ContainerType containerType = getContainerType( member, reflectionManager );
 
 		// Backend specific providers are managed first so that they can override the standard
 		// bridges
@@ -207,8 +206,7 @@ public final class BridgeFactory {
 			if ( providerEntry.getKey().equals( indexManagerType ) ) {
 				bridge = getFieldBridgeFromBridgeProvider(
 						providerEntry.getValue(),
-						context,
-						containerType );
+						context );
 
 				if ( bridge != null ) {
 					return bridge;
@@ -222,8 +220,7 @@ public final class BridgeFactory {
 		for ( BridgeProvider provider : annotationBasedProviders ) {
 			bridge = getFieldBridgeFromBridgeProvider(
 					provider,
-					context,
-					containerType
+					context
 			);
 			if ( bridge != null ) {
 				return bridge;
@@ -237,8 +234,7 @@ public final class BridgeFactory {
 		for ( BridgeProvider provider : regularProviders ) {
 			FieldBridge createdBridge = getFieldBridgeFromBridgeProvider(
 					provider,
-					context,
-					containerType
+					context
 			);
 			if ( createdBridge != null ) {
 				// oops we found a duplicate
@@ -274,6 +270,28 @@ public final class BridgeFactory {
 		throw LOG.unableToGuessFieldBridge( member.getType().getName(), member.getName() );
 	}
 
+	public FieldBridge wrapContainerBridgeIfNecessary(XMember member,
+			ReflectionManager reflectionManager,
+			FieldBridge elementBridge
+	) {
+		ContainerType containerType = getContainerType( member, reflectionManager );
+		switch ( containerType ) {
+			case SINGLE:
+				return elementBridge;
+			case ITERABLE:
+				// Should we cache these per bridge instance?
+				// would make sense at least for the known built-in bridges
+				// but is that worth it?
+				return new BuiltinIterableBridge( elementBridge );
+			case ARRAY:
+				return new BuiltinArrayBridge( elementBridge );
+			case MAP:
+				return new BuiltinMapBridge( elementBridge );
+			default:
+				throw new AssertionFailure( "Unknown ContainerType " + containerType );
+		}
+	}
+
 	private ContainerType getContainerType(XMember member, ReflectionManager reflectionManager) {
 		if ( ! member.isAnnotationPresent( IndexedEmbedded.class ) ) {
 			return ContainerType.SINGLE;
@@ -295,29 +313,14 @@ public final class BridgeFactory {
 
 	private FieldBridge getFieldBridgeFromBridgeProvider(
 			BridgeProvider bridgeProvider,
-			ExtendedBridgeProvider.ExtendedBridgeProviderContext context,
-			ContainerType containerType
+			ExtendedBridgeProvider.ExtendedBridgeProviderContext context
 	) {
 		FieldBridge bridge = bridgeProvider.provideFieldBridge( context );
 		if ( bridge == null ) {
 			return null;
 		}
 		populateReturnType( context.getReturnType(), bridge.getClass(), bridge );
-		switch ( containerType ) {
-			case SINGLE:
-				return bridge;
-			case ITERABLE:
-				// Should we cache these per bridge instance?
-				// would make sense at least for the known built-in bridges
-				// but is that worth it?
-				return new BuiltinIterableBridge( bridge );
-			case ARRAY:
-				return new BuiltinArrayBridge( bridge );
-			case MAP:
-				return new BuiltinMapBridge( bridge );
-			default:
-				throw new AssertionFailure( "Unknown ContainerType " + containerType );
-		}
+		return bridge;
 	}
 
 	/**
