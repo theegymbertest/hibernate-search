@@ -1212,8 +1212,13 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 
 		final NumericEncodingType numericEncodingType = determineNumericFieldEncoding( fieldBridge );
 		final NullMarkerCodec nullTokenCodec = determineNullMarkerCodec( fieldAnnotation, configContext, numericEncodingType, fieldName );
-		if ( nullTokenCodec != NotEncodingCodec.SINGLETON && fieldBridge instanceof TwoWayFieldBridge ) {
-			fieldBridge = new NullEncodingTwoWayFieldBridge( (TwoWayFieldBridge) fieldBridge, nullTokenCodec );
+		if ( nullTokenCodec != NotEncodingCodec.SINGLETON ) {
+			if ( fieldBridge instanceof TwoWayFieldBridge ) {
+				fieldBridge = new NullEncodingTwoWayFieldBridge( (TwoWayFieldBridge) fieldBridge, nullTokenCodec );
+			}
+			else if ( fieldBridge instanceof StringBridge ) {
+				fieldBridge = new NullEncodingFieldBridge( (StringBridge) fieldBridge, nullTokenCodec );
+			}
 		}
 
 		if ( !parseContext.skipFieldBridges() ) {
@@ -1342,9 +1347,6 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	private boolean isNumericField(NumericField numericFieldAnnotation, FieldBridge fieldBridge) {
 		if ( fieldBridge instanceof ContainerBridge ) {
 			fieldBridge = ( (ContainerBridge) fieldBridge ).getElementBridge();
-		}
-		if ( fieldBridge instanceof NullEncodingTwoWayFieldBridge ) {
-			fieldBridge = ( (NullEncodingTwoWayFieldBridge) fieldBridge ).unwrap();
 		}
 
 		// either @NumericField is specified explicitly or we are dealing with a implicit numeric value encoded via a numeric

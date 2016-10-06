@@ -23,7 +23,7 @@ import org.hibernate.search.analyzer.impl.LuceneAnalyzerReference;
 import org.hibernate.search.analyzer.impl.RemoteAnalyzerReference;
 import org.hibernate.search.bridge.ContainerBridge;
 import org.hibernate.search.bridge.FieldBridge;
-import org.hibernate.search.bridge.builtin.impl.NullEncodingTwoWayFieldBridge;
+import org.hibernate.search.bridge.builtin.impl.NullEncodingBridgeWrapper;
 import org.hibernate.search.bridge.spi.ConversionContext;
 import org.hibernate.search.bridge.spi.IgnoreAnalyzerBridge;
 import org.hibernate.search.bridge.util.impl.ContextualExceptionBridgeHelper;
@@ -99,8 +99,8 @@ public class ConnectedMultiFieldsTermQueryBuilder implements TermTermination {
 			if ( nullEncodingBridgeCandidate instanceof ContainerBridge ) {
 				nullEncodingBridgeCandidate = ( (ContainerBridge) nullEncodingBridgeCandidate ).getElementBridge();
 			}
-			if ( nullEncodingBridgeCandidate instanceof NullEncodingTwoWayFieldBridge ) {
-				NullEncodingTwoWayFieldBridge nullEncodingBridge = (NullEncodingTwoWayFieldBridge) nullEncodingBridgeCandidate;
+			if ( nullEncodingBridgeCandidate instanceof NullEncodingBridgeWrapper ) {
+				NullEncodingBridgeWrapper<?> nullEncodingBridge = (NullEncodingBridgeWrapper<?>) nullEncodingBridgeCandidate;
 				validateNullValueIsSearchable( fieldContext );
 				return nullEncodingBridge.buildNullQuery( fieldContext.getField() );
 			}
@@ -129,21 +129,21 @@ public class ConnectedMultiFieldsTermQueryBuilder implements TermTermination {
 	 * @param fieldBridge
 	 * @return
 	 */
-	private boolean isIgnoreAnalyzerBridge(FieldBridge fieldBridge) {
+	private boolean isIgnoreAnalyzerBridge(Object fieldBridge) {
 		if ( fieldBridge instanceof IgnoreAnalyzerBridge ) {
 			return true;
 		}
 		if ( fieldBridge instanceof ContainerBridge ) {
-			fieldBridge = ( (ContainerBridge) fieldBridge ).getElementBridge();
+			Object candidate = ( (ContainerBridge) fieldBridge ).getElementBridge();
+			if ( isIgnoreAnalyzerBridge( candidate ) ) {
+				return true;
+			}
 		}
-		if ( fieldBridge instanceof IgnoreAnalyzerBridge ) {
-			return true;
-		}
-		if ( fieldBridge instanceof NullEncodingTwoWayFieldBridge ) {
-			fieldBridge = ( (NullEncodingTwoWayFieldBridge) fieldBridge ).unwrap();
-		}
-		if ( fieldBridge instanceof IgnoreAnalyzerBridge ) {
-			return true;
+		if ( fieldBridge instanceof NullEncodingBridgeWrapper ) {
+			Object candidate = ( (NullEncodingBridgeWrapper<?>) fieldBridge ).unwrap();
+			if ( isIgnoreAnalyzerBridge( candidate ) ) {
+				return true;
+			}
 		}
 		return false;
 	}

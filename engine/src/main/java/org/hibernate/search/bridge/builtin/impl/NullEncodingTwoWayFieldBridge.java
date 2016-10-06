@@ -20,7 +20,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
 /**
  * @author Hardy Ferentschik
  */
-public class NullEncodingTwoWayFieldBridge implements TwoWayFieldBridge {
+public class NullEncodingTwoWayFieldBridge implements TwoWayFieldBridge, NullEncodingBridgeWrapper<TwoWayFieldBridge> {
 
 	private static final Log LOG = LoggerFactory.make();
 
@@ -58,6 +58,7 @@ public class NullEncodingTwoWayFieldBridge implements TwoWayFieldBridge {
 		}
 	}
 
+	@Override
 	public TwoWayFieldBridge unwrap() {
 		return fieldBridge;
 	}
