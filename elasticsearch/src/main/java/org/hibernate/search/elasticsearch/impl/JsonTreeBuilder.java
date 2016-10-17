@@ -42,8 +42,6 @@ import com.google.gson.JsonObject;
  */
 final class JsonTreeBuilder {
 
-	private static final String PATH_COMPONENT_SEPARATOR = ".";
-
 	private final JsonObject root;
 
 	/*
@@ -53,8 +51,8 @@ final class JsonTreeBuilder {
 	private final Deque<Integer> indexes = new ArrayDeque<>();
 
 	private JsonObject parent;
-	private final StringBuilder path = new StringBuilder();
-	private int currentIndexInPath = 0;
+
+	private final FieldPathBuilder fieldPathBuilder = new FieldPathBuilder();
 
 	public JsonTreeBuilder(JsonObject root) {
 		super();
@@ -66,8 +64,7 @@ final class JsonTreeBuilder {
 		indexes.clear();
 
 		parent = root;
-		path.delete( 0, path.length() );
-		currentIndexInPath = 0;
+		fieldPathBuilder.reset();
 	}
 
 	/**
@@ -87,7 +84,7 @@ final class JsonTreeBuilder {
 		for ( NestingPathComponent pathComponent : nestingPath ) {
 			EmbeddedTypeMetadata embeddedTypeMetadata = pathComponent.getEmbeddedTypeMetadata();
 
-			path.append( embeddedTypeMetadata.getEmbeddedFieldPrefix() );
+			fieldPathBuilder.append( embeddedTypeMetadata.getEmbeddedFieldPrefix() );
 
 			Integer currentComponentArrayIndex = pathComponent.getIndex();
 			if ( currentComponentArrayIndex != null ) {
@@ -107,9 +104,8 @@ final class JsonTreeBuilder {
 	 * if {@code indexes} is non-empty (requiring the creation of arrays).
 	 */
 	private void advanceInPath() {
-		int nextSeparatorIndex = path.indexOf( PATH_COMPONENT_SEPARATOR, currentIndexInPath );
-		while ( nextSeparatorIndex >= 0 ) {
-			String childName = path.substring( currentIndexInPath, nextSeparatorIndex );
+		String childName = fieldPathBuilder.nextComponent();
+		while ( childName != null ) {
 			JsonObject newParent;
 
 			if ( !indexes.isEmpty() ) {
@@ -128,8 +124,7 @@ final class JsonTreeBuilder {
 			}
 
 			parent = newParent;
-			currentIndexInPath = nextSeparatorIndex + 1;
-			nextSeparatorIndex = path.indexOf( PATH_COMPONENT_SEPARATOR, currentIndexInPath );
+			childName = fieldPathBuilder.nextComponent();
 		}
 	}
 
