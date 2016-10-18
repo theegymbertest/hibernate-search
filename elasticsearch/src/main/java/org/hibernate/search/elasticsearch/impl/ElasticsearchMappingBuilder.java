@@ -53,6 +53,12 @@ final class ElasticsearchMappingBuilder {
 		FieldPathBuilder newPathBuilder = pathBuilder.clone();
 		newPathBuilder.append( embeddedTypeMetadata.getEmbeddedFieldPrefix() );
 
+		JsonObject newMappingJson = getOrCreateParents( newPathBuilder );
+
+		return new ElasticsearchMappingBuilder( this, binding, embeddedTypeMetadata, newMappingJson, newPathBuilder );
+	}
+
+	private JsonObject getOrCreateParents(FieldPathBuilder newPathBuilder) {
 		JsonObject currentMappingJson = mappingJson;
 		String newPathComponent = newPathBuilder.nextComponent();
 		while ( newPathComponent != null ) {
@@ -66,7 +72,7 @@ final class ElasticsearchMappingBuilder {
 			if ( newProperty == null ) {
 				newProperty = new JsonObject();
 
-				// Must be set to avoid errors when there is no property inside this property
+				// Must be set to avoid errors when there is no property
 				newProperty.addProperty( "type", ElasticsearchFieldType.OBJECT.getElasticsearchString() );
 
 				// TODO HSEARCH-2263 enable nested mapping as needed:
@@ -75,14 +81,14 @@ final class ElasticsearchMappingBuilder {
 				// * for these, the user should be able to opt out (nested would be the safe default mapping in this
 				// case, but they could want to opt out when only ever querying on single fields of the embeddable)
 
-				addPropertyRelative( currentMappingJson, newPathComponent, newProperty );
+				setPropertyRelative( currentMappingJson, newPathComponent, newProperty );
 			}
 
 			currentMappingJson = newProperty;
 			newPathComponent = newPathBuilder.nextComponent();
 		}
 
-		return new ElasticsearchMappingBuilder( this, binding, embeddedTypeMetadata, currentMappingJson, newPathBuilder );
+		return currentMappingJson;
 	}
 
 	private static JsonObject getPropertyRelative(JsonObject parent, String name) {
@@ -95,7 +101,7 @@ final class ElasticsearchMappingBuilder {
 		}
 	}
 
-	private static void addPropertyRelative(JsonObject parent, String name, JsonObject property) {
+	private static void setPropertyRelative(JsonObject parent, String name, JsonObject property) {
 		JsonObject properties = parent.getAsJsonObject( "properties" );
 		if ( properties == null ) {
 			properties = new JsonObject();
@@ -104,15 +110,34 @@ final class ElasticsearchMappingBuilder {
 		properties.add( name, property );
 	}
 
-	public boolean hasPropertyAbsolute(String absolutePath) {
-		String relativePath = pathBuilder.makeRelative( absolutePath );
-		JsonObject property = getPropertyRelative( mappingJson, relativePath );
-		return property != null;
+	public static final class PropertyMappingAccessor {
+		private final JsonObject parent;
+		private final String name;
+
+		public PropertyMappingAccessor(JsonObject parent, String name) {
+			super();
+			this.parent = parent;
+			this.name = name;
+		}
+
+		public boolean exists() {
+			return getPropertyRelative( parent, name ) != null;
+		}
+
+		public void set(JsonObject propertyMapping) {
+			setPropertyRelative( parent, name, propertyMapping );
+		}
 	}
 
-	public void addPropertyAbsolute(String absolutePath, JsonObject property) {
-		String relativePath = pathBuilder.makeRelative( absolutePath );
-		addPropertyRelative( mappingJson, relativePath, property );
+	public PropertyMappingAccessor getAccessor(String absolutePath) {
+		/*
+		 * Handle cases where the field name contains dots (and therefore requires
+		 * creating containing properties).
+		 */
+		FieldPathBuilder newPathBuilder = this.pathBuilder.clone();
+		newPathBuilder.appendRelativePart( absolutePath );
+		JsonObject parent = getOrCreateParents( newPathBuilder );
+		return new PropertyMappingAccessor( parent, newPathBuilder.complete() );
 	}
 
 	public TypeMetadata getMetadata() {

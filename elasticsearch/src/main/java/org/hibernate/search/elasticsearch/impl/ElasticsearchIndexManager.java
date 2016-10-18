@@ -29,6 +29,7 @@ import org.hibernate.search.elasticsearch.cfg.IndexSchemaManagementStrategy;
 import org.hibernate.search.elasticsearch.client.impl.BackendRequest;
 import org.hibernate.search.elasticsearch.client.impl.BackendRequestProcessor;
 import org.hibernate.search.elasticsearch.client.impl.JestClient;
+import org.hibernate.search.elasticsearch.impl.ElasticsearchMappingBuilder.PropertyMappingAccessor;
 import org.hibernate.search.elasticsearch.impl.FieldHelper.ExtendedFieldType;
 import org.hibernate.search.elasticsearch.logging.impl.Log;
 import org.hibernate.search.elasticsearch.spi.ElasticsearchIndexManagerType;
@@ -422,7 +423,7 @@ public class ElasticsearchIndexManager implements IndexManager, RemoteAnalyzerPr
 			field.add( "null_value", nullValueJsonElement );
 		}
 
-		mappingBuilder.addPropertyAbsolute( fieldPath, field );
+		mappingBuilder.getAccessor( fieldPath ).set( field );
 
 		// Create facet fields if needed: if the facet has the same name as the field, we don't need to create an
 		// extra field for it
@@ -457,10 +458,11 @@ public class ElasticsearchIndexManager implements IndexManager, RemoteAnalyzerPr
 			addIndexOptions( field, mappingBuilder, bridgeDefinedField.getSourceField().getSourceProperty(),
 					fieldPath, fieldType, bridgeDefinedField.getIndex(), null );
 
+			PropertyMappingAccessor accessor = mappingBuilder.getAccessor( fieldPath );
 			// we don't overwrite already defined fields. Typically, in the case of spatial, the geo_point field
 			// is defined before the double field and we want to keep the geo_point one
-			if ( !mappingBuilder.hasPropertyAbsolute( fieldPath ) ) {
-				mappingBuilder.addPropertyAbsolute( fieldPath, field );
+			if ( !accessor.exists() ) {
+				accessor.set( field );
 			}
 		}
 		else {
@@ -475,7 +477,7 @@ public class ElasticsearchIndexManager implements IndexManager, RemoteAnalyzerPr
 				field.addProperty( "type", ElasticsearchFieldType.GEO_POINT.getElasticsearchString() );
 
 				// in this case, the spatial field has precedence over an already defined field
-				mappingBuilder.addPropertyAbsolute( SpatialHelper.getSpatialFieldRootName( fieldPath ), field );
+				mappingBuilder.getAccessor( SpatialHelper.stripSpatialFieldSuffix( fieldPath ) ).set( field );
 			}
 			else {
 				// the fields potentially created for the spatial hash queries
@@ -483,7 +485,7 @@ public class ElasticsearchIndexManager implements IndexManager, RemoteAnalyzerPr
 				field.addProperty( "type", ElasticsearchFieldType.STRING.getElasticsearchString() );
 				field.addProperty( "index", NOT_ANALYZED );
 
-				mappingBuilder.addPropertyAbsolute( fieldPath, field );
+				mappingBuilder.getAccessor( fieldPath ).set( field );
 			}
 		}
 	}
@@ -496,7 +498,7 @@ public class ElasticsearchIndexManager implements IndexManager, RemoteAnalyzerPr
 		field.addProperty( "store", false );
 		field.addProperty( "index", NOT_ANALYZED );
 
-		mappingBuilder.addPropertyAbsolute( fullFieldName, field );
+		mappingBuilder.getAccessor( fullFieldName ).set( field );
 		return field;
 	}
 

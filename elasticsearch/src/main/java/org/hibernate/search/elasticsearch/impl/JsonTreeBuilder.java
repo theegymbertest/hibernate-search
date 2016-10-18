@@ -20,6 +20,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 /**
  * A non-threadsafe helper to create JSON trees from {@link NestingPathComponent}s.
@@ -60,7 +61,7 @@ final class JsonTreeBuilder {
 		this.parent = root;
 	}
 
-	private void reset() {
+	public void reset() {
 		indexes.clear();
 
 		parent = root;
@@ -68,18 +69,14 @@ final class JsonTreeBuilder {
 	}
 
 	/**
-	 * Gets the parent JSON object for a field having the given nesting marker
+	 * Add properties as necessary and update the current parent to match the given nesting path.
 	 *
 	 * @param nestingPath The nesting path.
-	 * @return The JSON object representing the parent for any property in the
-	 * given nesting path.
 	 */
-	public JsonObject getOrCreateParent(List<NestingPathComponent> nestingPath) {
+	public void append(List<NestingPathComponent> nestingPath) {
 		if ( nestingPath == null ) {
-			return root;
+			return;
 		}
-
-		reset();
 
 		for ( NestingPathComponent pathComponent : nestingPath ) {
 			EmbeddedTypeMetadata embeddedTypeMetadata = pathComponent.getEmbeddedTypeMetadata();
@@ -91,9 +88,38 @@ final class JsonTreeBuilder {
 				indexes.addLast( currentComponentArrayIndex );
 			}
 
-			advanceInPath();
+			JsonObject newParent = getOrCreateFromPath( fieldPathBuilder );
+			if ( newParent != parent ) {
+				parent = newParent;
+				indexes.clear();
+			}
 		}
-		return parent;
+	}
+
+	public void addPropertyAbsolute(String absolutePath, JsonPrimitive value) {
+		/*
+		 * Necessary to handle cases where the field name contains dots (and therefore requires
+		 * creating containing properties independently of the nesting context).
+		 */
+		FieldPathBuilder newFieldPathBuilder = this.fieldPathBuilder.clone();
+		newFieldPathBuilder.appendRelativePart( absolutePath );
+
+		JsonObject parent = getOrCreateFromPath( newFieldPathBuilder );
+		// We don't update this.parent or this.indexes, because we just need the parent for one use
+
+		String propertyName = newFieldPathBuilder.complete();
+
+		JsonElement currentValue = parent.get( propertyName );
+		if ( currentValue == null ) {
+			JsonBuilder.object( parent ).add( propertyName, value );
+		}
+		else if ( !currentValue.isJsonArray() ) {
+			parent.remove( propertyName );
+			parent.add( propertyName, JsonBuilder.array().add( currentValue ).add( value ).build() );
+		}
+		else {
+			currentValue.getAsJsonArray().add( value );
+		}
 	}
 
 	/**
@@ -102,30 +128,36 @@ final class JsonTreeBuilder {
 	 * {@code path} between {@code currentIndexInPath} and the last dot.
 	 * <p>Multiple elements may get created for one of those field path components,
 	 * if {@code indexes} is non-empty (requiring the creation of arrays).
+	 *
+	 * @param fieldPathBuilder The field path builder to extract field path components from.
+	 * @return The parent to use for next nested components in the path.
 	 */
-	private void advanceInPath() {
+	private JsonObject getOrCreateFromPath(FieldPathBuilder fieldPathBuilder) {
 		String childName = fieldPathBuilder.nextComponent();
-		while ( childName != null ) {
-			JsonObject newParent;
+		JsonObject newParent = parent;
+		boolean useIndexes = !indexes.isEmpty();
 
-			if ( !indexes.isEmpty() ) {
+		while ( childName != null ) {
+
+			if ( useIndexes ) {
 				/*
 				 * There were indexes in previous path components.
 				 * We'll have to create an array, or multiple nested arrays, to reflect
 				 * those indexes in the resulting object tree.
 				 */
-				JsonArray array = getOrCreate( parent, childName, JsonElementType.ARRAY );
+				JsonArray array = getOrCreate( newParent, childName, JsonElementType.ARRAY );
 
 				newParent = getOrCreate( array, indexes, JsonElementType.OBJECT );
-				indexes.clear();
+				useIndexes = false; // Indexes were consumed, don't use them anymore
 			}
 			else {
-				newParent = getOrCreate( parent, childName, JsonElementType.OBJECT );
+				newParent = getOrCreate( newParent, childName, JsonElementType.OBJECT );
 			}
 
-			parent = newParent;
 			childName = fieldPathBuilder.nextComponent();
 		}
+
+		return newParent;
 	}
 
 	/**

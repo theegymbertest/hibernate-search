@@ -34,6 +34,23 @@ class FieldPathBuilder implements Cloneable {
 	}
 
 	/**
+	 * Append to the path the part of {@code otherPath} that is relative to the current path.
+	 * <p>In other words, replace the current path with {@code otherPath} provided {@code otherPath}
+	 * denotes a child element of the current path, while preserving the memory of the previously
+	 * consumed path components.
+	 * @param otherPath A path that must start with the current path.
+	 */
+	public void appendRelativePart(String otherPath) {
+		String pathAsString = path.toString();
+		if ( !otherPath.startsWith( pathAsString ) ) {
+			throw new AssertionFailure( "The path '" + otherPath + "' is not contained within '" + pathAsString + "'" );
+		}
+
+		path.append( otherPath, path.length(), otherPath.length() );
+	}
+
+	/**
+	 * Consumes one more component in the current path (if possible) and returns this component.
 	 * @return The next complete path component, or null if it cannot be determined yet.
 	 */
 	public String nextComponent() {
@@ -46,6 +63,26 @@ class FieldPathBuilder implements Cloneable {
 		else {
 			return null;
 		}
+	}
+
+	/**
+	 * Completes the path consumption by returning the last path component, i.e the remaining
+	 * characters from the {@link #nextComponent() last consumed path components} to the end
+	 * of the current path.
+	 * @return The last path component
+	 * @throws AssertionFailure If there is nothing to consume in the path, or if there is more
+	 * than one component to consume.
+	 */
+	public String complete() {
+		if ( currentIndexInPath >= path.length() ) {
+			throw new AssertionFailure( "No path component remaining: " + toString() );
+		}
+		if ( path.indexOf( PATH_COMPONENT_SEPARATOR, currentIndexInPath ) >= 0 ) {
+			throw new AssertionFailure( "Multiple path components remaining: " + toString() );
+		}
+		String lastComponent = path.substring( currentIndexInPath );
+		currentIndexInPath = path.length();
+		return lastComponent;
 	}
 
 	/**
