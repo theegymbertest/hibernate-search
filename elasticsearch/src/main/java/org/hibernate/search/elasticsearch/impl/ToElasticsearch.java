@@ -6,6 +6,9 @@
  */
 package org.hibernate.search.elasticsearch.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -25,6 +28,8 @@ import org.apache.lucene.search.WildcardQuery;
 import org.hibernate.search.backend.spi.DeletionQuery;
 import org.hibernate.search.elasticsearch.logging.impl.Log;
 import org.hibernate.search.engine.spi.DocumentBuilderIndexedEntity;
+import org.hibernate.search.engine.spi.EntityIndexBinding;
+import org.hibernate.search.exception.AssertionFailure;
 import org.hibernate.search.filter.impl.CachingWrapperFilter;
 import org.hibernate.search.query.dsl.impl.DiscreteFacetRequest;
 import org.hibernate.search.query.dsl.impl.FacetRange;
@@ -36,6 +41,7 @@ import org.hibernate.search.query.facet.FacetingRequest;
 import org.hibernate.search.spatial.impl.DistanceFilter;
 import org.hibernate.search.spatial.impl.SpatialHashFilter;
 import org.hibernate.search.util.StringHelper;
+import org.hibernate.search.util.impl.CollectionHelper;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
 import com.google.gson.JsonArray;
@@ -49,7 +55,7 @@ import com.google.gson.JsonObject;
  */
 public class ToElasticsearch {
 
-	private static final Log LOG = LoggerFactory.make( Log.class );
+	static final Log LOG = LoggerFactory.make( Log.class );
 
 	private static final int DEFAULT_SLOP = 0;
 	private static final int DEFAULT_MAX_EDIT_DISTANCE = 0;
@@ -134,15 +140,22 @@ public class ToElasticsearch {
 		return jsonCondition;
 	}
 
-	public static JsonObject fromLuceneQuery(Query query) {
+	public static JsonObject fromLuceneQuery(QueryTargetMetadata targetMetadata, Query query) {
 		if ( query instanceof MatchAllDocsQuery ) {
 			return convertMatchAllDocsQuery( (MatchAllDocsQuery) query );
 		}
 		else if ( query instanceof TermQuery ) {
-			return convertTermQuery( (TermQuery) query );
+			TermQuery termQuery = (TermQuery) query;
+			String field = termQuery.getTerm().field();
+			if ( targetMetadata.isId( field ) ) {
+				return convertIdQuery( termQuery );
+			}
+			else {
+				return convertTermQuery( termQuery );
+			}
 		}
 		else if ( query instanceof BooleanQuery ) {
-			return convertBooleanQuery( (BooleanQuery) query );
+			return convertBooleanQuery( targetMetadata, (BooleanQuery) query );
 		}
 		else if ( query instanceof TermRangeQuery ) {
 			return convertTermRangeQuery( (TermRangeQuery) query );
@@ -166,13 +179,13 @@ public class ToElasticsearch {
 			return convertRemoteMatchQuery( (RemoteMatchQuery) query );
 		}
 		else if ( query instanceof ConstantScoreQuery ) {
-			return convertConstantScoreQuery( (ConstantScoreQuery) query );
+			return convertConstantScoreQuery( targetMetadata, (ConstantScoreQuery) query );
 		}
 		else if ( query instanceof FilteredQuery ) {
-			return convertFilteredQuery( (FilteredQuery) query );
+			return convertFilteredQuery( targetMetadata, (FilteredQuery) query );
 		}
 		else if ( query instanceof Filter ) {
-			return fromLuceneFilter( (Filter) query );
+			return fromLuceneFilter( targetMetadata, (Filter) query );
 		}
 		else if ( query instanceof PhraseQuery ) {
 			return convertPhraseQuery( (PhraseQuery) query );
@@ -182,32 +195,34 @@ public class ToElasticsearch {
 	}
 
 	public static JsonObject fromDeletionQuery(DocumentBuilderIndexedEntity documentBuilder, DeletionQuery deletionQuery) {
-		return fromLuceneQuery( deletionQuery.toLuceneQuery( documentBuilder ) );
+		QueryTargetMetadata targetMetadata = new QueryTargetMetadata( CollectionHelper.asSet( documentBuilder ) );
+		return fromLuceneQuery( targetMetadata, deletionQuery.toLuceneQuery( documentBuilder ) );
 	}
 
 	private static JsonObject convertMatchAllDocsQuery(MatchAllDocsQuery matchAllDocsQuery) {
 		return JsonBuilder.object().add( "match_all", new JsonObject() ).build();
 	}
 
-	private static JsonObject convertBooleanQuery(BooleanQuery booleanQuery) {
+	private static JsonObject convertBooleanQuery(QueryTargetMetadata metadata, BooleanQuery booleanQuery) {
 		JsonArray musts = new JsonArray();
 		JsonArray shoulds = new JsonArray();
 		JsonArray mustNots = new JsonArray();
 		JsonArray filters = new JsonArray();
 
 		for ( BooleanClause clause : booleanQuery.clauses() ) {
+			JsonObject convertedClause = fromLuceneQuery( metadata, clause.getQuery() );
 			switch ( clause.getOccur() ) {
 				case MUST:
-					musts.add( fromLuceneQuery( clause.getQuery() ) );
+					musts.add( convertedClause );
 					break;
 				case FILTER:
-					filters.add( fromLuceneQuery( clause.getQuery() ) );
+					filters.add( convertedClause );
 					break;
 				case MUST_NOT:
-					mustNots.add( fromLuceneQuery( clause.getQuery() ) );
+					mustNots.add( convertedClause );
 					break;
 				case SHOULD:
-					shoulds.add( fromLuceneQuery( clause.getQuery() ) );
+					shoulds.add( convertedClause );
 					break;
 			}
 		}
@@ -252,6 +267,21 @@ public class ToElasticsearch {
 
 		JsonObject matchQuery = JsonBuilder.object()
 				.add( "term",
+						JsonBuilder.object().add( field,
+								JsonBuilder.object()
+										.addProperty( "value", query.getTerm().text() )
+										.append( boostAppender( query ) )
+						)
+				).build();
+
+		return wrapQueryForNestedIfRequired( field, matchQuery );
+	}
+
+	private static JsonObject convertIdQuery(TermQuery query) {
+		String field = query.getTerm().field();
+
+		JsonObject matchQuery = JsonBuilder.object()
+				.add( "_id",
 						JsonBuilder.object().add( field,
 								JsonBuilder.object()
 										.addProperty( "value", query.getTerm().text() )
@@ -412,23 +442,23 @@ public class ToElasticsearch {
 		return wrapQueryForNestedIfRequired( query.getField(), range );
 	}
 
-	private static JsonObject convertConstantScoreQuery(ConstantScoreQuery query) {
+	private static JsonObject convertConstantScoreQuery(QueryTargetMetadata targetMetadata, ConstantScoreQuery query) {
 		JsonObject constantScoreQuery = JsonBuilder.object()
 				.add( "constant_score",
 						JsonBuilder.object()
-								.add( "filter", fromLuceneQuery( query.getQuery() ) )
+								.add( "filter", fromLuceneQuery( targetMetadata, query.getQuery() ) )
 								.append( boostAppender( query ) )
 				).build();
 
 		return constantScoreQuery;
 	}
 
-	private static JsonObject convertFilteredQuery(FilteredQuery query) {
+	private static JsonObject convertFilteredQuery(QueryTargetMetadata metadata, FilteredQuery query) {
 		JsonObject filteredQuery = JsonBuilder.object()
 				.add( "filtered",
 						JsonBuilder.object()
-								.add( "query", fromLuceneQuery( query.getQuery() ) )
-								.add( "filter", fromLuceneQuery( query.getFilter() ) )
+								.add( "query", fromLuceneQuery( metadata, query.getQuery() ) )
+								.add( "filter", fromLuceneQuery( metadata, query.getFilter() ) )
 								.append( boostAppender( query ) )
 				).build();
 
@@ -557,11 +587,11 @@ public class ToElasticsearch {
 		return false;
 	}
 
-	public static JsonObject fromLuceneFilter(Filter luceneFilter) {
+	public static JsonObject fromLuceneFilter(QueryTargetMetadata metadata, Filter luceneFilter) {
 		if ( luceneFilter instanceof QueryWrapperFilter ) {
 			Query query = ( (QueryWrapperFilter) luceneFilter ).getQuery();
 			query.setBoost( luceneFilter.getBoost() * query.getBoost() );
-			return fromLuceneQuery( query );
+			return fromLuceneQuery( metadata, query );
 		}
 		else if ( luceneFilter instanceof DistanceFilter ) {
 			return convertDistanceFilter( (DistanceFilter) luceneFilter );
@@ -570,7 +600,7 @@ public class ToElasticsearch {
 			return convertSpatialHashFilter( (SpatialHashFilter) luceneFilter );
 		}
 		else if ( luceneFilter instanceof CachingWrapperFilter ) {
-			return fromLuceneFilter( ( (CachingWrapperFilter) luceneFilter ).getCachedFilter() );
+			return fromLuceneFilter( metadata, ( (CachingWrapperFilter) luceneFilter ).getCachedFilter() );
 		}
 		throw LOG.cannotTransformLuceneFilterIntoEsQuery( luceneFilter );
 	}

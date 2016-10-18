@@ -6,12 +6,16 @@
  */
 package org.hibernate.search.elasticsearch.impl;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.lucene.search.Query;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.engine.service.spi.Startable;
+import org.hibernate.search.engine.spi.DocumentBuilderIndexedEntity;
 import org.hibernate.search.engine.spi.EntityIndexBinding;
 import org.hibernate.search.indexes.spi.IndexManager;
 import org.hibernate.search.query.engine.impl.LuceneQueryTranslator;
@@ -19,6 +23,7 @@ import org.hibernate.search.query.engine.spi.QueryDescriptor;
 import org.hibernate.search.spi.BuildContext;
 import org.hibernate.search.util.impl.CollectionHelper;
 
+import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 
 /**
@@ -38,8 +43,14 @@ public class ElasticsearchLuceneQueryTranslator implements LuceneQueryTranslator
 	}
 
 	@Override
-	public QueryDescriptor convertLuceneQuery(Query luceneQuery) {
-		JsonObject convertedQuery = ToElasticsearch.fromLuceneQuery( luceneQuery );
+	public QueryDescriptor convertLuceneQuery(Collection<Class<?>> entities, Query luceneQuery) {
+		Set<DocumentBuilderIndexedEntity> documentBuilders = getElasticsearchEntitiesDocumentBuilders( entities );
+		if ( bindings.isEmpty() ) {
+			return null;
+		}
+
+		QueryTargetMetadata targetMetadata = new QueryTargetMetadata( documentBuilders );
+		JsonObject convertedQuery = ToElasticsearch.fromLuceneQuery( targetMetadata, luceneQuery );
 
 		JsonObject query = new JsonObject();
 		query.add( "query", convertedQuery );
@@ -47,8 +58,8 @@ public class ElasticsearchLuceneQueryTranslator implements LuceneQueryTranslator
 		return new ElasticsearchJsonQueryDescriptor( query );
 	}
 
-	@Override
-	public boolean conversionRequired(Class<?>... entities) {
+	private Set<DocumentBuilderIndexedEntity> getElasticsearchEntitiesDocumentBuilders(Collection<Class<?>> entities) {
+		Set<DocumentBuilderIndexedEntity> result = new HashSet<>();
 		Set<Class<?>> queriedEntityTypes = getQueriedEntityTypes( entities );
 		Set<Class<?>> queriedEntityTypesWithSubTypes = extendedIntegrator.getIndexedTypesPolymorphic( queriedEntityTypes.toArray( new Class<?>[queriedEntityTypes.size()] ) );
 
@@ -63,20 +74,20 @@ public class ElasticsearchLuceneQueryTranslator implements LuceneQueryTranslator
 
 			for ( IndexManager indexManager : indexManagers ) {
 				if ( indexManager instanceof ElasticsearchIndexManager ) {
-					return true;
+					result.add( binding.getDocumentBuilder() );
 				}
 			}
 		}
 
-		return false;
+		return result;
 	}
 
-	private Set<Class<?>> getQueriedEntityTypes(Class<?>... indexedTargetedEntities) {
-		if ( indexedTargetedEntities == null || indexedTargetedEntities.length == 0 ) {
+	private Set<Class<?>> getQueriedEntityTypes(Collection<Class<?>> indexedTargetedEntities) {
+		if ( indexedTargetedEntities == null || indexedTargetedEntities.isEmpty() ) {
 			return extendedIntegrator.getIndexBindings().keySet();
 		}
 		else {
-			return CollectionHelper.asSet( indexedTargetedEntities );
+			return new HashSet<>( indexedTargetedEntities );
 		}
 	}
 }

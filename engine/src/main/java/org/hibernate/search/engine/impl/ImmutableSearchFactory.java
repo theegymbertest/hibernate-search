@@ -285,12 +285,13 @@ public class ImmutableSearchFactory implements ExtendedSearchIntegratorWithShare
 	@Override
 	public HSQuery createHSQuery(Query luceneQuery, Class<?>... entities) {
 		QueryDescriptor descriptor = null;
+		List<Class<?>> entitiesAsList = Arrays.asList( entities );
 
 		if ( queryTranslatorPresent ) {
 			try (ServiceReference<LuceneQueryTranslator> translator =
 					getServiceManager().requestReference( LuceneQueryTranslator.class )) {
-				if ( translator.get().conversionRequired( entities ) ) {
-					descriptor = translator.get().convertLuceneQuery( luceneQuery );
+				if ( translator.get().conversionRequired( entitiesAsList ) ) {
+					descriptor = translator.get().convertLuceneQuery( entitiesAsList, luceneQuery );
 				}
 			}
 		}
@@ -299,7 +300,7 @@ public class ImmutableSearchFactory implements ExtendedSearchIntegratorWithShare
 			descriptor = new LuceneQueryDescriptor( luceneQuery );
 		}
 
-		return descriptor.createHSQuery( this ).targetedEntities( Arrays.asList( entities ) );
+		return descriptor.createHSQuery( this ).targetedEntities( entitiesAsList );
 	}
 
 	@Override
