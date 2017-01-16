@@ -7,7 +7,12 @@
 package org.hibernate.search.test.util;
 
 import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -21,13 +26,16 @@ import org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionPro
 import org.hibernate.engine.jdbc.connections.spi.AbstractMultiTenantConnectionProvider;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
+import org.hibernate.resource.transaction.spi.DdlTransactionIsolator;
+import org.hibernate.search.util.logging.impl.Log;
+import org.hibernate.search.util.logging.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.testing.boot.JdbcConnectionAccessImpl;
 import org.hibernate.testing.env.ConnectionProviderBuilder;
 import org.hibernate.tool.schema.internal.HibernateSchemaManagementTool;
 import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
 import org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase;
+import org.hibernate.tool.schema.internal.exec.JdbcContext;
 
 /**
  * Utility to help setting up a test SessionFactory which uses multi-tenancy based
@@ -38,10 +46,13 @@ import org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase;
  */
 public class MultitenancyTestHelper implements Closeable {
 
+	private static final Log LOG = LoggerFactory.make();
+
 	private final Set<String> tenantIds;
 	private final boolean multitenancyEnabled;
 	private final AbstractMultiTenantConnectionProvider multiTenantConnectionProvider;
 	private final Map<String,DriverManagerConnectionProviderImpl> tenantSpecificConnectionProviders = new HashMap<>();
+	private final List<Connection> tenantSpecificConnections = new ArrayList<>();
 
 	public MultitenancyTestHelper(Set<String> tenantIds) {
 		this.tenantIds = tenantIds;
@@ -83,6 +94,14 @@ public class MultitenancyTestHelper implements Closeable {
 
 	@Override
 	public void close() {
+		for ( Connection connection : tenantSpecificConnections ) {
+			try {
+				connection.close();
+			}
+			catch (SQLException e) {
+				LOG.error( "Error while closing a tenant-specific connection", e );
+			}
+		}
 		for ( DriverManagerConnectionProviderImpl connectionProvider : tenantSpecificConnectionProviders.values() ) {
 			connectionProvider.stop();
 		}
@@ -91,7 +110,7 @@ public class MultitenancyTestHelper implements Closeable {
 	public void exportSchema(ServiceRegistryImplementor serviceRegistry, Metadata metadata, Map<String, Object> settings) {
 		HibernateSchemaManagementTool tool = new HibernateSchemaManagementTool();
 		tool.injectServices( serviceRegistry );
-		final GenerationTargetToDatabase[] databaseTargets = createSchemaTargets( serviceRegistry );
+		final GenerationTargetToDatabase[] databaseTargets = createSchemaTargets( tool, settings );
 		new SchemaDropperImpl( serviceRegistry ).doDrop(
 				metadata,
 				serviceRegistry,
@@ -108,14 +127,27 @@ public class MultitenancyTestHelper implements Closeable {
 			);
 	}
 
-	private GenerationTargetToDatabase[] createSchemaTargets(ServiceRegistryImplementor serviceRegistry) {
+	private GenerationTargetToDatabase[] createSchemaTargets(HibernateSchemaManagementTool tool, Map<String, Object> settings) {
 		GenerationTargetToDatabase[] targets = new GenerationTargetToDatabase[tenantSpecificConnectionProviders.size()];
 		int index = 0;
-		for ( Entry<String, DriverManagerConnectionProviderImpl> e : tenantSpecificConnectionProviders.entrySet() ) {
-			ConnectionProvider connectionProvider = e.getValue();
-			targets[index] = new GenerationTargetToDatabase(
-						new DdlTransactionIsolatorTestingImpl( serviceRegistry,
-								new JdbcConnectionAccessImpl( connectionProvider ) ) );
+
+		for ( Entry<String, DriverManagerConnectionProviderImpl> entry : tenantSpecificConnectionProviders.entrySet() ) {
+			ConnectionProvider connectionProvider = entry.getValue();
+			Connection connection;
+			try {
+				connection = connectionProvider.getConnection();
+			}
+			catch (SQLException e) {
+				throw new IllegalStateException( "Unexpected error when creating tenant-specific connections", e );
+			}
+			tenantSpecificConnections.add( connection );
+
+			Map<String, Object> tenantSpecificSettings = new LinkedHashMap<>( settings );
+			tenantSpecificSettings.put( AvailableSettings.HBM2DDL_CONNECTION, connection );
+
+			JdbcContext jdbcContext = tool.resolveJdbcContext( tenantSpecificSettings );
+			DdlTransactionIsolator ddlTransactionIsolator = tool.getDdlTransactionIsolator( jdbcContext );
+			targets[index] = new GenerationTargetToDatabase( ddlTransactionIsolator );
 			index++;
 		}
 		return targets;
