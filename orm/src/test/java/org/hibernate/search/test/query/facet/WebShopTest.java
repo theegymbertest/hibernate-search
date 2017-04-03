@@ -171,7 +171,7 @@ public class WebShopTest extends AbstractFacetTest {
 			// range faceting
 			final FacetingRequest priceFacet = builder.facet()
 					.name( cubicCapacityFacetName )
-					.onField( Car.CUBIC_CAPACITY_NUMERIC )
+					.onField( Car.CUBIC_CAPACITY_NUMERIC_FACET )
 					.range()
 					.below( 2500 ).excludeLimit()
 					.from( 2500 ).to( 3000 )
