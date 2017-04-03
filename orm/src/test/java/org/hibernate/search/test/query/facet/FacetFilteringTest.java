@@ -19,8 +19,7 @@ import org.hibernate.search.query.engine.spi.FacetManager;
 import org.hibernate.search.query.facet.Facet;
 import org.hibernate.search.query.facet.FacetCombine;
 import org.hibernate.search.query.facet.FacetingRequest;
-import org.hibernate.testing.TestForIssue;
-
+import org.hibernate.search.testsupport.TestForIssue;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

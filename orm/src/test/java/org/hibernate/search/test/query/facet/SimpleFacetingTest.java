@@ -135,6 +135,22 @@ public class SimpleFacetingTest extends AbstractFacetTest {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "HSEARCH-2671")
+	public void testZeroCountsIncludedForNumericSourceField() throws Exception {
+		FacetingRequest request = queryBuilder( Car.class ).facet()
+				.name( facetName )
+				.onField( Car.CUBIC_CAPACITY_NUMERIC_FACET_STRING_ENCODING )
+				.discrete()
+				.orderedBy( FacetSortOrder.COUNT_DESC )
+				.includeZeroCounts( true )
+				.createFacetingRequest();
+		FullTextQuery query = queryHondaWithFacet( request );
+
+		List<Facet> facetList = query.getFacetManager().getFacets( facetName );
+		assertFacetCounts( facetList, new int[] { 5, 4, 4, 0 } );
+	}
+
+	@Test
 	@TestForIssue(jiraKey = "HSEARCH-776")
 	public void testMaxFacetCounts() throws Exception {
 		FacetingRequest request = queryBuilder( Car.class ).facet()
