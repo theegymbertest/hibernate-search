@@ -19,8 +19,7 @@ import org.hibernate.search.query.engine.spi.FacetManager;
 import org.hibernate.search.query.facet.Facet;
 import org.hibernate.search.query.facet.FacetCombine;
 import org.hibernate.search.query.facet.FacetingRequest;
-import org.hibernate.testing.TestForIssue;
-
+import org.hibernate.search.testsupport.TestForIssue;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -62,6 +61,39 @@ public class FacetFilteringTest extends AbstractFacetTest {
 		assertEquals( "Wrong number of query matches", 9, query.list().size() );
 		newFacetList = facetManager.getFacets( facetName );
 		assertFacetCounts( newFacetList, new int[] { 5, 4, 0, 0 } );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "HSEARCH-2668")
+	public void testStringFacetOnNumericFieldDrillDown() throws Exception {
+		final String facetName = "ccs";
+		Query luceneQuery = queryBuilder( Car.class ).keyword().onField( "make" ).matching( "Honda" ).createQuery();
+		FacetingRequest request = queryBuilder( Car.class ).facet()
+				.name( facetName )
+				.onField( Car.CUBIC_CAPACITY_NUMERIC_FACET_STRING_ENCODING )
+				.discrete()
+				.createFacetingRequest();
+
+		FullTextQuery query = fullTextSession.createFullTextQuery( luceneQuery, Car.class );
+		FacetManager facetManager = query.getFacetManager();
+		facetManager.enableFaceting( request );
+		query.setFirstResult( 0 ).setMaxResults( 1 );
+		assertEquals( "Wrong number of query matches", 13, query.getResultSize() );
+
+		List<Facet> facetList = facetManager.getFacets( facetName );
+		assertFacetCounts( facetList, new int[] { 5, 4, 4 } );
+
+		facetManager.getFacetGroup( facetName ).selectFacets( facetList.get( 0 ) );
+		query.list();
+		assertEquals( "Wrong number of query matches", 5, query.getResultSize() );
+		List<Facet> newFacetList = facetManager.getFacets( facetName );
+		assertFacetCounts( newFacetList, new int[] { 5 } );
+
+		facetManager.getFacetGroup( facetName ).selectFacets( facetList.get( 1 ) );
+		query.setMaxResults( 1000 ); // When testing against Elasticsearch you need to stay under the maximum page limit
+		assertEquals( "Wrong number of query matches", 9, query.list().size() );
+		newFacetList = facetManager.getFacets( facetName );
+		assertFacetCounts( newFacetList, new int[] { 5, 4 } );
 	}
 
 	@Test
