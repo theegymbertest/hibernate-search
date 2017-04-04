@@ -67,4 +67,11 @@ public interface IndexShardingStrategy {
 	 * @return the set of {@link IndexManager}(s) where the entities matching the filters are stored
 	 */
 	IndexManager[] getIndexManagersForQuery(FullTextFilterImplementor[] fullTextFilters);
+
+	/**
+	 * @return The shard identifier provider used by this sharding strategy, or null if there is none.
+	 */
+	default ShardIdentifierProvider getShardIdentifierProvider() {
+		return null;
+	}
 }

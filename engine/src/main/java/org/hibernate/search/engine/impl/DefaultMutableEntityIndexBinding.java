@@ -25,20 +25,17 @@ public class DefaultMutableEntityIndexBinding implements MutableEntityIndexBindi
 	private final Similarity similarityInstance;
 	private DocumentBuilderIndexedEntity documentBuilder;
 	private final IndexManagerType indexManagerType;
-	private final IndexManager[] indexManagers;
 	private final EntityIndexingInterceptor entityIndexingInterceptor;
 
 	public DefaultMutableEntityIndexBinding(
 			IndexShardingStrategy shardingStrategy,
 			Similarity similarityInstance,
 			IndexManagerType indexManagerType,
-			IndexManager[] providers,
 			EntityIndexingInterceptor entityIndexingInterceptor) {
-				this.shardingStrategy = shardingStrategy;
-				this.similarityInstance = similarityInstance;
-				this.indexManagerType = indexManagerType;
-				this.indexManagers = providers;
-				this.entityIndexingInterceptor = entityIndexingInterceptor;
+		this.shardingStrategy = shardingStrategy;
+		this.similarityInstance = similarityInstance;
+		this.indexManagerType = indexManagerType;
+		this.entityIndexingInterceptor = entityIndexingInterceptor;
 	}
 
 	@Override
@@ -58,7 +55,7 @@ public class DefaultMutableEntityIndexBinding implements MutableEntityIndexBindi
 
 	@Override
 	public ShardIdentifierProvider getShardIdentifierProvider() {
-		return null;
+		return shardingStrategy.getShardIdentifierProvider();
 	}
 
 	@Override
@@ -78,7 +75,7 @@ public class DefaultMutableEntityIndexBinding implements MutableEntityIndexBindi
 
 	@Override
 	public IndexManager[] getIndexManagers() {
-		return indexManagers;
+		return shardingStrategy.getIndexManagersForAllShards();
 	}
 
 	@Override
