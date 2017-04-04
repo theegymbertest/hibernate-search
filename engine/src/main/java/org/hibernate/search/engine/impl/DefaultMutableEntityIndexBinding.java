@@ -12,6 +12,7 @@ import org.apache.lucene.search.similarities.Similarity;
 import org.hibernate.search.engine.spi.DocumentBuilderIndexedEntity;
 import org.hibernate.search.indexes.spi.IndexManager;
 import org.hibernate.search.indexes.spi.IndexManagerType;
+import org.hibernate.search.indexes.impl.IndexManagerGroupHolder;
 import org.hibernate.search.indexes.interceptor.EntityIndexingInterceptor;
 import org.hibernate.search.store.IndexShardingStrategy;
 import org.hibernate.search.store.ShardIdentifierProvider;
@@ -21,20 +22,17 @@ import org.hibernate.search.store.ShardIdentifierProvider;
  */
 public class DefaultMutableEntityIndexBinding implements MutableEntityIndexBinding {
 
+	private final IndexManagerGroupHolder indexManagerGroupHolder;
 	private final IndexShardingStrategy shardingStrategy;
-	private final Similarity similarityInstance;
 	private DocumentBuilderIndexedEntity documentBuilder;
-	private final IndexManagerType indexManagerType;
 	private final EntityIndexingInterceptor entityIndexingInterceptor;
 
 	public DefaultMutableEntityIndexBinding(
+			IndexManagerGroupHolder indexManagerGroupHolder,
 			IndexShardingStrategy shardingStrategy,
-			Similarity similarityInstance,
-			IndexManagerType indexManagerType,
 			EntityIndexingInterceptor entityIndexingInterceptor) {
+		this.indexManagerGroupHolder = indexManagerGroupHolder;
 		this.shardingStrategy = shardingStrategy;
-		this.similarityInstance = similarityInstance;
-		this.indexManagerType = indexManagerType;
 		this.entityIndexingInterceptor = entityIndexingInterceptor;
 	}
 
@@ -45,7 +43,7 @@ public class DefaultMutableEntityIndexBinding implements MutableEntityIndexBindi
 
 	@Override
 	public Similarity getSimilarity() {
-		return similarityInstance;
+		return indexManagerGroupHolder.getSimilarity();
 	}
 
 	@Override
@@ -70,7 +68,7 @@ public class DefaultMutableEntityIndexBinding implements MutableEntityIndexBindi
 
 	@Override
 	public IndexManagerType getIndexManagerType() {
-		return indexManagerType;
+		return indexManagerGroupHolder.getIndexManagerType();
 	}
 
 	@Override

@@ -90,51 +90,43 @@ public class IndexManagerHolder {
 			WorkerBuildContext buildContext
 	) {
 		String indexName = getIndexName( entity, cfg );
-		Properties[] indexProperties = getIndexProperties( cfg, indexName );
-		Similarity similarity = createSimilarity( indexName, cfg, indexProperties[0], buildContext );
-		boolean isDynamicSharding = isShardingDynamic( indexProperties[0], buildContext );
+		IndexManagerGroupHolder groupHolder = updateOrCreateIndexManagerGroupHolder(
+				indexName, cfg, buildContext );
 
-		IndexManagerType indexManagerType = getIndexManagerType( entity, cfg, buildContext );
-
-		IndexManagerGroupHolder indexManagerGroupHolder = updateOrCreateIndexManagerGroupHolder(
-				indexName, indexProperties, similarity );
-
-		IndexShardingStrategy shardingStrategy = null;
-		if ( isDynamicSharding ) {
-			ShardIdentifierProvider shardIdentifierProvider = createShardIdentifierProvider(
-					buildContext, indexProperties[0]
-			);
-			shardingStrategy = new DynamicShardingStrategy( shardIdentifierProvider, indexManagerGroupHolder, mappedClass );
-		}
-		else {
-			shardingStrategy = createIndexShardingStrategy( indexProperties, buildContext );
-		}
+		IndexShardingStrategyFactory shardingStrategyFactory = groupHolder.getShardingStrategyFactory();
+		IndexShardingStrategy shardingStrategy =
+				shardingStrategyFactory.create( groupHolder, mappedClass, buildContext );
 
 		EntityIndexingInterceptor<?> interceptor = createEntityIndexingInterceptor( entity );
 
-		MutableEntityIndexBinding entityIndexBinding =
-				new DefaultMutableEntityIndexBinding( shardingStrategy, similarity, indexManagerType, interceptor );
-
-		if ( !isDynamicSharding ) {
-			IndexManager[] indexManagers = indexManagerGroupHolder.preInitializeIndexManagers( mappedClass, buildContext );
-			if ( indexManagers.length == 0 ) {
-				throw log.entityWithNoShard( mappedClass );
-			}
-			shardingStrategy.initialize(
-					new MaskedProperty( indexProperties[0], SHARDING_STRATEGY ), indexManagers
-			);
-		}
-
-		return entityIndexBinding;
+		return new DefaultMutableEntityIndexBinding( groupHolder, shardingStrategy, interceptor );
 	}
 
-	private synchronized IndexManagerGroupHolder updateOrCreateIndexManagerGroupHolder(String indexNameBase,
-			Properties[] properties, Similarity similarity ) {
+	private synchronized IndexManagerGroupHolder updateOrCreateIndexManagerGroupHolder(
+			String indexNameBase, SearchConfiguration cfg, WorkerBuildContext buildContext) {
 		IndexManagerGroupHolder holder = indexManagerGroupHolders.get( indexNameBase );
-		if ( holder == null ) {
-			holder = new IndexManagerGroupHolder( this, indexNameBase, properties, similarity );
-			indexManagerGroupHolders.put( indexNameBase, holder );
+		if ( holder != null ) {
+			return holder;
 		}
+
+		Properties[] properties = getIndexProperties( cfg, indexNameBase );
+		Similarity similarity = createSimilarity( indexNameBase, cfg, properties[0], buildContext );
+		boolean isDynamicSharding = isShardingDynamic( properties[0], buildContext );
+
+		IndexManagerType indexManagerType = getIndexManagerType( indexNameBase, properties, cfg, buildContext );
+
+		IndexShardingStrategyFactory shardingStrategyFactory = null;
+		if ( isDynamicSharding ) {
+			shardingStrategyFactory = createDynamicShardingStrategyFactory( properties, buildContext );
+		}
+		else {
+			shardingStrategyFactory = createNonDynamicShardingStrategyFactory( properties, buildContext );
+		}
+
+		holder = new IndexManagerGroupHolder( this, indexNameBase, properties,
+				similarity, indexManagerType, shardingStrategyFactory );
+
+		indexManagerGroupHolders.put( indexNameBase, holder );
 
 		return holder;
 	}
@@ -373,20 +365,17 @@ public class IndexManagerHolder {
 		}
 	}
 
-	private ShardIdentifierProvider createShardIdentifierProvider(WorkerBuildContext buildContext, Properties indexProperty) {
-		ShardIdentifierProvider shardIdentifierProvider;
-		String shardIdentityProviderName = indexProperty.getProperty( SHARDING_STRATEGY );
+	private IndexShardingStrategyFactory createDynamicShardingStrategyFactory(Properties indexProperty[], WorkerBuildContext buildContext) {
+		String shardIdentityProviderName = indexProperty[0].getProperty( SHARDING_STRATEGY );
 		ServiceManager serviceManager = buildContext.getServiceManager();
-		shardIdentifierProvider = ClassLoaderHelper.instanceFromName(
+		Class<? extends ShardIdentifierProvider> shardIdentifierProviderClass = ClassLoaderHelper.classForName(
 				ShardIdentifierProvider.class,
 				shardIdentityProviderName,
 				"ShardIdentifierProvider",
 				serviceManager
 		);
 
-		shardIdentifierProvider.initialize( new MaskedProperty( indexProperty, SHARDING_STRATEGY ), buildContext );
-
-		return shardIdentifierProvider;
+		return new DynamicShardingStrategyFactory( shardIdentifierProviderClass, new MaskedProperty( indexProperty[0], SHARDING_STRATEGY ) );
 	}
 
 	private EntityIndexingInterceptor createEntityIndexingInterceptor(XClass entity) {
@@ -463,30 +452,33 @@ public class IndexManagerHolder {
 		return configLevelSimilarity;
 	}
 
-	private IndexShardingStrategy createIndexShardingStrategy(Properties[] indexProps,
+	private IndexShardingStrategyFactory createNonDynamicShardingStrategyFactory(Properties[] indexProps,
 			WorkerBuildContext buildContext) {
-		IndexShardingStrategy shardingStrategy;
+		Class<? extends IndexShardingStrategy> shardingStrategyClass;
 
 		// any indexProperty will do, the indexProps[0] surely exists.
 		String shardingStrategyName = indexProps[0].getProperty( SHARDING_STRATEGY );
 		if ( shardingStrategyName == null ) {
 			if ( indexProps.length == 1 ) {
-				shardingStrategy = new NotShardedStrategy();
+				shardingStrategyClass = NotShardedStrategy.class;
 			}
 			else {
-				shardingStrategy = new IdHashShardingStrategy();
+				shardingStrategyClass = IdHashShardingStrategy.class;
 			}
 		}
 		else {
 			ServiceManager serviceManager = buildContext.getServiceManager();
-			shardingStrategy = ClassLoaderHelper.instanceFromName(
+			shardingStrategyClass = ClassLoaderHelper.classForName(
 					IndexShardingStrategy.class,
 					shardingStrategyName,
 					"IndexShardingStrategy",
 					serviceManager
 			);
 		}
-		return shardingStrategy;
+
+		Properties maskedProperties = new MaskedProperty( indexProps[0], IndexManagerHolder.SHARDING_STRATEGY );
+
+		return new NonDynamicShardingStrategyFactory( shardingStrategyClass, maskedProperties );
 	}
 
 	private boolean isShardingDynamic(Properties indexProperty, WorkerBuildContext buildContext) {
@@ -515,11 +507,10 @@ public class IndexManagerHolder {
 		return isShardingDynamic;
 	}
 
-	public synchronized IndexManagerType getIndexManagerType(XClass entity, SearchConfiguration cfg, WorkerBuildContext buildContext) {
+	public synchronized IndexManagerType getIndexManagerType(String indexName, Properties[] indexProperties,
+			SearchConfiguration cfg, WorkerBuildContext buildContext) {
 		ServiceManager serviceManager = buildContext.getServiceManager();
 
-		String indexName = getIndexName( entity, cfg );
-		Properties[] indexProperties = getIndexProperties( cfg, indexName );
 		//TODO the following code assumes that all shards use the same type;
 		//we decided to commit on this limitation by design, yet it's not being validated at this point.
 		String indexManagerImplementationName = indexProperties[0].getProperty( Environment.INDEX_MANAGER_IMPL_NAME );

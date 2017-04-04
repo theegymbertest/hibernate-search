@@ -12,14 +12,19 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.lucene.search.similarities.Similarity;
 import org.hibernate.search.indexes.spi.IndexManager;
+import org.hibernate.search.indexes.spi.IndexManagerType;
 import org.hibernate.search.spi.WorkerBuildContext;
 import org.hibernate.search.util.configuration.impl.MaskedProperty;
+import org.hibernate.search.util.logging.impl.Log;
+import org.hibernate.search.util.logging.impl.LoggerFactory;
 
 /**
  * A class responsible for holding references to
  * @author Yoann Rodiere
  */
 public class IndexManagerGroupHolder {
+	private static final Log log = LoggerFactory.make();
+
 	private static final String INDEX_SHARD_ID_SEPARATOR = ".";
 
 	private final IndexManagerHolder parentHolder;
@@ -29,23 +34,45 @@ public class IndexManagerGroupHolder {
 	private final Properties[] properties;
 
 	private final Similarity similarity;
+	private final IndexManagerType indexManagerType;
+	private final IndexShardingStrategyFactory shardingStrategyFactory;
 
 	private final ConcurrentMap<String, IndexManager> indexManagersRegistry = new ConcurrentHashMap<>();
 
 	public IndexManagerGroupHolder(IndexManagerHolder parentHolder,
 			String indexNameBase,
 			Properties[] properties,
-			Similarity similarity) {
+			Similarity similarity,
+			IndexManagerType indexManagerType,
+			IndexShardingStrategyFactory shardingStrategyFactory) {
 		super();
 		this.parentHolder = parentHolder;
 		this.indexNameBase = indexNameBase;
 		this.properties = properties;
 		this.similarity = similarity;
+		this.indexManagerType = indexManagerType;
+		this.shardingStrategyFactory = shardingStrategyFactory;
+	}
+
+	public Similarity getSimilarity() {
+		return similarity;
+	}
+
+	public IndexManagerType getIndexManagerType() {
+		return indexManagerType;
+	}
+
+
+	public IndexShardingStrategyFactory getShardingStrategyFactory() {
+		return shardingStrategyFactory;
 	}
 
 	IndexManager[] preInitializeIndexManagers(Class<?> entityType, WorkerBuildContext context) {
 		IndexManager[] indexManagers;
 		int nbrOfIndexManagers = properties.length;
+		if ( nbrOfIndexManagers == 0 ) {
+			throw log.entityWithNoShard( entityType );
+		}
 		indexManagers = new IndexManager[nbrOfIndexManagers];
 		for ( int index = 0; index < nbrOfIndexManagers; index++ ) {
 			String indexManagerName = nbrOfIndexManagers > 1 ?
