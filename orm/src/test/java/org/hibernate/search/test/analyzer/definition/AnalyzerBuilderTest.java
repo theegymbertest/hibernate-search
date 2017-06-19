@@ -7,17 +7,17 @@
 package org.hibernate.search.test.analyzer.definition;
 
 import static org.hibernate.search.test.analyzer.AnalyzerTest.assertTokensEqual;
-import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-import org.hibernate.Transaction;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
+import org.hibernate.search.analyzer.impl.LuceneAnalyzerReference;
+import org.hibernate.search.engine.impl.NormalizerRegistry;
+import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
+import org.hibernate.search.indexes.spi.LuceneEmbeddedIndexManagerType;
 import org.hibernate.search.test.SearchTestBase;
 import org.hibernate.search.testsupport.junit.SkipOnElasticsearch;
 import org.hibernate.search.util.AnalyzerUtils;
@@ -31,53 +31,8 @@ import org.junit.experimental.categories.Category;
  * @author Emmanuel Bernard
  * @author Hardy Ferentschik
  */
+@Category(SkipOnElasticsearch.class) // Analyzers cannot be retrieved directly when using Elasticsearch
 public class AnalyzerBuilderTest extends SearchTestBase {
-
-	/**
-	 * Tests that the token filters applied to <code>Team</code> are successfully created and used. Refer to
-	 * <code>Team</code> to see the exact definitions.
-	 *
-	 * @throws Exception in case the test fails
-	 */
-	@Test
-	public void testAnalyzerDef() throws Exception {
-		// create the test instance
-		Team team = new Team();
-		team.setDescription( "This is a D\u00E0scription" ); // \u00E0 == � - ISOLatin1AccentFilterFactory should strip of diacritic
-		team.setLocation( "Atlanta" );
-		team.setName( "ATL team" );
-
-		// persist and index the test object
-		FullTextSession fts = Search.getFullTextSession( openSession() );
-		Transaction tx = fts.beginTransaction();
-		fts.persist( team );
-		tx.commit();
-		fts.clear();
-
-		// execute several search to show that the right tokenizers were applies
-		tx = fts.beginTransaction();
-		TermQuery query = new TermQuery( new Term( "description", "D\u00E0scription" ) );
-		assertEquals(
-				"iso latin filter should work. � should be a now", 0, fts.createFullTextQuery( query ).list().size()
-		);
-
-		query = new TermQuery( new Term( "description", "is" ) );
-		assertEquals(
-				"stop word filter should work. is should be removed", 0, fts.createFullTextQuery( query ).list().size()
-		);
-
-		query = new TermQuery( new Term( "description", "dascript" ) );
-		assertEquals(
-				"snowball stemmer should work. 'dascription' should be stemmed to 'dascript'",
-				1,
-				fts.createFullTextQuery( query ).list().size()
-		);
-
-		// cleanup
-		fts.delete( fts.createFullTextQuery( query ).list().get( 0 ) );
-		tx.commit();
-		fts.close();
-	}
 
 	/**
 	 * Tests the analyzers defined on {@link Team}.
@@ -85,7 +40,6 @@ public class AnalyzerBuilderTest extends SearchTestBase {
 	 * @throws Exception in case the test fails.
 	 */
 	@Test
-	@Category(SkipOnElasticsearch.class) // Analyzers cannot be retrieved directly when using Elasticsearch
 	public void testAnalyzers() throws Exception {
 		FullTextSession fts = Search.getFullTextSession( openSession() );
 
@@ -172,6 +126,17 @@ public class AnalyzerBuilderTest extends SearchTestBase {
 		text = "CORA\u00C7\u00C3O DE MEL\u00C3O";
 		tokens = AnalyzerUtils.tokensFromAnalysis( analyzer, "name", text );
 		assertTokensEqual( tokens, new String[] { "CORACAO", "DE", "MELAO" } );
+
+		ExtendedSearchIntegrator integrator = getExtendedSearchIntegrator();
+		NormalizerRegistry normalizerRegistry =
+				integrator.getIntegration( LuceneEmbeddedIndexManagerType.INSTANCE )
+				.getNormalizerRegistry();
+
+		analyzer = normalizerRegistry.getNamedNormalizerReference( "custom_normalizer" )
+				.unwrap( LuceneAnalyzerReference.class ).getAnalyzer();
+		text = "This is a D\u00E0scription";
+		tokens = AnalyzerUtils.tokensFromAnalysis( analyzer, "name", text );
+		assertTokensEqual( tokens, new String[] { "this is a dascription" } );
 
 		fts.close();
 	}

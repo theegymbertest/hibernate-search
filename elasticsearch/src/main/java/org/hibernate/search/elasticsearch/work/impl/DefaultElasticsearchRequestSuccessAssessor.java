@@ -8,10 +8,11 @@ package org.hibernate.search.elasticsearch.work.impl;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
-import org.elasticsearch.client.Response;
 import org.hibernate.search.elasticsearch.client.impl.ElasticsearchRequest;
+import org.hibernate.search.elasticsearch.client.impl.ElasticsearchResponse;
 import org.hibernate.search.elasticsearch.gson.impl.GsonProvider;
 import org.hibernate.search.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.elasticsearch.logging.impl.Log;
@@ -29,9 +30,9 @@ public class DefaultElasticsearchRequestSuccessAssessor implements Elasticsearch
 
 	private static final Log LOG = LoggerFactory.make( Log.class );
 
-	private static final JsonAccessor ROOT_ERROR_TYPE = JsonAccessor.root().property( "error" ).property( "type" );
-	private static final JsonAccessor BULK_ITEM_STATUS_CODE = JsonAccessor.root().property( "status" );
-	private static final JsonAccessor BULK_ITEM_ERROR_TYPE = JsonAccessor.root().property( "error" ).property( "type" );
+	private static final JsonAccessor<String> ROOT_ERROR_TYPE = JsonAccessor.root().property( "error" ).property( "type" ).asString();
+	private static final JsonAccessor<Integer> BULK_ITEM_STATUS_CODE = JsonAccessor.root().property( "status" ).asInteger();
+	private static final JsonAccessor<String> BULK_ITEM_ERROR_TYPE = JsonAccessor.root().property( "error" ).property( "type" ).asString();
 
 	private static final int TIME_OUT_HTTP_STATUS_CODE = 408;
 
@@ -83,20 +84,20 @@ public class DefaultElasticsearchRequestSuccessAssessor implements Elasticsearch
 	}
 
 	@Override
-	public void checkSuccess(ElasticsearchWorkExecutionContext context, ElasticsearchRequest request, Response response,
-			JsonObject parsedResponseBody) throws SearchException {
-		if ( !isSuccess( response, parsedResponseBody ) ) {
+	public void checkSuccess(ElasticsearchWorkExecutionContext context, ElasticsearchRequest request, ElasticsearchResponse response) throws SearchException {
+		JsonObject body = response.getBody();
+		if ( !isSuccess( response, body ) ) {
 			GsonProvider gsonProvider = context.getGsonProvider();
-			if ( response.getStatusLine().getStatusCode() == TIME_OUT_HTTP_STATUS_CODE ) {
+			if ( response.getStatusCode() == TIME_OUT_HTTP_STATUS_CODE ) {
 				throw LOG.elasticsearchRequestTimeout(
 						ElasticsearchClientUtils.formatRequest( gsonProvider, request ),
-						ElasticsearchClientUtils.formatResponse( gsonProvider, response, parsedResponseBody )
+						ElasticsearchClientUtils.formatResponse( gsonProvider, response )
 						);
 			}
 			else {
 				throw LOG.elasticsearchRequestFailed(
 						ElasticsearchClientUtils.formatRequest( gsonProvider, request ),
-						ElasticsearchClientUtils.formatResponse( gsonProvider, response, parsedResponseBody ),
+						ElasticsearchClientUtils.formatResponse( gsonProvider, response ),
 						null );
 			}
 		}
@@ -109,17 +110,18 @@ public class DefaultElasticsearchRequestSuccessAssessor implements Elasticsearch
 		}
 		// Result items have the following format: { "actionName" : { "status" : 201, ... } }
 		JsonObject content = resultItem.entrySet().iterator().next().getValue().getAsJsonObject();
-		int statusCode = BULK_ITEM_STATUS_CODE.get( content ).getAsInt();
-		return ElasticsearchClientUtils.isSuccessCode( statusCode )
-			|| ignoredErrorStatuses.contains( statusCode )
-			|| ignoredErrorTypes.contains( BULK_ITEM_ERROR_TYPE.get( content ).getAsString() );
+		Optional<Integer> statusCode = BULK_ITEM_STATUS_CODE.get( content );
+		return statusCode.map( (c) ->
+						ElasticsearchClientUtils.isSuccessCode( c ) || ignoredErrorStatuses.contains( c )
+				).orElse( false )
+				|| BULK_ITEM_ERROR_TYPE.get( content ).map( ignoredErrorTypes::contains ).orElse( false );
 	}
 
-	private boolean isSuccess(Response response, JsonObject parsedResponseBody) {
-		int code = response.getStatusLine().getStatusCode();
+	private boolean isSuccess(ElasticsearchResponse response, JsonObject parsedResponseBody) {
+		int code = response.getStatusCode();
 		return ElasticsearchClientUtils.isSuccessCode( code )
 				|| ignoredErrorStatuses.contains( code )
-				|| ignoredErrorTypes.contains( ROOT_ERROR_TYPE.get( parsedResponseBody ).getAsString() );
+				|| ROOT_ERROR_TYPE.get( parsedResponseBody ).map( ignoredErrorTypes::contains ).orElse( false );
 	}
 
 }

@@ -42,18 +42,30 @@ public class SearchConfigurationForTest extends SearchConfigurationBase implemen
 	private ClassLoaderService classLoaderService;
 	private boolean enableJPAAnnotationsProcessing;
 
+	public static SearchConfigurationForTest noTestDefaults() {
+		return new SearchConfigurationForTest( new Properties() );
+	}
+
 	public SearchConfigurationForTest() {
 		this( DefaultInstanceInitializer.DEFAULT_INITIALIZER, false );
 	}
 
+	public SearchConfigurationForTest(Properties properties) {
+		this( DefaultInstanceInitializer.DEFAULT_INITIALIZER, false, properties );
+	}
+
 	public SearchConfigurationForTest(InstanceInitializer init, boolean expectsJPAAnnotations) {
+		this( init, expectsJPAAnnotations, TestDefaults.getProperties() );
+	}
+
+	private SearchConfigurationForTest(InstanceInitializer init, boolean expectsJPAAnnotations, Properties properties) {
 		this.initializer = init;
 		this.enableJPAAnnotationsProcessing = expectsJPAAnnotations;
 		this.classes = new HashMap<String, Class<?>>();
-		this.properties = TestDefaults.getProperties();
+		this.properties = properties;
 		this.providedServices = new HashMap<Class<? extends Service>, Object>();
 		this.classLoaderService = new DefaultClassLoaderService();
-		addProperty( "hibernate.search.default.directory_provider", "ram" );
+		addProperty( "hibernate.search.default.directory_provider", "local-heap" );
 		addProperty( "hibernate.search.lucene_version", TestConstants.getTargetLuceneVersion().toString() );
 	}
 

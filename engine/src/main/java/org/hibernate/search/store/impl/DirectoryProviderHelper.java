@@ -6,7 +6,6 @@
  */
 package org.hibernate.search.store.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +26,6 @@ import org.hibernate.search.store.spi.DirectoryHelper;
 import org.hibernate.search.store.spi.LockFactoryCreator;
 import org.hibernate.search.util.StringHelper;
 import org.hibernate.search.util.configuration.impl.ConfigurationParseHelper;
-import org.hibernate.search.util.impl.FileHelper;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
@@ -41,24 +39,15 @@ public final class DirectoryProviderHelper {
 
 	private static final String ROOT_INDEX_PROP_NAME = "sourceBase";
 	private static final String RELATIVE_INDEX_PROP_NAME = "source";
+
+	@Deprecated //Legacy - no longer used:
 	private static final String COPY_BUFFER_SIZE_PROP_NAME = "buffer_size_on_copy";
+
 	private static final String FS_DIRECTORY_TYPE_PROP_NAME = "filesystem_access_type";
 	private static final String REFRESH_PROP_NAME = "refresh";
 	private static final String RETRY_INITIALIZE_PROP_NAME = "retry_initialize_period";
 
 	private DirectoryProviderHelper() {
-	}
-
-	/**
-	 * @deprecated Use getSourceDirectoryPath
-	 * @param indexName the name of the index (directory) to create
-	 * @param properties the configuration properties
-	 * @param needWritePermissions when true the directory will be tested for read-write permissions.
-	 * @return The file representing the source directory
-	 */
-	@Deprecated
-	public static File getSourceDirectory(String indexName, Properties properties, boolean needWritePermissions) {
-		return getSourceDirectoryPath( indexName, properties, needWritePermissions ).toFile();
 	}
 
 	/**
@@ -120,16 +109,16 @@ public final class DirectoryProviderHelper {
 	 * @return the created {@code FSDirectory} instance
 	 * @throws java.io.IOException if an error
 	 */
-	public static FSDirectory createFSIndex(File indexDir, Properties properties, ServiceManager serviceManager) throws IOException {
+	public static FSDirectory createFSIndex(Path indexDir, Properties properties, ServiceManager serviceManager) throws IOException {
 		LockFactory lockFactory = getLockFactory( indexDir, properties, serviceManager );
 		FSDirectoryType fsDirectoryType = FSDirectoryType.getType( properties );
-		FSDirectory fsDirectory = fsDirectoryType.getDirectory( indexDir.toPath(), lockFactory );
-		log.debugf( "Initialize index: '%s'", indexDir.getAbsolutePath() );
+		FSDirectory fsDirectory = fsDirectoryType.getDirectory( indexDir, lockFactory );
+		log.debugf( "Initialize index: '%s'", indexDir.toAbsolutePath() );
 		DirectoryHelper.initializeIndexIfNeeded( fsDirectory );
 		return fsDirectory;
 	}
 
-	private static LockFactory getLockFactory(File indexDir, Properties properties, ServiceManager serviceManager) {
+	private static LockFactory getLockFactory(Path indexDir, Properties properties, ServiceManager serviceManager) {
 		try {
 			return serviceManager.requestService( LockFactoryCreator.class ).createLockFactory( indexDir, properties );
 		}
@@ -174,18 +163,6 @@ public final class DirectoryProviderHelper {
 	}
 
 	/**
-	 * @deprecated Use makeSanityCheckedDirectory(Path directory, String indexName, boolean verifyIsWritable)
-	 *
-	 * @param directory The directory to create or verify
-	 * @param indexName To label exceptions
-	 * @param verifyIsWritable Verify the directory is writable
-	 */
-	@Deprecated
-	public static void makeSanityCheckedDirectory(File directory, String indexName, boolean verifyIsWritable) {
-		makeSanityCheckedDirectory( directory.toPath(), indexName, verifyIsWritable );
-	}
-
-	/**
 	 * @param properties the configuration of the DirectoryProvider
 	 * @param directoryProviderName the name of the DirectoryProvider, used for error reporting
 	 * @return The period in milliseconds to keep retrying initialization of a DirectoryProvider
@@ -219,31 +196,19 @@ public final class DirectoryProviderHelper {
 	 * "chunk size" for large file copy operations performed
 	 * by DirectoryProviders.
 	 *
+	 * @deprecated the configured chunk size is actually no longer useful and will be ignored.
+	 *
 	 * @param indexName the index name
 	 * @param properties the configuration properties
 	 * @return the number of Bytes to use as "chunk size" in file copy operations.
 	 */
+	@Deprecated
 	public static long getCopyBufferSize(String indexName, Properties properties) {
 		String value = properties.getProperty( COPY_BUFFER_SIZE_PROP_NAME );
-		long size = FileHelper.DEFAULT_COPY_BUFFER_SIZE;
 		if ( value != null ) {
-			try {
-				size = Long.parseLong( value ) * 1024 * 1024; //from MB to B.
-			}
-			catch (NumberFormatException nfe) {
-				throw new SearchException(
-						"Unable to initialize index " +
-								indexName + "; " + COPY_BUFFER_SIZE_PROP_NAME + " is not numeric.", nfe
-				);
-			}
-			if ( size <= 0 ) {
-				throw new SearchException(
-						"Unable to initialize index " +
-								indexName + "; " + COPY_BUFFER_SIZE_PROP_NAME + " needs to be greater than zero."
-				);
-			}
+			log.deprecatedConfigurationPropertyIsIgnored( COPY_BUFFER_SIZE_PROP_NAME );
 		}
-		return size;
+		return 0l;
 	}
 
 	private enum FSDirectoryType {

@@ -19,7 +19,12 @@
 
     <name>Hibernate Search Elasticsearch</name>
     <description>Hibernate Search backend which has indexing operations forwarded to Elasticsearch</description>
-
+    
+    <properties>
+        <test.elasticsearch.failsafe.excludedGroups.version></test.elasticsearch.failsafe.excludedGroups.version>
+        <test.elasticsearch.failsafe.excludedGroups.aws></test.elasticsearch.failsafe.excludedGroups.aws>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -46,7 +51,6 @@
         </dependency>
 
         <!-- Test -->
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-testing</artifactId>
@@ -139,6 +143,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <scope>test</scope>
@@ -154,6 +178,23 @@
             <groupId>io.takari.junit</groupId>
             <artifactId>takari-cpsuite</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.co.lucasweb</groupId>
+            <artifactId>aws-v4-signer-java</artifactId>
+            <version>1.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Enable extracting shared test build resources -->
+        <!-- See how maven-dependency-plugin is configured in the parent pom -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-sharedtestresources</artifactId>
+            <classifier>build-resources</classifier>
+            <type>zip</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -234,15 +275,25 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                            <argLine>${additionalRuntimeArgLine}</argLine>
                             <dependenciesToScan>
                                 <dependency>org.hibernate:hibernate-search-engine</dependency>
                                 <dependency>org.hibernate:hibernate-search-orm</dependency>
                             </dependenciesToScan>
                             <includes>
                                 <include>**/*IT.java</include>
-                                <include>**/*.java</include>
+                                <!--
+                                    Warning: do not use a permissive wildcard such as '**/*.java',
+                                    as it would results in bugs such as HSEARCH-2481,
+                                    where Failsafe ended up loading every class from the classpath,
+                                    eventually loading Byteman classes which *must not* be loaded
+                                    before the Byteman agent has been launched.
+                                    Here we use the default surefire patterns documented there:
+                                    http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html
+                                 -->
+                                <include>**/Test*.java</include>
+                                <include>**/*Test.java</include>
+                                <include>**/*Tests.java</include>
+                                <include>**/*TestCase.java</include>
                             </includes>
                             <excludes>
                                 <!-- HSEARCH-2389 Support indexNullAs for @IndexedEmbedded applied on objects with Elasticsearch -->
@@ -267,6 +318,10 @@
                                 <!-- HSEARCH-2404 Enable CollectionUpdateEventTest for Elasticsearch -->
                                 <exclude>**/CollectionUpdateEventTest.java</exclude><!-- Only fails on CI (Travis) -->
                             </excludes>
+                            <excludedGroups>
+                                ${test.elasticsearch.failsafe.excludedGroups.version}
+                                ${test.elasticsearch.failsafe.excludedGroups.aws}
+                            </excludedGroups>
                         </configuration>
                     </execution>
                 </executions>
@@ -276,21 +331,31 @@
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <!-- Inherit execution unpack-shared-test-build-resources -->
+            </plugin>
+            
             <plugin>
                 <groupId>com.github.alexcojocaru</groupId>
                 <artifactId>elasticsearch-maven-plugin</artifactId>
-                <configuration>
-                    <clusterName>hsearchEsTestCluster</clusterName>
-                    <httpPort>9200</httpPort>
-                </configuration>
             </plugin>
-
         </plugins>
     </build>
     
     <profiles>
         <profile>
             <id>elasticsearch-2.0</id>
+            <properties>
+                <test.elasticsearch.failsafe.excludedGroups.version>
+                    org.hibernate.search.testsupport.junit.SkipOnElasticsearch,
+                    org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipBelowElasticsearch50,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipBelowElasticsearch52
+                </test.elasticsearch.failsafe.excludedGroups.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -320,26 +385,8 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>elasticsearch-it</id>
-                                <configuration>
-                                <excludedGroups>org.hibernate.search.testsupport.junit.SkipOnElasticsearch,org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,org.hibernate.search.elasticsearch.testutil.junit.SkipOnElasticsearch2</excludedGroups>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>com.github.alexcojocaru</groupId>
                         <artifactId>elasticsearch-maven-plugin</artifactId>
-                        <configuration>
-                            <tcpPort>9300</tcpPort>
-                            <pluginsPath>${project.build.directory}/_ES_PLUGINS_</pluginsPath>
-                            <outputDirectory>${project.build.directory}/elastisearch0</outputDirectory>
-                            <configPath>${project.build.directory}/test-classes/elasticsearch/2.0/configuration/</configPath>
-                        </configuration>
                         <dependencies>
                             <!-- Groovy is in a core module named "org.elasticsearch:elasticsearch-groovy" in Elasticsearch 2.0.x and 2.1.x
                                  Also, in ES 2.0/2.1, core modules are not located in the plugin directory as with newer versions, but are
@@ -352,28 +399,20 @@
                                 <type>jar</type>
                             </dependency>
                         </dependencies>
-                        <executions>
-                            <execution >
-                                <id>start-elasticsearch</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>start</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>stop-elasticsearch</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
         <profile>
             <id>elasticsearch-2.2</id>
+            <properties>
+                <test.elasticsearch.failsafe.excludedGroups.version>
+                    org.hibernate.search.testsupport.junit.SkipOnElasticsearch,
+                    org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipBelowElasticsearch50,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipBelowElasticsearch52
+                </test.elasticsearch.failsafe.excludedGroups.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -411,97 +450,51 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>elasticsearch-it</id>
-                                <configuration>
-                                <excludedGroups>org.hibernate.search.testsupport.junit.SkipOnElasticsearch,org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,org.hibernate.search.elasticsearch.testutil.junit.SkipOnElasticsearch2</excludedGroups>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.alexcojocaru</groupId>
-                        <artifactId>elasticsearch-maven-plugin</artifactId>
-                        <configuration>
-                            <tcpPort>9300</tcpPort>
-                            <pluginsPath>${project.build.directory}/_ES_PLUGINS_</pluginsPath>
-                            <outputDirectory>${project.build.directory}/elastisearch0</outputDirectory>
-                            <configPath>${project.build.directory}/test-classes/elasticsearch/2.0/configuration/</configPath>
-                        </configuration>
-                        <executions>
-                            <execution >
-                                <id>start-elasticsearch</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>start</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>stop-elasticsearch</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
         <profile>
             <id>elasticsearch-5.0</id>
+            <properties>
+                <test.elasticsearch.failsafe.excludedGroups.version>
+                    org.hibernate.search.testsupport.junit.SkipOnElasticsearch,
+                    org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipFromElasticsearch50,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipBelowElasticsearch52
+                </test.elasticsearch.failsafe.excludedGroups.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>elasticsearch-5.2</id>
             <!-- Activation rules are not inherited from the profile definition in the parent, so we must copy them here -->
             <activation>
                 <property>
                     <name>!test.elasticsearch.host.version</name>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>elasticsearch-it</id>
-                                <configuration>
-                                <excludedGroups>org.hibernate.search.testsupport.junit.SkipOnElasticsearch,org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,org.hibernate.search.elasticsearch.testutil.junit.SkipOnElasticsearch5</excludedGroups>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.alexcojocaru</groupId>
-                        <artifactId>elasticsearch-maven-plugin</artifactId>
-                        <configuration>
-                            <pathConf>${project.build.directory}/test-classes/elasticsearch/5.0/configuration/</pathConf>
-                            <pathInitScript>${project.build.directory}/test-classes/elasticsearch/5.0/init/init.script</pathInitScript>
-                            <autoCreateIndex>false</autoCreateIndex>
-                        </configuration>
-                        <!-- Different executions from 2.x: the "start" goal has been renamed in version 5  -->
-                        <executions>
-                            <execution >
-                                <id>start-elasticsearch</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>runforked</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>stop-elasticsearch</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <test.elasticsearch.failsafe.excludedGroups.version>
+                    org.hibernate.search.testsupport.junit.SkipOnElasticsearch,
+                    org.hibernate.search.testsupport.junit.ElasticsearchSupportInProgress,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipFromElasticsearch50,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipFromElasticsearch52
+                </test.elasticsearch.failsafe.excludedGroups.version>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>aws</id>
+            <activation>
+                <property>
+                    <name>test.elasticsearch.host.aws.access_key</name>
+                </property>
+            </activation>
+            <properties>
+                <test.elasticsearch.failsafe.excludedGroups.aws>
+                    ,
+                    org.hibernate.search.elasticsearch.testutil.junit.SkipOnAWS
+                </test.elasticsearch.failsafe.excludedGroups.aws>
+            </properties>
         </profile>
     </profiles>
 </project>

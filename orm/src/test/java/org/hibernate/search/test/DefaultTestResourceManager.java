@@ -8,7 +8,6 @@ package org.hibernate.search.test;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -108,7 +107,7 @@ public final class DefaultTestResourceManager implements TestResourceManager {
 		if ( configurationSettings == null ) {
 			configurationSettings = new HashMap<>();
 			configurationSettings.put( "hibernate.search.lucene_version", TestConstants.getTargetLuceneVersion().toString() );
-			configurationSettings.put( "hibernate.search.default.directory_provider", "ram" );
+			configurationSettings.put( "hibernate.search.default.directory_provider", "local-heap" );
 			configurationSettings.put( "hibernate.search.default.indexBase", getBaseIndexDir().toAbsolutePath().toString() );
 			configurationSettings.put( Environment.ANALYZER_CLASS, StopAnalyzer.class.getName() );
 			configurationSettings.put( "hibernate.search.default.indexwriter.merge_factor", "100" );
@@ -185,12 +184,32 @@ public final class DefaultTestResourceManager implements TestResourceManager {
 	}
 
 	public void defaultTearDown() throws Exception {
+		close();
+		cleanUp();
+	}
+
+	/**
+	 * Close all open resources (streams, sessions, session factories, ...)
+	 * @throws Exception
+	 */
+	public void close() {
 		handleUnclosedResources();
 		closeSessionFactory();
+	}
+
+	/**
+	 * Clean up any side-effects of the test (temporary files in particular).
+	 * <p>
+	 * If multiple managers share the same files, this must be executed after
+	 * <em>every</em> manager has been {@link #closeResources() closed}.
+	 *
+	 * @throws Exception
+	 */
+	public void cleanUp() throws IOException {
 		ensureIndexesAreEmpty();
 	}
 
-	public void handleUnclosedResources() {
+	private void handleUnclosedResources() {
 		if ( session != null && session.isOpen() ) {
 			if ( session.isConnected() ) {
 				session.doWork( new RollbackWork() );
@@ -209,10 +228,9 @@ public final class DefaultTestResourceManager implements TestResourceManager {
 		// Appending UUID to be extra-sure no directory is ever reused across the test suite as Windows might not be
 		// able to delete the files after usage. See also
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154
-		return Paths.get(
-				TestConstants.getIndexDirectory( TestConstants.getTempTestDataDir(), currentTestModuleClass ),
+		return TestConstants.getIndexDirectory( TestConstants.getTempTestDataDir(), currentTestModuleClass ).resolve(
 				UUID.randomUUID().toString().substring( 0, 8 )
-		);
+			);
 	}
 
 	private static class RollbackWork implements Work {

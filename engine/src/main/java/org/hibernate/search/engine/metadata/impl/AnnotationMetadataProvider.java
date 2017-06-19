@@ -51,6 +51,8 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
+import org.hibernate.search.annotations.NormalizerDef;
+import org.hibernate.search.annotations.NormalizerDefs;
 import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.NumericFields;
@@ -79,6 +81,7 @@ import org.hibernate.search.engine.BoostStrategy;
 import org.hibernate.search.engine.impl.AnnotationProcessingHelper;
 import org.hibernate.search.engine.impl.ConfigContext;
 import org.hibernate.search.engine.impl.DefaultBoostStrategy;
+import org.hibernate.search.engine.impl.MappingDefinitionRegistry;
 import org.hibernate.search.engine.nulls.codec.impl.NotEncodingCodec;
 import org.hibernate.search.engine.nulls.codec.impl.NullMarkerCodec;
 import org.hibernate.search.engine.nulls.impl.MissingValueStrategy;
@@ -88,6 +91,8 @@ import org.hibernate.search.indexes.spi.IndexManagerType;
 import org.hibernate.search.metadata.NumericFieldSettingsDescriptor.NumericEncodingType;
 import org.hibernate.search.spatial.Coordinates;
 import org.hibernate.search.spatial.SpatialFieldBridge;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.impl.PojoIndexedTypeIdentifier;
 import org.hibernate.search.util.StringHelper;
 import org.hibernate.search.util.impl.ClassLoaderHelper;
 import org.hibernate.search.util.impl.ReflectionHelper;
@@ -142,7 +147,8 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	}
 
 	@Override
-	public TypeMetadata getTypeMetadataForContainedIn(Class<?> clazz) {
+	public TypeMetadata getTypeMetadataForContainedIn(IndexedTypeIdentifier type) {
+		final Class<?> clazz = type.getPojoType();
 		XClass xClass = reflectionManager.toXClass( clazz );
 
 		ParseContext parseContext = new ParseContext();
@@ -153,6 +159,16 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	}
 
 	@Override
+	public TypeMetadata getTypeMetadataFor(IndexedTypeIdentifier type, IndexManagerType indexManagerType) {
+		final Class<?> clazz = type.getPojoType();
+		return getTypeMetadataFor( clazz, indexManagerType );
+	}
+
+	/**
+	 * Use {@link #getTypeMetadataFor(IndexedTypeIdentifier, IndexManagerType)} instead.
+	 * @deprecated
+	 */
+	@Deprecated
 	public TypeMetadata getTypeMetadataFor(Class<?> clazz, IndexManagerType indexManagerType) {
 		XClass xClass = reflectionManager.toXClass( clazz );
 
@@ -165,7 +181,8 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	}
 
 	private TypeMetadata doGetTypeMetadataFor(Class<?> clazz, XClass xClass, ParseContext parseContext) {
-		TypeMetadata.Builder typeMetadataBuilder = new TypeMetadata.Builder( clazz, configContext, parseContext )
+		IndexedTypeIdentifier classTypeId = new PojoIndexedTypeIdentifier( clazz );
+		TypeMetadata.Builder typeMetadataBuilder = new TypeMetadata.Builder( classTypeId, configContext, parseContext )
 				.boost( getBoost( xClass ) )
 				.boostStrategy( AnnotationProcessingHelper.getDynamicBoost( xClass ) );
 
@@ -205,7 +222,8 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	}
 
 	@Override
-	public boolean containsSearchMetadata(Class<?> clazz) {
+	public boolean containsSearchMetadata(IndexedTypeIdentifier type) {
+		final Class<?> clazz = type.getPojoType();
 		XClass xClass = reflectionManager.toXClass( clazz );
 		return ReflectionHelper.containsSearchAnnotations( xClass );
 	}
@@ -634,6 +652,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	private void initializePackageLevelAnnotations(XPackage xPackage, ConfigContext configContext) {
 		if ( xPackage != null ) {
 			checkForAnalyzerDefs( xPackage, configContext );
+			checkForNormalizerDefs( xPackage, configContext );
 			checkForFullTextFilterDefs( xPackage, configContext );
 		}
 	}
@@ -663,10 +682,8 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			}
 		}
 
-		// check for AnalyzerDefs annotations
 		checkForAnalyzerDefs( clazz, configContext );
-
-		// check for FullTextFilterDefs annotations
+		checkForNormalizerDefs( clazz, configContext );
 		checkForFullTextFilterDefs( clazz, configContext );
 
 		// Check for any ClassBridges annotation.
@@ -768,7 +785,9 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 
 		if ( !parseContext.skipAnalyzers() ) {
 			AnalyzerReference analyzerReference = AnnotationProcessingHelper.getAnalyzerReference(
+					typeMetadataBuilder.getIndexedType(), fieldPath,
 					classBridgeAnnotation.analyzer(),
+					classBridgeAnnotation.normalizer(),
 					configContext,
 					parseContext.getIndexManagerType() );
 			typeMetadataBuilder.addToScopedAnalyzerReference( fieldPath, analyzerReference, index );
@@ -891,21 +910,22 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 
 	private FieldBridge determineSpatialFieldBridge(Spatial spatialAnnotation, ParseContext parseContext) {
 		final FieldBridge spatialBridge;
-		XClass clazz = parseContext.getCurrentClass();
-		if ( reflectionManager.toXClass( Coordinates.class ).isAssignableFrom( clazz ) ) {
+		XClass xClazz = parseContext.getCurrentClass();
+		Class<?> clazz = reflectionManager.toClass( xClazz );
+		if ( reflectionManager.toXClass( Coordinates.class ).isAssignableFrom( xClazz ) ) {
 			spatialBridge = bridgeFactory.buildSpatialBridge( spatialAnnotation, clazz, null, null );
 		}
 		else {
 			String latitudeField = null;
 			String longitudeField = null;
 
-			List<XProperty> fieldList = clazz.getDeclaredProperties( XClass.ACCESS_FIELD );
+			List<XProperty> fieldList = xClazz.getDeclaredProperties( XClass.ACCESS_FIELD );
 
 			for ( XProperty property : fieldList ) {
 				if ( property.isAnnotationPresent( Latitude.class ) && ( property.getAnnotation( Latitude.class ) ).of()
 						.equals( spatialAnnotation.name() ) ) {
 					if ( latitudeField != null ) {
-						throw log.ambiguousLatitudeDefinition( clazz.getName(), latitudeField, property.getName() );
+						throw log.ambiguousLatitudeDefinition( xClazz.getName(), latitudeField, property.getName() );
 					}
 					latitudeField = property.getName();
 				}
@@ -913,7 +933,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 						.equals( spatialAnnotation.name() ) ) {
 					if ( longitudeField != null ) {
 						throw log.ambiguousLongitudeDefinition(
-								clazz.getName(),
+								xClazz.getName(),
 								longitudeField,
 								property.getName()
 						);
@@ -922,13 +942,13 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 				}
 			}
 
-			List<XProperty> propertyList = clazz.getDeclaredProperties( XClass.ACCESS_PROPERTY );
+			List<XProperty> propertyList = xClazz.getDeclaredProperties( XClass.ACCESS_PROPERTY );
 
 			for ( XProperty property : propertyList ) {
 				if ( property.isAnnotationPresent( Latitude.class ) && ( property.getAnnotation( Latitude.class ) ).of()
 						.equals( spatialAnnotation.name() ) ) {
 					if ( latitudeField != null ) {
-						throw log.ambiguousLatitudeDefinition( clazz.getName(), latitudeField, property.getName() );
+						throw log.ambiguousLatitudeDefinition( xClazz.getName(), latitudeField, property.getName() );
 					}
 					latitudeField = property.getName();
 				}
@@ -936,7 +956,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 						.equals( spatialAnnotation.name() ) ) {
 					if ( longitudeField != null ) {
 						throw log.ambiguousLongitudeDefinition(
-								clazz.getName(),
+								xClazz.getName(),
 								longitudeField,
 								property.getName()
 						);
@@ -960,7 +980,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		if ( spatialBridge == null ) {
 			throw log.cannotFindCoordinatesNorLatLongForSpatial(
 					spatialAnnotation.name()
-							.isEmpty() ? "default" : spatialAnnotation.name(), clazz.getName()
+							.isEmpty() ? "default" : spatialAnnotation.name(), xClazz.getName()
 			);
 		}
 		return spatialBridge;
@@ -985,12 +1005,20 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			return;
 		}
 
-		if ( !sortedFieldAbsoluteName.equals( idFieldAbsoluteName ) && !containsField( propertyMetadataBuilder, sortedFieldAbsoluteName ) ) {
+		DocumentFieldMetadata targetField = getField( propertyMetadataBuilder, sortedFieldAbsoluteName );
+		if ( !sortedFieldAbsoluteName.equals( idFieldAbsoluteName ) && targetField == null ) {
 			if ( parseContext.getLevel() != 0 ) {
 				// Sortable defined on a property not indexed when the entity is embedded. We can skip it.
 				return;
 			}
-			throw log.sortableFieldRefersToUndefinedField( typeMetadataBuilder.getIndexedType(), propertyMetadataBuilder.getPropertyAccessor().getName(), sortedFieldAbsoluteName );
+			throw log.sortableFieldRefersToUndefinedField( typeMetadataBuilder.getIndexedType(), propertyMetadataBuilder.getPropertyAccessor().getName(), sortedFieldRelativeName );
+		}
+		if ( targetField != null ) {
+			AnalyzerReference analyzerReference = targetField.getAnalyzerReference();
+			if ( targetField.getIndex().isAnalyzed() && analyzerReference != null
+					&& !analyzerReference.isNormalizer( sortedFieldAbsoluteName ) ) {
+				log.sortableFieldWithNonNormalizerAnalyzer( typeMetadataBuilder.getIndexedType(), sortedFieldRelativeName );
+			}
 		}
 
 		SortableFieldMetadata fieldMetadata = new SortableFieldMetadata.Builder( sortedFieldAbsoluteName ).build();
@@ -998,14 +1026,14 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		propertyMetadataBuilder.addSortableField( fieldMetadata );
 	}
 
-	private boolean containsField(PropertyMetadata.Builder propertyMetadataBuilder, String fieldName) {
+	private DocumentFieldMetadata getField(PropertyMetadata.Builder propertyMetadataBuilder, String fieldName) {
 		for ( DocumentFieldMetadata field : propertyMetadataBuilder.getFieldMetadata() ) {
 			if ( field.getAbsoluteName().equals( fieldName ) ) {
-				return true;
+				return field;
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	private void initializeMemberLevelAnnotations(String prefix,
@@ -1039,6 +1067,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		checkForSortableField( member, typeMetadataBuilder, propertyMetadataBuilder, prefix, false, pathsContext, parseContext );
 		checkForSortableFields( member, typeMetadataBuilder, propertyMetadataBuilder, prefix, false, pathsContext, parseContext );
 		checkForAnalyzerDefs( member, configContext );
+		checkForNormalizerDefs( member, configContext );
 		checkForAnalyzerDiscriminator( member, typeMetadataBuilder, configContext );
 		checkForIndexedEmbedded(
 				member,
@@ -1167,7 +1196,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		}
 	}
 
-	private NumericFieldsConfiguration buildNumericFieldsConfiguration(Class<?> indexedType,
+	private NumericFieldsConfiguration buildNumericFieldsConfiguration(IndexedTypeIdentifier indexedTypeIdentifier,
 			XProperty member,
 			String prefix,
 			PathsContext pathsContext,
@@ -1197,13 +1226,13 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 				) || !parseContext.isMaxLevelReached() ) {
 					NumericField existing = fieldsMarkedAsNumeric.put( numericField.forField(), numericField );
 					if ( existing != null ) {
-						throw log.severalNumericFieldAnnotationsForSameField( indexedType, member.getName() );
+						throw log.severalNumericFieldAnnotationsForSameField( indexedTypeIdentifier, member.getName() );
 					}
 				}
 			}
 		}
 
-		return new NumericFieldsConfiguration( indexedType, member, fieldsMarkedAsNumeric );
+		return new NumericFieldsConfiguration( indexedTypeIdentifier, member.getName(), fieldsMarkedAsNumeric );
 	}
 
 	private void checkForField(XProperty member,
@@ -1315,7 +1344,9 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			analyzerReference = null;
 		}
 		else {
-			analyzerReference = determineAnalyzer( fieldAnnotation, member, configContext, parseContext );
+			analyzerReference = determineAnalyzer(
+					typeMetadataBuilder, fieldPath,
+					fieldAnnotation, member, configContext, parseContext );
 			// adjust the type analyzer
 			analyzerReference = typeMetadataBuilder.addToScopedAnalyzerReference(
 					fieldPath,
@@ -1468,7 +1499,7 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 
 	private NullMarkerCodec determineNullMarkerCodec(PartialDocumentFieldMetadata fieldMetadata,
 			FieldBridge fieldBridge, org.hibernate.search.annotations.Field fieldAnnotation,
-			ConfigContext context, ParseContext parseContext, Class<?> indexedType) {
+			ConfigContext context, ParseContext parseContext, IndexedTypeIdentifier indexedTypeIdentifier) {
 		if ( parseContext.skipNullMarkerCodec() ) {
 			return NotEncodingCodec.SINGLETON;
 		}
@@ -1497,9 +1528,9 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 			}
 
 			IndexManagerType indexManagerType = parseContext.getIndexManagerType();
-			MissingValueStrategy missingValueStrategy = context.getMissingValueStrategy( indexManagerType );
+			MissingValueStrategy missingValueStrategy = context.forType( indexManagerType ).getMissingValueStrategy();
 
-			return missingValueStrategy.createNullMarkerCodec( indexedType, fieldMetadata, nullMarker );
+			return missingValueStrategy.createNullMarkerCodec( indexedTypeIdentifier, fieldMetadata, nullMarker );
 		}
 	}
 
@@ -1518,17 +1549,21 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 		}
 	}
 
-	private AnalyzerReference determineAnalyzer(org.hibernate.search.annotations.Field fieldAnnotation,
+	private AnalyzerReference determineAnalyzer(
+			TypeMetadata.Builder typeMetadataBuilder, DocumentFieldPath fieldPath,
+			org.hibernate.search.annotations.Field fieldAnnotation,
 			XProperty member,
 			ConfigContext context,
 			ParseContext parseContext) {
 		AnalyzerReference analyzerReference = null;
 
 		if ( !parseContext.skipAnalyzers() ) {
-			// check for a nested @Analyzer annotation with @Field
+			// check for a nested @Analyzer/@Normalizer annotation with @Field
 			if ( fieldAnnotation != null ) {
 				analyzerReference = AnnotationProcessingHelper.getAnalyzerReference(
+						typeMetadataBuilder.getIndexedType(), fieldPath,
 						fieldAnnotation.analyzer(),
+						fieldAnnotation.normalizer(),
 						context,
 						parseContext.getIndexManagerType() );
 			}
@@ -1667,25 +1702,48 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 	}
 
 	private void checkForAnalyzerDefs(XAnnotatedElement annotatedElement, ConfigContext context) {
+		MappingDefinitionRegistry<AnalyzerDef, ?> registry = context.getAnalyzerDefinitionRegistry();
+
 		AnalyzerDefs defs = annotatedElement.getAnnotation( AnalyzerDefs.class );
 		if ( defs != null ) {
 			for ( AnalyzerDef def : defs.value() ) {
-				context.addAnalyzerDef( def, annotatedElement );
+				registry.registerFromAnnotation( def.name(), def, annotatedElement );
 			}
 		}
 		AnalyzerDef def = annotatedElement.getAnnotation( AnalyzerDef.class );
-		context.addAnalyzerDef( def, annotatedElement );
+		if ( def != null ) {
+			registry.registerFromAnnotation( def.name(), def, annotatedElement );
+		}
+	}
+
+	private void checkForNormalizerDefs(XAnnotatedElement annotatedElement, ConfigContext context) {
+		MappingDefinitionRegistry<NormalizerDef, ?> registry = context.getNormalizerDefinitionRegistry();
+
+		NormalizerDefs defs = annotatedElement.getAnnotation( NormalizerDefs.class );
+		if ( defs != null ) {
+			for ( NormalizerDef def : defs.value() ) {
+				registry.registerFromAnnotation( def.name(), def, annotatedElement );
+			}
+		}
+		NormalizerDef def = annotatedElement.getAnnotation( NormalizerDef.class );
+		if ( def != null ) {
+			registry.registerFromAnnotation( def.name(), def, annotatedElement );
+		}
 	}
 
 	private void checkForFullTextFilterDefs(XAnnotatedElement annotatedElement, ConfigContext context) {
+		MappingDefinitionRegistry<FullTextFilterDef, ?> registry = context.getFullTextFilterDefinitionRegistry();
+
 		FullTextFilterDefs defs = annotatedElement.getAnnotation( FullTextFilterDefs.class );
 		if ( defs != null ) {
 			for ( FullTextFilterDef def : defs.value() ) {
-				context.addFullTextFilterDef( def, annotatedElement );
+				registry.registerFromAnnotation( def.name(), def, annotatedElement );
 			}
 		}
 		FullTextFilterDef def = annotatedElement.getAnnotation( FullTextFilterDef.class );
-		context.addFullTextFilterDef( def, annotatedElement );
+		if ( def != null ) {
+			registry.registerFromAnnotation( def.name(), def, annotatedElement );
+		}
 	}
 
 	private void checkForAnalyzerDiscriminator(XAnnotatedElement annotatedElement,
@@ -1822,11 +1880,12 @@ public class AnnotationMetadataProvider implements MetadataProvider {
 				indexedEmbeddedAnnotation
 		) ) {
 			parseContext.processingClass( elementClass ); //push
+			final IndexedTypeIdentifier elementTypeIdentifier = new PojoIndexedTypeIdentifier( reflectionManager.toClass( elementClass ) );
 
 			EmbeddedTypeMetadata.Builder embeddedTypeMetadataBuilder =
 					new EmbeddedTypeMetadata.Builder(
 							typeMetadataBuilder,
-							reflectionManager.toClass( elementClass ),
+							elementTypeIdentifier,
 							propertyMetadataBuilder.getResultReference(),
 							member,
 							localPrefix

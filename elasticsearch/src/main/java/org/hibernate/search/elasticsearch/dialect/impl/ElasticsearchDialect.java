@@ -6,12 +6,14 @@
  */
 package org.hibernate.search.elasticsearch.dialect.impl;
 
+import org.hibernate.search.elasticsearch.analyzer.impl.ElasticsearchAnalyzerStrategyFactory;
 import org.hibernate.search.elasticsearch.gson.impl.GsonProvider;
+import org.hibernate.search.elasticsearch.query.impl.ElasticsearchQueryFactory;
 import org.hibernate.search.elasticsearch.schema.impl.ElasticsearchSchemaAccessor;
 import org.hibernate.search.elasticsearch.schema.impl.ElasticsearchSchemaTranslator;
 import org.hibernate.search.elasticsearch.schema.impl.ElasticsearchSchemaValidator;
 import org.hibernate.search.elasticsearch.work.impl.factory.ElasticsearchWorkFactory;
-import org.hibernate.search.engine.nulls.impl.MissingValueStrategy;
+import org.hibernate.search.engine.service.spi.ServiceManager;
 
 /**
  * An entry point to all operations that may be implemented differently depending
@@ -29,6 +31,8 @@ public interface ElasticsearchDialect {
 
 	ElasticsearchSchemaValidator createSchemaValidator(ElasticsearchSchemaAccessor schemaAccessor);
 
-	MissingValueStrategy createMissingValueStrategy();
+	ElasticsearchAnalyzerStrategyFactory createAnalyzerStrategyFactory(ServiceManager serviceManager);
+
+	ElasticsearchQueryFactory createQueryFactory();
 
 }

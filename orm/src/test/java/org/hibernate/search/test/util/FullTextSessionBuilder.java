@@ -6,8 +6,8 @@
  */
 package org.hibernate.search.test.util;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +43,7 @@ import org.junit.runners.model.Statement;
 
 /**
  * Use the builder pattern to provide a SessionFactory.
- * This is meant to use only ram-based index and databases, for those test
+ * This is meant to use only in-memory index and databases, for those test
  * which need to use several differently configured SessionFactories.
  *
  * @author Sanne Grinovero
@@ -53,7 +53,7 @@ public class FullTextSessionBuilder implements AutoCloseable, TestRule {
 
 	private static final Log log = org.hibernate.search.util.logging.impl.LoggerFactory.make();
 
-	private File indexRootDirectory;
+	private Path indexRootDirectory;
 	private final Properties cfg = new Properties();
 	private final Set<Class<?>> annotatedClasses = new HashSet<Class<?>>();
 	private SessionFactoryImplementor sessionFactory;
@@ -77,7 +77,7 @@ public class FullTextSessionBuilder implements AutoCloseable, TestRule {
 				org.hibernate.search.cfg.Environment.ANALYZER_CLASS,
 				StopAnalyzer.class.getName()
 		);
-		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
+		cfg.setProperty( "hibernate.search.default.directory_provider", "local-heap" );
 		usingFileSystem = false;
 	}
 
@@ -90,10 +90,10 @@ public class FullTextSessionBuilder implements AutoCloseable, TestRule {
 	 * @return the same builder (this).
 	 */
 	public FullTextSessionBuilder useFileSystemDirectoryProvider(Class<?> testClass) {
-		indexRootDirectory = new File( TestConstants.getIndexDirectory( TestConstants.getTempTestDataDir() ) );
-		log.debugf( "Using %s as index directory.", indexRootDirectory.getAbsolutePath() );
+		indexRootDirectory = TestConstants.getIndexDirectory( TestConstants.getTempTestDataDir() );
+		log.debugf( "Using %s as index directory.", indexRootDirectory.toAbsolutePath() );
 		cfg.setProperty( "hibernate.search.default.directory_provider", "filesystem" );
-		cfg.setProperty( "hibernate.search.default.indexBase", indexRootDirectory.getAbsolutePath() );
+		cfg.setProperty( "hibernate.search.default.indexBase", indexRootDirectory.toAbsolutePath().toString() );
 		usingFileSystem = true;
 		return this;
 	}

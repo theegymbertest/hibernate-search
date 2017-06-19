@@ -23,7 +23,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <springBootVersion>1.5.2.RELEASE</springBootVersion>
+        <springBootVersion>1.5.3.RELEASE</springBootVersion>
         <!-- Override the version of Hibernate ORM in Spring Boot (5.1 or something as I'm writing this) -->
         <hibernate.version>${hibernateVersion}</hibernate.version>
     </properties>
@@ -141,9 +141,6 @@
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
-                        <configuration>
-                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -9,6 +9,7 @@ package org.hibernate.search.metadata;
 import java.util.Set;
 
 import org.hibernate.search.engine.BoostStrategy;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
 
 /**
  * Top level descriptor of the metadata API. Giving access to the indexing information for a single type.
@@ -18,9 +19,16 @@ import org.hibernate.search.engine.BoostStrategy;
 public interface IndexedTypeDescriptor extends FieldContributor {
 
 	/**
+	 * @deprecated Use {@link #getIndexedType()} instead. This method will be removed.
 	 * @return the type for which this descriptor provides meta information
 	 */
+	@Deprecated
 	Class<?> getType();
+
+	/**
+	 * @return the type for which this descriptor provides meta information
+	 */
+	IndexedTypeIdentifier getIndexedType();
 
 	/**
 	 * @return {@code true} if the type for this descriptor is indexed, {@code false} otherwise
@@ -48,13 +56,25 @@ public interface IndexedTypeDescriptor extends FieldContributor {
 
 	/**
 	 * @return the class boost value, 1 being the default.
+	 *
+	 * @deprecated Index-time boosting will not be possible anymore starting from Lucene 7.
+	 * You should use query-time boosting instead, for instance by calling
+	 * {@link org.hibernate.search.query.dsl.FieldCustomization#boostedTo(float) boostedTo(float)}
+	 * when building queries with the Hibernate Search query DSL.
 	 */
+	@Deprecated
 	float getStaticBoost();
 
 	/**
 	 * @return Dynamic boost strategy. There will always be a boost strategy, but the default strategy will apply a
 	 *         boost of 1.0.
+	 *
+	 * @deprecated Index-time boosting will not be possible anymore starting from Lucene 7.
+	 * You should use query-time boosting instead, for instance by calling
+	 * {@link org.hibernate.search.query.dsl.FieldCustomization#boostedTo(float) boostedTo(float)}
+	 * when building queries with the Hibernate Search query DSL.
 	 */
+	@Deprecated
 	BoostStrategy getDynamicBoost();
 
 	/**

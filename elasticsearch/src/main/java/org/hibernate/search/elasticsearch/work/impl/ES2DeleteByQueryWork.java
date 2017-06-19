@@ -9,14 +9,16 @@ package org.hibernate.search.elasticsearch.work.impl;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.elasticsearch.client.Response;
 import org.hibernate.search.elasticsearch.client.impl.ElasticsearchRequest;
+import org.hibernate.search.elasticsearch.client.impl.ElasticsearchResponse;
 import org.hibernate.search.elasticsearch.client.impl.Paths;
 import org.hibernate.search.elasticsearch.client.impl.URLEncodedString;
 import org.hibernate.search.elasticsearch.gson.impl.GsonProvider;
 import org.hibernate.search.elasticsearch.logging.impl.Log;
 import org.hibernate.search.elasticsearch.util.impl.ElasticsearchClientUtils;
 import org.hibernate.search.elasticsearch.work.impl.builder.DeleteByQueryWorkBuilder;
+import org.hibernate.search.elasticsearch.work.impl.builder.RefreshWorkBuilder;
+import org.hibernate.search.elasticsearch.work.impl.factory.ElasticsearchWorkFactory;
 import org.hibernate.search.exception.AssertionFailure;
 import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
@@ -30,12 +32,23 @@ import com.google.gson.JsonObject;
  */
 public class ES2DeleteByQueryWork extends SimpleElasticsearchWork<Void> {
 
+	private final ElasticsearchWork<?> refreshWork;
+
 	protected ES2DeleteByQueryWork(Builder builder) {
 		super( builder );
+		this.refreshWork = builder.buildRefreshWork();
 	}
 
 	@Override
-	protected Void generateResult(ElasticsearchWorkExecutionContext context, Response response, JsonObject parsedResponseBody) {
+	protected void beforeExecute(ElasticsearchWorkExecutionContext executionContext, ElasticsearchRequest request) {
+		/*
+		 * Refresh the index so as to minimize the risk of version conflict
+		 */
+		refreshWork.execute( executionContext );
+	}
+
+	@Override
+	protected Void generateResult(ElasticsearchWorkExecutionContext context, ElasticsearchResponse response) {
 		return null;
 	}
 
@@ -46,10 +59,13 @@ public class ES2DeleteByQueryWork extends SimpleElasticsearchWork<Void> {
 		private final JsonObject payload;
 		private final Set<URLEncodedString> typeNames = new HashSet<>();
 
-		public Builder(URLEncodedString indexName, JsonObject payload) {
+		private final RefreshWorkBuilder refreshWorkBuilder;
+
+		public Builder(URLEncodedString indexName, JsonObject payload, ElasticsearchWorkFactory workFactory) {
 			super( indexName, SuccessAssessor.INSTANCE );
 			this.indexName = indexName;
 			this.payload = payload;
+			this.refreshWorkBuilder = workFactory.refresh().index( indexName );
 		}
 
 		@Override
@@ -72,6 +88,10 @@ public class ES2DeleteByQueryWork extends SimpleElasticsearchWork<Void> {
 					.body( payload );
 
 			return builder.build();
+		}
+
+		protected ElasticsearchWork<?> buildRefreshWork() {
+			return refreshWorkBuilder.build();
 		}
 
 		@Override
@@ -97,13 +117,13 @@ public class ES2DeleteByQueryWork extends SimpleElasticsearchWork<Void> {
 
 		@Override
 		public void checkSuccess(ElasticsearchWorkExecutionContext context, ElasticsearchRequest request,
-				Response response, JsonObject parsedResponseBody) throws SearchException {
-			this.delegate.checkSuccess( context, request, response, parsedResponseBody );
-			if ( response.getStatusLine().getStatusCode() == NOT_FOUND_HTTP_STATUS_CODE ) {
+				ElasticsearchResponse response) throws SearchException {
+			this.delegate.checkSuccess( context, request, response );
+			if ( response.getStatusCode() == NOT_FOUND_HTTP_STATUS_CODE ) {
 				GsonProvider gsonProvider = context.getGsonProvider();
 				throw LOG.elasticsearch2RequestDeleteByQueryNotFound(
 						ElasticsearchClientUtils.formatRequest( gsonProvider, request ),
-						ElasticsearchClientUtils.formatResponse( gsonProvider, response, parsedResponseBody )
+						ElasticsearchClientUtils.formatResponse( gsonProvider, response )
 						);
 			}
 		}

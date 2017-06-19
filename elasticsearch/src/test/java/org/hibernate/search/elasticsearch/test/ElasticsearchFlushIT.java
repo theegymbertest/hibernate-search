@@ -8,7 +8,6 @@ package org.hibernate.search.elasticsearch.test;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collections;
 
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -23,6 +22,9 @@ import org.hibernate.search.engine.spi.DocumentBuilderIndexedEntity;
 import org.hibernate.search.engine.spi.EntityIndexBinding;
 import org.hibernate.search.query.engine.spi.HSQuery;
 import org.hibernate.search.spi.DefaultInstanceInitializer;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.impl.IndexedTypeSets;
+import org.hibernate.search.spi.impl.PojoIndexedTypeIdentifier;
 import org.hibernate.search.testsupport.TestForIssue;
 import org.hibernate.search.testsupport.junit.SearchFactoryHolder;
 
@@ -50,7 +52,6 @@ public class ElasticsearchFlushIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-2491")
 	public void testFlushByEntity() throws Exception {
-
 		increaseRefreshTime( Entity1.class, Entity2.class );
 
 		Entity1 entity1 = new Entity1( 1 );
@@ -76,13 +77,13 @@ public class ElasticsearchFlushIT {
 
 	private void increaseRefreshTime(Class<?>... indexes) throws IOException {
 		for ( Class<?> index : indexes ) {
-			elasticsearchClient.index( index ).settings( "index.refresh_interval" ).put( "'3600s'" );
+			elasticsearchClient.index( index ).settings( "index.refresh_interval" ).putDynamic( "'3600s'" );
 			elasticsearchClient.index( index ).waitForRequiredIndexStatus();
 		}
 	}
 
 	private void flush(Class<?> clazz) {
-		sfHolder.getBatchBackend().flush( Collections.<Class<?>>singleton( clazz ) );
+		sfHolder.getBatchBackend().flush( IndexedTypeSets.fromClass( clazz ) );
 	}
 
 	private void indexAsStream(Serializable id, Object entity) throws InterruptedException {
@@ -91,13 +92,14 @@ public class ElasticsearchFlushIT {
 	}
 
 	private LuceneWork createUpdateWork(Serializable id, Object entity) {
-		Class clazz = entity.getClass();
+		Class<?> clazz = entity.getClass();
+		IndexedTypeIdentifier typeId = new PojoIndexedTypeIdentifier( clazz );
 		ExtendedSearchIntegrator searchFactory = sfHolder.getSearchFactory();
-		EntityIndexBinding entityIndexBinding = searchFactory.getIndexBinding( clazz );
+		EntityIndexBinding entityIndexBinding = searchFactory.getIndexBinding( typeId );
 		DocumentBuilderIndexedEntity docBuilder = entityIndexBinding.getDocumentBuilder();
 		return docBuilder.createUpdateWork(
 				null,
-				clazz,
+				typeId,
 				entity,
 				id,
 				id.toString(),
@@ -112,7 +114,6 @@ public class ElasticsearchFlushIT {
 	}
 
 	@Indexed
-	@SuppressWarnings("unused")
 	private static class Entity1 {
 
 		@Field
@@ -124,7 +125,6 @@ public class ElasticsearchFlushIT {
 	}
 
 	@Indexed
-	@SuppressWarnings("unused")
 	private static class Entity2 {
 
 		@Field

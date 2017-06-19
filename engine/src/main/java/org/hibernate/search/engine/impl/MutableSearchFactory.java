@@ -23,6 +23,7 @@ import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.cfg.SearchMapping;
 import org.hibernate.search.cfg.spi.IndexManagerFactory;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
+import org.hibernate.search.engine.integration.impl.SearchIntegration;
 import org.hibernate.search.engine.service.spi.ServiceManager;
 import org.hibernate.search.engine.spi.DocumentBuilderContainedEntity;
 import org.hibernate.search.engine.spi.EntityIndexBinding;
@@ -41,10 +42,13 @@ import org.hibernate.search.query.dsl.QueryContextBuilder;
 import org.hibernate.search.query.engine.spi.HSQuery;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
 import org.hibernate.search.spi.CustomTypeMetadata;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.IndexedTypeSet;
 import org.hibernate.search.spi.IndexingMode;
 import org.hibernate.search.spi.InstanceInitializer;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.spi.SearchIntegratorBuilder;
+import org.hibernate.search.spi.IndexedTypeMap;
 import org.hibernate.search.spi.WorkerBuildContext;
 import org.hibernate.search.spi.impl.ExtendedSearchIntegratorWithShareableState;
 import org.hibernate.search.spi.impl.TypeHierarchy;
@@ -79,11 +83,12 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
-	public Map<Class<?>, EntityIndexBinding> getIndexBindings() {
+	public IndexedTypeMap<EntityIndexBinding> getIndexBindings() {
 		return delegate.getIndexBindings();
 	}
 
 	@Override
+	@Deprecated
 	public EntityIndexBinding getIndexBinding(Class<?> entityType) {
 		return delegate.getIndexBinding( entityType );
 	}
@@ -104,8 +109,8 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
-	public Map<IndexManagerType, AnalyzerRegistry> getAnalyzerRegistries() {
-		return delegate.getAnalyzerRegistries();
+	public Map<IndexManagerType, SearchIntegration> getIntegrations() {
+		return delegate.getIntegrations();
 	}
 
 	@Override
@@ -145,11 +150,6 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
-	public HSQuery createHSQuery() {
-		return delegate.createHSQuery();
-	}
-
-	@Override
 	public HSQuery createHSQuery(Query luceneQuery, Class<?>... entities) {
 		return delegate.createHSQuery( luceneQuery, entities );
 	}
@@ -165,12 +165,14 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
-	public Set<Class<?>> getConfiguredTypesPolymorphic(Class<?>[] classes) {
+	@Deprecated
+	public IndexedTypeSet getConfiguredTypesPolymorphic(Class<?>[] classes) {
 		return delegate.getConfiguredTypesPolymorphic( classes );
 	}
 
 	@Override
-	public Set<Class<?>> getIndexedTypesPolymorphic(Class<?>[] classes) {
+	@Deprecated
+	public IndexedTypeSet getIndexedTypesPolymorphic(Class<?>[] classes) {
 		return delegate.getIndexedTypesPolymorphic( classes );
 	}
 
@@ -220,7 +222,13 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
+	@Deprecated
 	public void optimize(Class entityType) {
+		delegate.optimize( entityType );
+	}
+
+	@Override
+	public void optimize(IndexedTypeIdentifier entityType) {
 		delegate.optimize( entityType );
 	}
 
@@ -230,16 +238,23 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
-	public AnalyzerRegistry getAnalyzerRegistry(IndexManagerType indexManagerType) {
-		return delegate.getAnalyzerRegistry( indexManagerType );
+	public SearchIntegration getIntegration(IndexManagerType indexManagerType) {
+		return delegate.getIntegration( indexManagerType );
 	}
 
 	@Override
+	@Deprecated
 	public Analyzer getAnalyzer(Class<?> clazz) {
 		return delegate.getAnalyzer( clazz );
 	}
 
 	@Override
+	public Analyzer getAnalyzer(IndexedTypeIdentifier type) {
+		return delegate.getAnalyzer( type );
+	}
+
+	@Override
+	@Deprecated
 	public ScopedAnalyzerReference getAnalyzerReference(Class<?> clazz) {
 		return delegate.getAnalyzerReference( clazz );
 	}
@@ -255,7 +270,7 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	}
 
 	@Override
-	public Map<Class<?>, DocumentBuilderContainedEntity> getDocumentBuildersContainedEntities() {
+	public IndexedTypeMap<DocumentBuilderContainedEntity> getDocumentBuildersContainedEntities() {
 		return delegate.getDocumentBuildersContainedEntities();
 	}
 
@@ -317,6 +332,11 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	@Override
 	public Set<Class<?>> getIndexedTypes() {
 		return delegate.getIndexedTypes();
+	}
+
+	@Override
+	public IndexedTypeSet getIndexedTypeIdentifiers() {
+		return delegate.getIndexedTypeIdentifiers();
 	}
 
 	@Override
@@ -407,6 +427,36 @@ public class MutableSearchFactory implements ExtendedSearchIntegratorWithShareab
 	@Override
 	public OperationDispatcher createRemoteOperationDispatcher(Predicate<IndexManager> indexManagerFilter) {
 		return delegate.createRemoteOperationDispatcher( indexManagerFilter );
+	}
+
+	@Override
+	public EntityIndexBinding getIndexBinding(IndexedTypeIdentifier entityType) {
+		return delegate.getIndexBinding( entityType );
+	}
+
+	@Override
+	public IndexedTypeSet getConfiguredTypesPolymorphic(IndexedTypeSet types) {
+		return delegate.getConfiguredTypesPolymorphic( types );
+	}
+
+	@Override
+	public IndexedTypeSet getIndexedTypesPolymorphic(IndexedTypeSet queryTarget) {
+		return delegate.getIndexedTypesPolymorphic( queryTarget );
+	}
+
+	@Override
+	public DocumentBuilderContainedEntity getDocumentBuilderContainedEntity(IndexedTypeIdentifier entityType) {
+		return delegate.getDocumentBuilderContainedEntity( entityType );
+	}
+
+	@Override
+	public ScopedAnalyzerReference getAnalyzerReference(IndexedTypeIdentifier type) {
+		return delegate.getAnalyzerReference( type );
+	}
+
+	@Override
+	public IndexedTypeDescriptor getIndexedTypeDescriptor(IndexedTypeIdentifier typeId) {
+		return delegate.getIndexedTypeDescriptor( typeId );
 	}
 
 }

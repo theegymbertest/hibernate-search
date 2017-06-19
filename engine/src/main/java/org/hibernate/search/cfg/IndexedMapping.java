@@ -59,6 +59,16 @@ public class IndexedMapping {
 		return this;
 	}
 
+	/**
+	 * @param impl The class for an implementation of {@link BoostStrategy}.
+	 * @return this mapping, for chained calls.
+	 *
+	 * @deprecated Index-time boosting will not be possible anymore starting from Lucene 7.
+	 * You should use query-time boosting instead, for instance by calling
+	 * {@link org.hibernate.search.query.dsl.FieldCustomization#boostedTo(float) boostedTo(float)}
+	 * when building queries with the Hibernate Search query DSL.
+	 */
+	@Deprecated
 	public IndexedMapping dynamicBoost(Class<? extends BoostStrategy> impl) {
 		final Map<String, Object> dynamicBoost = new HashMap<String, Object>();
 		dynamicBoost.put( "impl", impl );
@@ -105,6 +115,10 @@ public class IndexedMapping {
 
 	public AnalyzerDefMapping analyzerDef(String name, String tokenizerName, Class<? extends TokenizerFactory> tokenizerFactory) {
 		return new AnalyzerDefMapping( name, tokenizerName, tokenizerFactory, mapping );
+	}
+
+	public NormalizerDefMapping normalizerDef(String name) {
+		return new NormalizerDefMapping( name, mapping );
 	}
 
 	public EntityMapping entity(Class<?> entityType) {

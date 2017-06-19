@@ -11,8 +11,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.elasticsearch.client.Response;
 import org.hibernate.search.elasticsearch.client.impl.ElasticsearchRequest;
+import org.hibernate.search.elasticsearch.client.impl.ElasticsearchResponse;
 import org.hibernate.search.elasticsearch.client.impl.Paths;
 import org.hibernate.search.elasticsearch.client.impl.URLEncodedString;
 import org.hibernate.search.elasticsearch.gson.impl.JsonAccessor;
@@ -26,6 +26,7 @@ import org.hibernate.search.elasticsearch.work.impl.SimpleElasticsearchWork;
 import org.hibernate.search.engine.service.spi.ServiceManager;
 import org.hibernate.search.engine.service.spi.ServiceReference;
 import org.hibernate.search.indexes.spi.IndexManager;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
 import org.hibernate.search.test.TestResourceManager;
 import org.hibernate.search.test.util.BackendTestHelper;
 
@@ -45,7 +46,7 @@ public class ElasticsearchBackendTestHelper extends BackendTestHelper {
 	}
 
 	@Override
-	public int getNumberOfDocumentsInIndex(Class<?> entityType) {
+	public int getNumberOfDocumentsInIndex(IndexedTypeIdentifier entityType) {
 		ServiceManager serviceManager = resourceManager.getExtendedSearchIntegrator().getServiceManager();
 
 		IndexManager[] indexManagers = resourceManager.getExtendedSearchIntegrator()
@@ -101,15 +102,16 @@ public class ElasticsearchBackendTestHelper extends BackendTestHelper {
 
 	private static class CountWork extends SimpleElasticsearchWork<Integer> {
 
-		private static final JsonAccessor COUNT_ACCESSOR = JsonAccessor.root().property( "count" );
+		private static final JsonAccessor<Integer> COUNT_ACCESSOR = JsonAccessor.root().property( "count" ).asInteger();
 
 		protected CountWork(Builder builder) {
 			super( builder );
 		}
 
 		@Override
-		protected Integer generateResult(ElasticsearchWorkExecutionContext context, Response response, JsonObject parsedResponseBody) {
-			return COUNT_ACCESSOR.get( parsedResponseBody ).getAsInt();
+		protected Integer generateResult(ElasticsearchWorkExecutionContext context, ElasticsearchResponse response) {
+			JsonObject body = response.getBody();
+			return COUNT_ACCESSOR.get( body ).get();
 		}
 
 		private static class Builder extends SimpleElasticsearchWork.Builder<Builder> {

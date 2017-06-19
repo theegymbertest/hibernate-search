@@ -15,43 +15,48 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.nio.conn.NoopIOSessionStrategy;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.sniff.ElasticsearchHostsSniffer;
+import org.elasticsearch.client.sniff.HostsSniffer;
 import org.elasticsearch.client.sniff.Sniffer;
+import org.elasticsearch.client.sniff.SnifferBuilder;
 import org.hibernate.search.elasticsearch.cfg.ElasticsearchEnvironment;
-import org.hibernate.search.elasticsearch.logging.impl.Log;
+import org.hibernate.search.elasticsearch.client.spi.ElasticsearchHttpClientConfigurer;
+import org.hibernate.search.engine.service.spi.ServiceManager;
+import org.hibernate.search.engine.service.spi.Startable;
+import org.hibernate.search.engine.service.spi.Stoppable;
+import org.hibernate.search.spi.BuildContext;
 import org.hibernate.search.util.configuration.impl.ConfigurationParseHelper;
 import org.hibernate.search.util.impl.SearchThreadFactory;
-import org.hibernate.search.util.logging.impl.LoggerFactory;
 
 /**
  * @author Gunnar Morling
  * @author Yoann Rodiere
  */
-public class DefaultElasticsearchClientFactory implements ElasticsearchClientFactory {
+public class DefaultElasticsearchClientFactory implements ElasticsearchClientFactory, Startable, Stoppable {
 
-	private static final Log log = LoggerFactory.make( Log.class );
-
-	private static final String HTTP_SCHEME = "http";
-
-	/**
-	 * Prefix for accessing the client-related settings.
-	 * To be suffixed by a scope (currently always "default")
-	 * and the name of the property to access.
-	 */
-	private static final String CLIENT_PROP_PREFIX = "hibernate.search.";
+	private ServiceManager serviceManager;
 
 	@Override
-	public ElasticsearchClientImplementor create(String scopeName, Properties properties) {
-		RestClient restClient = createClient( scopeName, properties );
-		Sniffer sniffer = createSniffer( scopeName, restClient, properties );
+	public void start(Properties properties, BuildContext context) {
+		this.serviceManager = context.getServiceManager();
+	}
+
+	@Override
+	public void stop() {
+		this.serviceManager = null;
+	}
+
+	@Override
+	public ElasticsearchClientImplementor create(Properties properties) {
+		RestClient restClient = createClient( properties );
+		Sniffer sniffer = createSniffer( restClient, properties );
 		return new DefaultElasticsearchClient( restClient, sniffer );
 	}
 
-	private RestClient createClient(String scopeName, Properties properties) {
-		String propertyPrefix = propertyPrefix( scopeName );
-
+	private RestClient createClient(Properties properties) {
 		String serverUrisString = ConfigurationParseHelper.getString(
 				properties,
-				propertyPrefix + ElasticsearchEnvironment.SERVER_URI,
+				ElasticsearchEnvironment.SERVER_URI,
 				ElasticsearchEnvironment.Defaults.SERVER_URI
 		);
 		ServerUris hosts = ServerUris.fromString( serverUrisString );
@@ -64,50 +69,58 @@ public class DefaultElasticsearchClientFactory implements ElasticsearchClientFac
 				 */
 				.setMaxRetryTimeoutMillis( ConfigurationParseHelper.getIntValue(
 						properties,
-						propertyPrefix + ElasticsearchEnvironment.SERVER_REQUEST_TIMEOUT,
+						ElasticsearchEnvironment.SERVER_REQUEST_TIMEOUT,
 						ElasticsearchEnvironment.Defaults.SERVER_REQUEST_TIMEOUT
 				) )
-				.setRequestConfigCallback( (b) -> customizeRequestConfig( propertyPrefix, properties, b ) )
-				.setHttpClientConfigCallback( (b) -> customizeHttpClientConfig( propertyPrefix, properties, hosts, b ) )
+				.setRequestConfigCallback( (b) -> customizeRequestConfig( properties, b ) )
+				.setHttpClientConfigCallback( (b) -> customizeHttpClientConfig( properties, hosts, b ) )
 				.build();
 	}
 
-	private Sniffer createSniffer(String scopeName, RestClient client, Properties properties) {
-		String propertyPrefix = propertyPrefix( scopeName );
-
+	private Sniffer createSniffer(RestClient client, Properties properties) {
 		boolean discoveryEnabled = ConfigurationParseHelper.getBooleanValue(
 				properties,
-				propertyPrefix + ElasticsearchEnvironment.DISCOVERY_ENABLED,
+				ElasticsearchEnvironment.DISCOVERY_ENABLED,
 				ElasticsearchEnvironment.Defaults.DISCOVERY_ENABLED
 		);
 		if ( discoveryEnabled ) {
-			return Sniffer.builder( client )
+			SnifferBuilder builder = Sniffer.builder( client )
 					.setSniffIntervalMillis(
 							ConfigurationParseHelper.getIntValue(
 									properties,
-									propertyPrefix + ElasticsearchEnvironment.DISCOVERY_REFRESH_INTERVAL,
+									ElasticsearchEnvironment.DISCOVERY_REFRESH_INTERVAL,
 									ElasticsearchEnvironment.Defaults.DISCOVERY_REFRESH_INTERVAL
 							)
 							* 1_000 // The configured value is in seconds
-					)
-					.build();
+					);
+			String scheme = ConfigurationParseHelper.getString(properties, ElasticsearchEnvironment.DISCOVERY_SCHEME, "http");
+
+			// https discovery support
+			if ( scheme.equals(ElasticsearchHostsSniffer.Scheme.HTTPS.toString()) ) {
+				HostsSniffer hostsSniffer = new ElasticsearchHostsSniffer(
+						client,
+						ElasticsearchHostsSniffer.DEFAULT_SNIFF_REQUEST_TIMEOUT, // 1sec
+						ElasticsearchHostsSniffer.Scheme.HTTPS );
+				builder.setHostsSniffer( hostsSniffer );
+			}
+			return builder.build();
 		}
 		else {
 			return null;
 		}
 	}
 
-	private HttpAsyncClientBuilder customizeHttpClientConfig(String propertyPrefix,
-			Properties properties, ServerUris hosts, HttpAsyncClientBuilder builder) {
+	private HttpAsyncClientBuilder customizeHttpClientConfig(Properties properties,
+			ServerUris hosts, HttpAsyncClientBuilder builder) {
 		builder = builder
 				.setMaxConnTotal( ConfigurationParseHelper.getIntValue(
 						properties,
-						propertyPrefix + ElasticsearchEnvironment.MAX_TOTAL_CONNECTION,
+						ElasticsearchEnvironment.MAX_TOTAL_CONNECTION,
 						ElasticsearchEnvironment.Defaults.MAX_TOTAL_CONNECTION
 				) )
 				.setMaxConnPerRoute( ConfigurationParseHelper.getIntValue(
 						properties,
-						propertyPrefix + ElasticsearchEnvironment.MAX_TOTAL_CONNECTION_PER_ROUTE,
+						ElasticsearchEnvironment.MAX_TOTAL_CONNECTION_PER_ROUTE,
 						ElasticsearchEnvironment.Defaults.MAX_TOTAL_CONNECTION_PER_ROUTE
 				) )
 				.setThreadFactory( new SearchThreadFactory( "Elasticsearch transport thread" ) );
@@ -119,13 +132,13 @@ public class DefaultElasticsearchClientFactory implements ElasticsearchClientFac
 
 		String username = ConfigurationParseHelper.getString(
 				properties,
-				propertyPrefix + ElasticsearchEnvironment.SERVER_USERNAME,
+				ElasticsearchEnvironment.SERVER_USERNAME,
 				null
 		);
 		if ( username != null ) {
 			String password = ConfigurationParseHelper.getString(
 					properties,
-					propertyPrefix + ElasticsearchEnvironment.SERVER_PASSWORD,
+					ElasticsearchEnvironment.SERVER_PASSWORD,
 					null
 			);
 			if ( password != null ) {
@@ -141,28 +154,28 @@ public class DefaultElasticsearchClientFactory implements ElasticsearchClientFac
 			builder = builder.setDefaultCredentialsProvider( credentialsProvider );
 		}
 
+		Iterable<ElasticsearchHttpClientConfigurer> configurers =
+				serviceManager.getClassLoaderService().loadJavaServices( ElasticsearchHttpClientConfigurer.class );
+		for ( ElasticsearchHttpClientConfigurer configurer : configurers ) {
+			configurer.configure( builder, properties );
+		}
+
 		return builder;
 	}
 
-	private RequestConfig.Builder customizeRequestConfig(String propertyPrefix, Properties properties, RequestConfig.Builder builder) {
+	private RequestConfig.Builder customizeRequestConfig(Properties properties, RequestConfig.Builder builder) {
 		return builder
 				.setConnectionRequestTimeout( 0 ) //Disable lease handling for the connection pool! See also HSEARCH-2681
 				.setSocketTimeout( ConfigurationParseHelper.getIntValue(
 						properties,
-						propertyPrefix + ElasticsearchEnvironment.SERVER_READ_TIMEOUT,
+						ElasticsearchEnvironment.SERVER_READ_TIMEOUT,
 						ElasticsearchEnvironment.Defaults.SERVER_READ_TIMEOUT
 				) )
 				.setConnectTimeout( ConfigurationParseHelper.getIntValue(
 						properties,
-						propertyPrefix + ElasticsearchEnvironment.SERVER_CONNECTION_TIMEOUT,
+						ElasticsearchEnvironment.SERVER_CONNECTION_TIMEOUT,
 						ElasticsearchEnvironment.Defaults.SERVER_CONNECTION_TIMEOUT
 				) );
-	}
-
-	private String propertyPrefix(String scopeName) {
-		return new StringBuilder( CLIENT_PROP_PREFIX )
-				.append( scopeName ).append( "." )
-				.toString();
 	}
 
 }

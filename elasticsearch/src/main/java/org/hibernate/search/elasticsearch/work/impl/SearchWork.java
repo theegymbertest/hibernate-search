@@ -10,8 +10,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.elasticsearch.client.Response;
 import org.hibernate.search.elasticsearch.client.impl.ElasticsearchRequest;
+import org.hibernate.search.elasticsearch.client.impl.ElasticsearchResponse;
 import org.hibernate.search.elasticsearch.client.impl.Paths;
 import org.hibernate.search.elasticsearch.client.impl.URLEncodedString;
 import org.hibernate.search.elasticsearch.gson.impl.GsonProvider;
@@ -19,11 +19,11 @@ import org.hibernate.search.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.elasticsearch.logging.impl.Log;
 import org.hibernate.search.elasticsearch.util.impl.ElasticsearchClientUtils;
 import org.hibernate.search.elasticsearch.work.impl.builder.SearchWorkBuilder;
+import org.hibernate.search.exception.AssertionFailure;
 import org.hibernate.search.util.logging.impl.DefaultLogCategories;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -50,8 +50,9 @@ public class SearchWork extends SimpleElasticsearchWork<SearchResult> {
 	}
 
 	@Override
-	protected SearchResult generateResult(ElasticsearchWorkExecutionContext context, Response response, JsonObject parsedResponseBody) {
-		return new SearchResultImpl( parsedResponseBody );
+	protected SearchResult generateResult(ElasticsearchWorkExecutionContext context, ElasticsearchResponse response) {
+		JsonObject body = response.getBody();
+		return new SearchResultImpl( body );
 	}
 
 	public static class Builder
@@ -119,17 +120,17 @@ public class SearchWork extends SimpleElasticsearchWork<SearchResult> {
 
 	static class SearchResultImpl implements SearchResult {
 
-		private static final JsonAccessor HITS_HITS_ACCESSOR = JsonAccessor.root().property( "hits" ).property( "hits" );
+		private static final JsonAccessor<JsonArray> HITS_HITS_ACCESSOR = JsonAccessor.root().property( "hits" ).property( "hits" ).asArray();
 
-		private static final JsonAccessor COUNT_ACCESSOR = JsonAccessor.root().property( "hits" ).property( "total" );
+		private static final JsonAccessor<Integer> COUNT_ACCESSOR = JsonAccessor.root().property( "hits" ).property( "total" ).asInteger();
 
-		private static final JsonAccessor AGGREGATIONS_ACCESSOR = JsonAccessor.root().property( "aggregations" );
+		private static final JsonAccessor<JsonObject> AGGREGATIONS_ACCESSOR = JsonAccessor.root().property( "aggregations" ).asObject();
 
-		private static final JsonAccessor TOOK_ACCESSOR = JsonAccessor.root().property( "took" );
+		private static final JsonAccessor<Integer> TOOK_ACCESSOR = JsonAccessor.root().property( "took" ).asInteger();
 
-		private static final JsonAccessor TIMED_OUT_ACCESSOR = JsonAccessor.root().property( "timed_out" );
+		private static final JsonAccessor<Boolean> TIMED_OUT_ACCESSOR = JsonAccessor.root().property( "timed_out" ).asBoolean();
 
-		private static final JsonAccessor SCROLL_ID_ACCESSOR = JsonAccessor.root().property( "_scroll_id" );
+		private static final JsonAccessor<String> SCROLL_ID_ACCESSOR = JsonAccessor.root().property( "_scroll_id" ).asString();
 
 		private final JsonObject jsonObject;
 
@@ -140,34 +141,47 @@ public class SearchWork extends SimpleElasticsearchWork<SearchResult> {
 
 		@Override
 		public JsonArray getHits() {
-			return HITS_HITS_ACCESSOR.get( jsonObject ).getAsJsonArray();
+			return HITS_HITS_ACCESSOR.get( jsonObject )
+					.orElseGet( JsonArray::new );
 		}
 
 		@Override
 		public int getTotalHitCount() {
-			return COUNT_ACCESSOR.get( jsonObject ).getAsInt();
+			return COUNT_ACCESSOR.get( jsonObject )
+					.orElse( 0 );
 		}
 
 		@Override
 		public JsonObject getAggregations() {
-			JsonElement element = AGGREGATIONS_ACCESSOR.get( jsonObject );
-			return element == null ? null : element.getAsJsonObject();
+			return AGGREGATIONS_ACCESSOR.get( jsonObject )
+					.orElseGet( JsonObject::new );
 		}
 
 		@Override
 		public int getTook() {
-			return TOOK_ACCESSOR.get( jsonObject ).getAsInt();
+			return TOOK_ACCESSOR.get( jsonObject )
+					.orElseThrow( () -> new AssertionFailure(
+							"Elasticsearch response lacked a value for '"
+							+ TOOK_ACCESSOR.getStaticAbsolutePath() + "'"
+					) );
 		}
 
 		@Override
 		public boolean getTimedOut() {
-			return TIMED_OUT_ACCESSOR.get( jsonObject ).getAsBoolean();
+			return TIMED_OUT_ACCESSOR.get( jsonObject )
+					.orElseThrow( () -> new AssertionFailure(
+							"Elasticsearch response lacked a value for '"
+							+ TIMED_OUT_ACCESSOR.getStaticAbsolutePath() + "'"
+					) );
 		}
 
 		@Override
 		public String getScrollId() {
-			JsonElement element = SCROLL_ID_ACCESSOR.get( jsonObject );
-			return element == null ? null : element.getAsString();
+			return SCROLL_ID_ACCESSOR.get( jsonObject )
+					.orElseThrow( () -> new AssertionFailure(
+							"Elasticsearch response lacked a value for '"
+							+ SCROLL_ID_ACCESSOR.getStaticAbsolutePath() + "'"
+					) );
 		}
 
 	}

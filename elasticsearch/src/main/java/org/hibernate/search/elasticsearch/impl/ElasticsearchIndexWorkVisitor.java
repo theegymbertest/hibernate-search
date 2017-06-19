@@ -7,7 +7,6 @@
 package org.hibernate.search.elasticsearch.impl;
 
 import java.util.List;
-import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.FacetsConfig;
@@ -30,6 +29,7 @@ import org.hibernate.search.elasticsearch.client.impl.URLEncodedString;
 import org.hibernate.search.elasticsearch.gson.impl.JsonAccessor;
 import org.hibernate.search.elasticsearch.gson.impl.JsonElementType;
 import org.hibernate.search.elasticsearch.gson.impl.UnexpectedJsonElementTypeException;
+import org.hibernate.search.elasticsearch.gson.impl.UnknownTypeJsonAccessor;
 import org.hibernate.search.elasticsearch.impl.NestingMarker.NestingPathComponent;
 import org.hibernate.search.elasticsearch.logging.impl.Log;
 import org.hibernate.search.elasticsearch.util.impl.FieldHelper;
@@ -48,6 +48,7 @@ import org.hibernate.search.engine.spi.DocumentBuilderIndexedEntity;
 import org.hibernate.search.engine.spi.EntityIndexBinding;
 import org.hibernate.search.exception.AssertionFailure;
 import org.hibernate.search.spatial.impl.SpatialHelper;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
 import com.google.gson.JsonElement;
@@ -79,7 +80,7 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 
 	@Override
 	public ElasticsearchWork<?> visitAddWork(AddLuceneWork work, IndexingMonitor monitor) {
-		return indexDocument( getDocumentId( work ), work.getDocument(), work.getEntityClass() )
+		return indexDocument( getDocumentId( work ), work.getDocument(), work.getEntityType() )
 				.monitor( monitor )
 				.luceneWork( work )
 				.markIndexDirty( refreshAfterWrite )
@@ -112,17 +113,17 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 				.luceneWork( work )
 				.markIndexDirty( refreshAfterWrite );
 
-		Set<Class<?>> typesToDelete = searchIntegrator.getIndexedTypesPolymorphic( new Class<?>[] { work.getEntityClass() } );
-		for ( Class<?> typeToDelete : typesToDelete ) {
-			builder.type( URLEncodedString.fromString( typeToDelete.getName() ) );
-		}
-
+		/*
+		 * Deleting only the given type.
+		 * Inheritance trees are handled at a higher level by creating multiple purge works.
+		 */
+		builder.type( URLEncodedString.fromString( work.getEntityType().getName() ) );
 		return builder.build();
 	}
 
 	@Override
 	public ElasticsearchWork<?> visitUpdateWork(UpdateLuceneWork work, IndexingMonitor monitor) {
-		return indexDocument( getDocumentId( work ), work.getDocument(), work.getEntityClass() )
+		return indexDocument( getDocumentId( work ), work.getDocument(), work.getEntityType() )
 				.monitor( monitor )
 				.luceneWork( work )
 				.markIndexDirty( refreshAfterWrite )
@@ -140,10 +141,10 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 	@Override
 	public ElasticsearchWork<?> visitDeleteByQueryWork(DeleteByQueryLuceneWork work, IndexingMonitor monitor) {
 		JsonObject convertedQuery = ToElasticsearch.fromDeletionQuery(
-				searchIntegrator.getIndexBinding( work.getEntityClass() ).getDocumentBuilder(),
+				searchIntegrator.getIndexBinding( work.getEntityType() ).getDocumentBuilder(),
 				work.getDeletionQuery()
 		);
-		URLEncodedString typeName = URLEncodedString.fromString( work.getEntityClass().getName() );
+		URLEncodedString typeName = URLEncodedString.fromString( work.getEntityType().getName() );
 
 		JsonObject payload = createDeleteByQueryPayload( convertedQuery, work.getTenantId() );
 
@@ -178,13 +179,13 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 	}
 
 
-	private IndexWorkBuilder indexDocument(URLEncodedString id, Document document, Class<?> entityType) {
+	private IndexWorkBuilder indexDocument(URLEncodedString id, Document document, IndexedTypeIdentifier entityType) {
 		JsonObject source = convertDocumentToJson( document, entityType );
 		URLEncodedString typeName = URLEncodedString.fromString( entityType.getName() );
 		return workFactory.index( indexName, typeName, id, source );
 	}
 
-	private JsonObject convertDocumentToJson(Document document, Class<?> entityType) {
+	private JsonObject convertDocumentToJson(Document document, IndexedTypeIdentifier entityType) {
 		EntityIndexBinding indexBinding = searchIntegrator.getIndexBinding( entityType );
 		JsonObject root = new JsonObject();
 
@@ -292,7 +293,7 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 					}
 					else {
 						// should only be the case for class-bridge fields; in that case we'd miss proper handling of boolean/Date for now
-						JsonAccessor accessor = accessorBuilder.buildForPath( fieldPath );
+						UnknownTypeJsonAccessor accessor = accessorBuilder.buildForPath( fieldPath );
 						String stringValue = field.stringValue();
 						Number numericValue = field.numericValue();
 						if ( stringValue != null ) {
@@ -307,7 +308,7 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 					}
 				}
 				else {
-					JsonAccessor accessor = accessorBuilder.buildForPath( fieldPath );
+					UnknownTypeJsonAccessor accessor = accessorBuilder.buildForPath( fieldPath );
 
 					// If the value was initially null, explicitly propagate null and let ES handle the default token.
 					if ( field instanceof NullMarker ) {
@@ -342,7 +343,7 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 		}
 		catch (UnexpectedJsonElementTypeException e) {
 			List<JsonElementType<?>> expectedTypes = e.getExpectedTypes();
-			JsonAccessor accessor = e.getAccessor();
+			JsonAccessor<?> accessor = e.getAccessor();
 			JsonElement actualValue = e.getActualElement();
 
 			if ( expectedTypes.contains( JsonElementType.OBJECT ) || JsonElementType.OBJECT.isInstance( actualValue ) ) {
@@ -364,7 +365,7 @@ class ElasticsearchIndexWorkVisitor implements IndexWorkVisitor<IndexingMonitor,
 	}
 
 	private static URLEncodedString entityName(LuceneWork work) {
-		return URLEncodedString.fromString( work.getEntityClass().getName() );
+		return URLEncodedString.fromString( work.getEntityType().getName() );
 	}
 
 }

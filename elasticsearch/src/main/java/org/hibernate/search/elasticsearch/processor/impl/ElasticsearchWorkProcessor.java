@@ -7,11 +7,15 @@
 package org.hibernate.search.elasticsearch.processor.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.hibernate.search.backend.LuceneWork;
 import org.hibernate.search.backend.impl.lucene.MultiWriteDrainableLinkedList;
@@ -24,9 +28,11 @@ import org.hibernate.search.elasticsearch.work.impl.ElasticsearchWork;
 import org.hibernate.search.elasticsearch.work.impl.ElasticsearchWorkAggregator;
 import org.hibernate.search.elasticsearch.work.impl.ElasticsearchWorkExecutionContext;
 import org.hibernate.search.elasticsearch.work.impl.factory.ElasticsearchWorkFactory;
+import org.hibernate.search.exception.ErrorContext;
 import org.hibernate.search.exception.ErrorHandler;
 import org.hibernate.search.exception.impl.ErrorContextBuilder;
 import org.hibernate.search.spi.BuildContext;
+import org.hibernate.search.util.impl.CollectionHelper;
 import org.hibernate.search.util.impl.Executors;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
@@ -74,7 +80,8 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 	}
 
 	/**
-	 * Executes a work synchronously, potentially throwing exceptions (the error handler isn't used).
+	 * Execute a single work synchronously,
+	 * potentially throwing exceptions (the error handler isn't used).
 	 *
 	 * @param work The work to be executed.
 	 * @return The result of the given work.
@@ -84,21 +91,48 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 	}
 
 	/**
-	 * Executes works synchronously, passing any thrown exception to the error handler.
+	 * Execute a set of works synchronously.
+	 * <p>
+	 * Works submitted in the same list will be executed in the given order.
+	 * <p>
+	 * If any work throws an exception, this exception will be passed
+	 * to the error handler with an {@link ErrorContext} spanning at least the given works,
+	 * and the remaining works will not be executed.
 	 *
 	 * @param works The works to be executed.
 	 */
 	public void executeSyncSafe(Iterable<ElasticsearchWork<?>> works) {
-		executeSafely( works );
+		SequentialWorkExecutionContext context = new SequentialWorkExecutionContext(
+				client, gsonProvider, workFactory, this, errorHandler );
+		executeSafe( context, works, true );
+		context.flush();
 	}
 
 	/**
-	 * Executes a work asynchronously, passing any exception to the error handler.
+	 * Execute a single work asynchronously.
+	 * <p>
+	 * If the work throws an exception, this exception will be passed
+	 * to the error handler with an {@link ErrorContext} spanning at least this work.
 	 *
 	 * @param work The work to be executed.
 	 */
 	public void executeAsync(ElasticsearchWork<?> work) {
-		asyncProcessor.submitRequest( work );
+		asyncProcessor.submit( Collections.singleton( work ) );
+	}
+
+	/**
+	 * Execute a set of works asynchronously.
+	 * <p>
+	 * Works submitted in the same list will be executed in the given order.
+	 * <p>
+	 * If any work throws an exception, this exception will be passed
+	 * to the error handler with an {@link ErrorContext} spanning at least the given works,
+	 * and the remaining works will not be executed.
+	 *
+	 * @param works The works to be executed.
+	 */
+	public void executeAsync(List<ElasticsearchWork<?>> works) {
+		asyncProcessor.submit( works );
 	}
 
 	/**
@@ -110,67 +144,70 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 	}
 
 	/**
-	 * Groups the given work list into executable bulks and executes them. For each bulk, the error handler - if
-	 * registered - will be invoked with the items of that bulk.
+	 * Execute a list of works, bulking them as necessary, and passing any exception to the error handler.
+	 * <p>
+	 * After an exception, the remaining works in the list are not executed,
+	 * though some may have already been executed if they were bulked with the failing work.
+	 *
+	 * @param nonBulkedWorks The works to be bulked (as much as possible) and executed
+	 * @param refreshInBulkAPICall The parameter to pass to {@link #createRequestGroups(Iterable, boolean)}.
 	 */
-	private void executeSafely(Iterable<ElasticsearchWork<?>> requests) {
-		SequentialWorkExecutionContext context = new SequentialWorkExecutionContext(
-				client, gsonProvider, workFactory, this, errorHandler );
+	private void executeSafe(SequentialWorkExecutionContext context, Iterable<ElasticsearchWork<?>> nonBulkedWorks,
+			boolean refreshInBulkAPICall) {
+		ErrorContextBuilder errorContextBuilder = new ErrorContextBuilder();
 
-		for ( ElasticsearchWork<?> work : createRequestGroups( requests, true ) ) {
-			executeSafely( work, context );
+		for ( ElasticsearchWork<?> work : createRequestGroups( nonBulkedWorks, refreshInBulkAPICall ) ) {
+			try {
+				executeUnsafe( work, context );
+				work.getLuceneWorks().forEach( errorContextBuilder::workCompleted );
+			}
+			catch (BulkRequestFailedException brfe) {
+				brfe.getSuccessfulItems().keySet().stream()
+						.flatMap( ElasticsearchWork::getLuceneWorks )
+						.forEach( errorContextBuilder::workCompleted );
+
+				handleError(
+						errorContextBuilder,
+						brfe,
+						nonBulkedWorks,
+						brfe.getErroneousItems().stream()
+								.flatMap( ElasticsearchWork::getLuceneWorks )
+						);
+				break;
+			}
+			catch (RuntimeException e) {
+				handleError(
+						errorContextBuilder,
+						e,
+						nonBulkedWorks,
+						work.getLuceneWorks()
+						);
+				break;
+			}
 		}
-
-		context.flush();
 	}
 
-	private void executeSafely(ElasticsearchWork<?> work, ElasticsearchWorkExecutionContext context) {
+	private void executeUnsafe(ElasticsearchWork<?> work, ElasticsearchWorkExecutionContext context) {
 		if ( LOG.isTraceEnabled() ) {
 			LOG.tracef( "Processing %s", work );
 		}
 
-		try {
-			work.execute( context );
-		}
-		catch (BulkRequestFailedException brfe) {
-			ErrorContextBuilder builder = new ErrorContextBuilder();
-			List<LuceneWork> allWorks = new ArrayList<>();
+		work.execute( context );
+	}
 
-			for ( BulkableElasticsearchWork<?> successfulWork : brfe.getSuccessfulItems().keySet() ) {
-				successfulWork.getLuceneWorks().forEach( (w) -> {
-						allWorks.add( w );
-						builder.workCompleted( w );
-				});
-			}
+	private void handleError(ErrorContextBuilder errorContextBuilder, Throwable e,
+			Iterable<ElasticsearchWork<?>> allWorks, Stream<LuceneWork> worksThatFailed) {
+		errorContextBuilder.allWorkToBeDone(
+				StreamSupport.stream( allWorks.spliterator(), false )
+						.flatMap( w -> w.getLuceneWorks() )
+						.collect( Collectors.toList() )
+				);
 
-			for ( BulkableElasticsearchWork<?> failedWork : brfe.getErroneousItems() ) {
-				failedWork.getLuceneWorks().forEach( (w) -> {
-						allWorks.add( w );
-						builder.addWorkThatFailed( w );
-				});
-			}
+		worksThatFailed.forEach( errorContextBuilder::addWorkThatFailed );
 
-			builder.allWorkToBeDone( allWorks );
+		errorContextBuilder.errorThatOccurred( e );
 
-			builder.errorThatOccurred( brfe );
-
-			errorHandler.handle( builder.createErrorContext() );
-		}
-		catch (RuntimeException e) {
-			ErrorContextBuilder builder = new ErrorContextBuilder();
-			List<LuceneWork> allWorks = new ArrayList<>();
-
-			work.getLuceneWorks().forEach( (w) -> {
-					allWorks.add( w );
-					builder.addWorkThatFailed( w );
-			});
-
-			builder.allWorkToBeDone( allWorks );
-
-			builder.errorThatOccurred( e );
-
-			errorHandler.handle( builder.createErrorContext() );
-		}
+		errorHandler.handle( errorContextBuilder.createErrorContext() );
 	}
 
 	/**
@@ -198,7 +235,7 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 	private class AsyncBackendRequestProcessor {
 
 		private final ScheduledExecutorService scheduler;
-		private final MultiWriteDrainableLinkedList<ElasticsearchWork<?>> asyncWorkQueue;
+		private final MultiWriteDrainableLinkedList<Iterable<ElasticsearchWork<?>>> asyncWorkQueue;
 		private final AtomicBoolean asyncWorkerWasStarted;
 
 		private volatile CountDownLatch lastAsyncWorkLatch;
@@ -209,9 +246,12 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 			asyncWorkerWasStarted = new AtomicBoolean( false );
 		}
 
-		public void submitRequest(ElasticsearchWork<?> request) {
-			asyncWorkQueue.add( request );
+		public void submit(Iterable<ElasticsearchWork<?>> works) {
+			asyncWorkQueue.add( works );
+			ensureStarted();
+		}
 
+		private void ensureStarted() {
 			// Set up worker if needed
 			if ( !asyncWorkerWasStarted.get() ) {
 				synchronized ( AsyncBackendRequestProcessor.this ) {
@@ -295,7 +335,7 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 					client, gsonProvider, workFactory, ElasticsearchWorkProcessor.this, errorHandler );
 			synchronized ( asyncProcessor ) {
 				while ( true ) {
-					Iterable<ElasticsearchWork<?>> works = asyncProcessor.asyncWorkQueue.drainToDetachedIterable();
+					Iterable<Iterable<ElasticsearchWork<?>>> works = asyncProcessor.asyncWorkQueue.drainToDetachedIterable();
 					if ( works == null ) {
 						// Allow other async processors to be setup already as we're on our way to termination:
 						asyncProcessor.asyncWorkerWasStarted.set( false );
@@ -303,9 +343,8 @@ public class ElasticsearchWorkProcessor implements AutoCloseable {
 						context.flush();
 						return;
 					}
-					for ( ElasticsearchWork<?> work : createRequestGroups( works, false ) ) {
-						work.execute( context );
-					}
+					Iterable<ElasticsearchWork<?>> flattenedWorks = CollectionHelper.flatten( works );
+					executeSafe( context, flattenedWorks, false );
 				}
 			}
 		}

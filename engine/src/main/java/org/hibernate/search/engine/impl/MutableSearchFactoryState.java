@@ -16,6 +16,7 @@ import org.hibernate.search.backend.spi.Worker;
 import org.hibernate.search.cfg.Environment;
 import org.hibernate.search.cfg.SearchMapping;
 import org.hibernate.search.cfg.spi.IndexManagerFactory;
+import org.hibernate.search.engine.integration.impl.SearchIntegration;
 import org.hibernate.search.engine.service.spi.ServiceManager;
 import org.hibernate.search.engine.spi.DocumentBuilderContainedEntity;
 import org.hibernate.search.engine.spi.EntityIndexBinding;
@@ -28,6 +29,7 @@ import org.hibernate.search.indexes.spi.IndexManagerType;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
 import org.hibernate.search.spi.IndexingMode;
 import org.hibernate.search.spi.InstanceInitializer;
+import org.hibernate.search.spi.IndexedTypeMap;
 import org.hibernate.search.spi.impl.ExtendedSearchIntegratorWithShareableState;
 import org.hibernate.search.spi.impl.TypeHierarchy;
 import org.hibernate.search.spi.impl.SearchFactoryState;
@@ -41,14 +43,14 @@ import org.hibernate.search.util.configuration.impl.ConfigurationParseHelper;
  */
 public class MutableSearchFactoryState implements SearchFactoryState {
 
-	private Map<Class<?>, DocumentBuilderContainedEntity> documentBuildersContainedEntities;
-	private Map<Class<?>, EntityIndexBinding> indexBindingsPerEntity;
+	private IndexedTypeMap<DocumentBuilderContainedEntity> documentBuildersContainedEntities;
+	private IndexedTypeMap<EntityIndexBinding> indexBindingsPerEntity;
 	private IndexingMode indexingMode;
 	private Worker worker;
 	private BackendQueueProcessor backendQueueProcessor;
 	private Map<String, FilterDef> filterDefinitions = new ConcurrentHashMap<>();
 	private FilterCachingStrategy filterCachingStrategy;
-	private Map<IndexManagerType, AnalyzerRegistry> analyzerRegistries = new ConcurrentHashMap<>();
+	private Map<IndexManagerType, SearchIntegration> integrations = new ConcurrentHashMap<>();
 	private int cacheBitResultsSize;
 	private Properties configurationProperties;
 	private TypeHierarchy configuredTypeHierarchy;
@@ -77,8 +79,8 @@ public class MutableSearchFactoryState implements SearchFactoryState {
 		worker = oldFactoryState.getWorker();
 		filterDefinitions = oldFactoryState.getFilterDefinitions();
 		filterCachingStrategy = oldFactoryState.getFilterCachingStrategy();
-		analyzerRegistries.clear();
-		analyzerRegistries.putAll( oldFactoryState.getAnalyzerRegistries() );
+		integrations.clear();
+		integrations.putAll( oldFactoryState.getIntegrations() );
 		cacheBitResultsSize = oldFactoryState.getCacheBitResultsSize();
 		configurationProperties = oldFactoryState.getConfigurationProperties();
 		configuredTypeHierarchy = oldFactoryState.getConfiguredTypeHierarchy();
@@ -111,12 +113,12 @@ public class MutableSearchFactoryState implements SearchFactoryState {
 	}
 
 	@Override
-	public Map<Class<?>, DocumentBuilderContainedEntity> getDocumentBuildersContainedEntities() {
+	public IndexedTypeMap<DocumentBuilderContainedEntity> getDocumentBuildersContainedEntities() {
 		return documentBuildersContainedEntities;
 	}
 
 	@Override
-	public Map<Class<?>, EntityIndexBinding> getIndexBindings() {
+	public IndexedTypeMap<EntityIndexBinding> getIndexBindings() {
 		return indexBindingsPerEntity;
 	}
 
@@ -145,8 +147,8 @@ public class MutableSearchFactoryState implements SearchFactoryState {
 	}
 
 	@Override
-	public Map<IndexManagerType, AnalyzerRegistry> getAnalyzerRegistries() {
-		return analyzerRegistries;
+	public Map<IndexManagerType, SearchIntegration> getIntegrations() {
+		return integrations;
 	}
 
 	@Override
@@ -169,11 +171,11 @@ public class MutableSearchFactoryState implements SearchFactoryState {
 		return indexedTypeHierarchy;
 	}
 
-	public void setDocumentBuildersContainedEntities(Map<Class<?>, DocumentBuilderContainedEntity> documentBuildersContainedEntities) {
+	public void setDocumentBuildersContainedEntities(IndexedTypeMap<DocumentBuilderContainedEntity> documentBuildersContainedEntities) {
 		this.documentBuildersContainedEntities = documentBuildersContainedEntities;
 	}
 
-	public void setDocumentBuildersIndexedEntities(Map<Class<?>, EntityIndexBinding> documentBuildersIndexedEntities) {
+	public void setDocumentBuildersIndexedEntities(IndexedTypeMap<EntityIndexBinding> documentBuildersIndexedEntities) {
 		this.indexBindingsPerEntity = documentBuildersIndexedEntities;
 	}
 
@@ -197,8 +199,8 @@ public class MutableSearchFactoryState implements SearchFactoryState {
 		this.filterCachingStrategy = filterCachingStrategy;
 	}
 
-	public void addAnalyzerRegistries(Map<IndexManagerType, AnalyzerRegistry> analyzerRegistries) {
-		this.analyzerRegistries.putAll( analyzerRegistries );
+	public void addIntegrations(Map<IndexManagerType, SearchIntegration> integrations) {
+		this.integrations.putAll( integrations );
 	}
 
 	public void setCacheBitResultsSize(int cacheBitResultsSize) {

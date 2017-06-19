@@ -174,7 +174,7 @@
         <!-- Dependency versions -->
         <slf4jVersion>1.6.4</slf4jVersion>
         <luceneVersion>5.5.4</luceneVersion>
-        <infinispanVersion>8.2.4.Final</infinispanVersion>
+        <infinispanVersion>9.0.1.Final</infinispanVersion>
         <jgroupsVersion>3.6.12.Final</jgroupsVersion>
 
         <!-- ORM and transitive deps; Make sure to match ORM's set of versions when updating -->
@@ -209,10 +209,13 @@
         <activeMQVersion>5.13.3</activeMQVersion>
         <commonsLangVersion>2.6</commonsLangVersion>
         <commonsLang3Version>3.5</commonsLang3Version>
+        <httpCoreVersion>4.4.5</httpCoreVersion>
+        <httpClientVersion>4.5.2</httpClientVersion>
+        <commonsCodecVersion>1.10</commonsCodecVersion>
 
         <!-- Elasticsearch -->
-        <elasticsearchClientVersion>5.3.0</elasticsearchClientVersion>
-        <elasticsearchSnifferVersion>5.3.0</elasticsearchSnifferVersion>
+        <elasticsearchClientVersion>5.4.1</elasticsearchClientVersion>
+        <elasticsearchSnifferVersion>5.4.1</elasticsearchSnifferVersion>
         <elasticsearchGsonVersion>2.8.0</elasticsearchGsonVersion>
         
         <!-- Tests -->
@@ -225,6 +228,12 @@
         <shrinkwrapResolverVersion>2.2.2</shrinkwrapResolverVersion>
         <wildflyVersion>10.1.0.Final</wildflyVersion>
         <jmhVersion>1.11.2</jmhVersion>
+        
+        <!-- Elasticsearch -->
+        <test.elasticsearch.host.url>http://localhost:9200</test.elasticsearch.host.url>
+        <test.elasticsearch.host.username></test.elasticsearch.host.username>
+        <test.elasticsearch.host.password></test.elasticsearch.host.password>
+        <test.elasticsearch.client.http_client_configurer></test.elasticsearch.client.http_client_configurer>
 
         <!-- character encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -475,6 +484,21 @@
                 <version>${commonsLang3Version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpClientVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpCoreVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commonsCodecVersion}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-serialization-avro</artifactId>
                 <version>${project.version}</version>
@@ -510,6 +534,15 @@
                 <artifactId>hibernate-search-engine</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-sharedtestresources</artifactId>
+                <classifier>build-resources</classifier>
+                <type>zip</type>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
@@ -1115,11 +1148,47 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <!-- 2.19.1 seems buggy, see https://hibernate.atlassian.net/browse/HV-1117 -->
                     <version>2.18.1</version>
+                    <configuration>
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <runOrder>alphabetical</runOrder>
+                        <systemPropertyVariables>
+                            <!-- See HSEARCH-1444 -->
+                            <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                            <com.sun.management.jmxremote>true</com.sun.management.jmxremote>
+                            <org.hibernate.search.enable_performance_tests>${org.hibernate.search.enable_performance_tests}</org.hibernate.search.enable_performance_tests>
+                            <org.hibernate.search.fail_on_unreleased_service>true</org.hibernate.search.fail_on_unreleased_service>
+                        </systemPropertyVariables>
+                        <argLine>${additionalRuntimeArgLine}</argLine>
+                        <additionalClasspathElements>
+                            <!-- Needed by Byteman to load the agent on demand -->
+                            <additionalClasspathElement>${jdk-toolsjar}</additionalClasspathElement>
+                        </additionalClasspathElements>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.0.0</version>
+                    <executions>
+                        <execution>
+                            <!-- See http://blog.sonatype.com/2008/04/how-to-share-resources-across-projects-in-maven/ -->
+                            <!-- This will only be effective if hibernate-search-sharedtestresources is actually a project dependency -->
+                            <id>unpack-shared-test-build-resources</id>
+                            <goals>
+                                <goal>unpack-dependencies</goal>
+                            </goals>
+                            <phase>generate-test-resources</phase>
+                            <configuration>
+                                <outputDirectory>${project.build.directory}/</outputDirectory>
+                                <includeGroupIds>${project.groupId}</includeGroupIds>
+                                <includeArtifacIds>hibernate-search-sharedtestresources</includeArtifacIds>
+                                <includeTypes>zip</includeTypes>
+                                <excludeTransitive>true</excludeTransitive>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1225,6 +1294,15 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                  <targetVersion>1.8</targetVersion>
                                  <!-- if the used Java version is too new, don't fail, just do nothing: -->
                                  <failOnUnsupportedJava>false</failOnUnsupportedJava>
+                                 <failOnUnresolvableSignatures>false</failOnUnresolvableSignatures>
+                                 <excludes>
+                                 <!--
+                                     Only those two classes are allowed to build search integrators,
+                                     because they do it right (with guaranteed calls to close at the end of the test).
+                                 -->
+                                    <exclude>**/org/hibernate/search/testsupport/junit/SearchFactoryHolder.class</exclude>
+                                    <exclude>**/org/hibernate/search/testsupport/junit/SearchIntegratorResource.class</exclude>
+                                 </excludes>
                                  <bundledSignatures>
                                      <!-- This will automatically choose the right signatures based on 'targetVersion': -->
                                      <bundledSignature>jdk-unsafe</bundledSignature>
@@ -1232,6 +1310,9 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                      <bundledSignature>jdk-non-portable</bundledSignature>
                                      <bundledSignature>jdk-internal</bundledSignature>
                                  </bundledSignatures>
+                                 <signatures>
+org.hibernate.search.spi.SearchIntegratorBuilder#buildSearchIntegrator()
+                                 </signatures>
                              </configuration>
                              <phase>test-compile</phase>
                              <goals>
@@ -1320,6 +1401,7 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                         <versionRange>[2.1,)</versionRange>
                                         <goals>
                                             <goal>unpack</goal>
+                                            <goal>unpack-dependencies</goal>
                                             <goal>build-classpath</goal>
                                         </goals>
                                     </pluginExecutionFilter>
@@ -1398,6 +1480,15 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                     <groupId>org.apache.servicemix.tooling</groupId>
                     <artifactId>depends-maven-plugin</artifactId>
                     <version>1.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.alexcojocaru</groupId>
+                    <artifactId>elasticsearch-maven-plugin</artifactId>
+                    <version>${test.elasticsearch.mavenPlugin.version}</version>
+                    <configuration>
+                        <clusterName>hsearchEsTestCluster</clusterName>
+                        <httpPort>9200</httpPort>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -1520,7 +1611,7 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                 <jdk>9</jdk>
             </activation>
             <properties>
-                <additionalRuntimeArgLine>--add-modules java.xml.bind --add-opens=java.base/java.lang=ALL-UNNAMED</additionalRuntimeArgLine>
+                <additionalRuntimeArgLine>-Djdk.attach.allowAttachSelf=true --add-modules java.xml.bind --add-opens=java.base/java.lang=ALL-UNNAMED</additionalRuntimeArgLine>
             </properties>
         </profile>
 
@@ -1528,6 +1619,33 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
             <id>perf</id>
             <properties>
                 <org.hibernate.search.enable_performance_tests>true</org.hibernate.search.enable_performance_tests>
+            </properties>
+        </profile>
+
+        <!-- ====================================== -->
+        <!-- Detection of tools classes for Byteman -->
+        <!-- ====================================== -->
+        <!-- See the configuration of the surefire and failsafe plugins -->
+        <profile>
+            <id>default-toolsjar-profile</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <jdk-toolsjar>${java.home}/../lib/tools.jar</jdk-toolsjar>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac-toolsjar-profile</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../Classes/classes.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <jdk-toolsjar>${java.home}/../Classes/classes.jar</jdk-toolsjar>
             </properties>
         </profile>
 
@@ -1550,7 +1668,6 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
             <properties>
                 <test.elasticsearch.mavenPlugin.version>2.2</test.elasticsearch.mavenPlugin.version>
                 <test.elasticsearch.host.version>2.0.0</test.elasticsearch.host.version>
-                <test.elasticsearch.host.url>http://localhost:9200</test.elasticsearch.host.url>
             </properties>
             <build>
                 <pluginManagement>
@@ -1561,6 +1678,10 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                             <version>${test.elasticsearch.mavenPlugin.version}</version>
                             <configuration>
                                 <skip>${test.elasticsearch.host.provided}</skip>
+                                <tcpPort>9300</tcpPort>
+                                <pluginsPath>${project.build.directory}/_ES_PLUGINS_</pluginsPath>
+                                <outputDirectory>${project.build.directory}/elastisearch0</outputDirectory>
+                                <configPath>${project.build.directory}/elasticsearch-maven-plugin/2.0/configuration/</configPath>
                             </configuration>
                             <dependencies>
                                 <dependency>
@@ -1576,6 +1697,22 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                     <version>${project.version}</version>
                                 </dependency>
                             </dependencies>
+                            <executions>
+                                <execution >
+                                    <id>start-elasticsearch</id>
+                                    <phase>pre-integration-test</phase>
+                                    <goals>
+                                        <goal>start</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>stop-elasticsearch</id>
+                                    <phase>post-integration-test</phase>
+                                    <goals>
+                                        <goal>stop</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
                         </plugin>
                     </plugins>
                 </pluginManagement>
@@ -1588,7 +1725,6 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
             <properties>
                 <test.elasticsearch.mavenPlugin.version>2.2</test.elasticsearch.mavenPlugin.version>
                 <test.elasticsearch.host.version>2.4.4</test.elasticsearch.host.version>
-                <test.elasticsearch.host.url>http://localhost:9200</test.elasticsearch.host.url>
             </properties>
             <build>
                 <pluginManagement>
@@ -1599,6 +1735,10 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                             <version>${test.elasticsearch.mavenPlugin.version}</version>
                             <configuration>
                                 <skip>${test.elasticsearch.host.provided}</skip>
+                                <tcpPort>9300</tcpPort>
+                                <pluginsPath>${project.build.directory}/_ES_PLUGINS_</pluginsPath>
+                                <outputDirectory>${project.build.directory}/elastisearch0</outputDirectory>
+                                <configPath>${project.build.directory}/elasticsearch-maven-plugin/2.0/configuration/</configPath>
                             </configuration>
                             <dependencies>
                                 <dependency>
@@ -1614,24 +1754,34 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                     <version>${project.version}</version>
                                 </dependency>
                             </dependencies>
+                            <executions>
+                                <execution >
+                                    <id>start-elasticsearch</id>
+                                    <phase>pre-integration-test</phase>
+                                    <goals>
+                                        <goal>start</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>stop-elasticsearch</id>
+                                    <phase>post-integration-test</phase>
+                                    <goals>
+                                        <goal>stop</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
                         </plugin>
                     </plugins>
                 </pluginManagement>
             </build>
         </profile>
 
-        <!-- Elasticsearch 5.x test environment (default) -->
+        <!-- Elasticsearch 5.0/5.1 test environment -->
         <profile>
             <id>elasticsearch-5.0</id>
-            <activation>
-                <!-- Activate by default, i.e. if testElasticsearchVersion has not been defined explicitly -->
-                <property>
-                    <name>!test.elasticsearch.mavenPlugin.version</name>
-                </property>
-            </activation>
             <properties>
                 <test.elasticsearch.mavenPlugin.version>5.7</test.elasticsearch.mavenPlugin.version>
-                <test.elasticsearch.host.version>5.3.0</test.elasticsearch.host.version>
+                <test.elasticsearch.host.version>5.1.2</test.elasticsearch.host.version>
                 <test.elasticsearch.host.url>http://localhost:9200</test.elasticsearch.host.url>
             </properties>
             <build>
@@ -1645,6 +1795,9 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                 <skip>${test.elasticsearch.host.provided}</skip>
                                 <version>${test.elasticsearch.host.version}</version>
                                 <timeout>90</timeout><!-- Make it work on our slow CI -->
+                                <pathConf>${project.build.directory}/elasticsearch-maven-plugin/5.0/configuration/</pathConf>
+                                <pathInitScript>${project.build.directory}/elasticsearch-maven-plugin/5.0/init/init.script</pathInitScript>
+                                <autoCreateIndex>false</autoCreateIndex>
                             </configuration>
                             <dependencies>
                                 <!-- The next two are used to get ES log output into the Maven console -->
@@ -1659,6 +1812,87 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                                     <version>2.6.2</version>
                                 </dependency>
                             </dependencies>
+                            <!-- Different executions from 2.x: the "start" goal has been renamed in version 5  -->
+                            <executions>
+                                <execution >
+                                    <id>start-elasticsearch</id>
+                                    <phase>pre-integration-test</phase>
+                                    <goals>
+                                        <goal>runforked</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>stop-elasticsearch</id>
+                                    <phase>post-integration-test</phase>
+                                    <goals>
+                                        <goal>stop</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        
+        <!-- Elasticsearch 5.2+ test environment (default) -->
+        <profile>
+            <id>elasticsearch-5.2</id>
+            <activation>
+                <!-- Activate by default, i.e. if testElasticsearchVersion has not been defined explicitly -->
+                <property>
+                    <name>!test.elasticsearch.mavenPlugin.version</name>
+                </property>
+            </activation>
+            <properties>
+                <test.elasticsearch.mavenPlugin.version>5.7</test.elasticsearch.mavenPlugin.version>
+                <test.elasticsearch.host.version>5.4.1</test.elasticsearch.host.version>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.github.alexcojocaru</groupId>
+                            <artifactId>elasticsearch-maven-plugin</artifactId>
+                            <version>${test.elasticsearch.mavenPlugin.version}</version>
+                            <configuration>
+                                <skip>${test.elasticsearch.host.provided}</skip>
+                                <version>${test.elasticsearch.host.version}</version>
+                                <timeout>90</timeout><!-- Make it work on our slow CI -->
+                                <pathConf>${project.build.directory}/elasticsearch-maven-plugin/5.0/configuration/</pathConf>
+                                <pathInitScript>${project.build.directory}/elasticsearch-maven-plugin/5.0/init/init.script</pathInitScript>
+                                <autoCreateIndex>false</autoCreateIndex>
+                            </configuration>
+                            <dependencies>
+                                <!-- The next two are used to get ES log output into the Maven console -->
+                                <dependency>
+                                    <groupId>org.hibernate</groupId>
+                                    <artifactId>hibernate-search-sharedtestresources</artifactId>
+                                    <version>${project.version}</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.apache.logging.log4j</groupId>
+                                    <artifactId>log4j-core</artifactId>
+                                    <version>2.6.2</version>
+                                </dependency>
+                            </dependencies>
+                            <!-- Different executions from 2.x: the "start" goal has been renamed in version 5  -->
+                            <executions>
+                                <execution >
+                                    <id>start-elasticsearch</id>
+                                    <phase>pre-integration-test</phase>
+                                    <goals>
+                                        <goal>runforked</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>stop-elasticsearch</id>
+                                    <phase>post-integration-test</phase>
+                                    <goals>
+                                        <goal>stop</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
                         </plugin>
                     </plugins>
                 </pluginManagement>
@@ -1771,7 +2005,7 @@ org.jboss.logging.BasicLogger#debugf(java.lang.Throwable, java.lang.String, long
                 <dependency>
                     <groupId>org.mariadb.jdbc</groupId>
                     <artifactId>mariadb-java-client</artifactId>
-                    <version>1.1.7</version>
+                    <version>1.5.9</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

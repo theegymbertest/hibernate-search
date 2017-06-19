@@ -202,7 +202,7 @@ public interface Log extends org.hibernate.search.util.logging.impl.Log {
 
 	@Message(id = ES_BACKEND_MESSAGES_START_ID + 36,
 			value = "Mapping conflict detected for field '%2$s' on entity '%1$s'."
-					+ " The current mapping would require the field to be mapped to  both a composite field"
+					+ " The current mapping would require the field to be mapped to both a composite field"
 					+ " ('object' datatype) and a \"concrete\" field ('integer', 'date', etc.) holding a value,"
 					+ " which Elasticsearch does not allow. If you're seeing this issue, you probably added both"
 					+ " an @IndexedEmbedded annotation and a @Field (or similar) annotation on the same property:"
@@ -411,7 +411,7 @@ public interface Log extends org.hibernate.search.util.logging.impl.Log {
 	SearchException analyzerNamingConflict(String remoteName);
 
 	@Message(id = ES_BACKEND_MESSAGES_START_ID + 75,
-			value = "Property '" + ElasticsearchEnvironment.ANALYZER_DEFINITION_PROVIDER + "' set to value '%1$s' is invalid."
+			value = "Property '" + ElasticsearchEnvironment.ANALYSIS_DEFINITION_PROVIDER + "' set to value '%1$s' is invalid."
 					+ " The value must be the fully-qualified name of a class with a public, no-arg constructor in your classpath."
 					+ " Also, the class must either implement ElasticsearchAnalyzerDefinitionProvider or expose a public,"
 					+ " @Factory-annotated method returning a ElasticsearchAnalyzerDefinitionProvider.")
@@ -438,9 +438,9 @@ public interface Log extends org.hibernate.search.util.logging.impl.Log {
 	SearchException failedToDetectElasticsearchVersion(@Cause Exception e);
 
 	@Message(id = ES_BACKEND_MESSAGES_START_ID + 81,
-			value = "An unexpected Elasticsearch version runs on the Elasticsearch cluster: '%s'."
+			value = "An unsupported Elasticsearch version runs on the Elasticsearch cluster: '%s'."
 					+ " Please refer to the documentation to know which versions are supported." )
-	SearchException unexpectedElasticsearchVersion(String name);
+	SearchException unsupportedElasticsearchVersion(String name);
 
 	@LogMessage(level = Level.TRACE)
 	@Message(id = ES_BACKEND_MESSAGES_START_ID + 82,
@@ -456,4 +456,24 @@ public interface Log extends org.hibernate.search.util.logging.impl.Log {
 			value = "The parameter '%2$s' must have value '%3$s' for the factory '%1$s' with Elasticsearch. Current value '%4$s' is invalid." )
 	SearchException invalidAnalysisFactoryParameter(@FormatWith(ClassFormatter.class) Class<?> factoryType, String parameter,
 			String expectedValue, String actualValue);
+
+	@LogMessage(level = Level.WARN)
+	@Message(id = ES_BACKEND_MESSAGES_START_ID + 85,
+			value = "Hibernate Search may not work correctly, because an unknown Elasticsearch version runs on the Elasticsearch cluster: '%s'." )
+	void unexpectedElasticsearchVersion(String name);
+
+	@Message(id = ES_BACKEND_MESSAGES_START_ID + 86,
+			value = "The same normalizer name '%1$s' is assigned to multiple definitions. The analyzer names must be unique." )
+	SearchException normalizerNamingConflict(String remoteName);
+
+	@Message(id = ES_BACKEND_MESSAGES_START_ID + 87,
+			value = "The same name '%1$s' is assigned to a normalizer definition and an analyzer definition."
+					+ " This is not possible on Elasticsearch 5.1 and below, since normalizers are translated to analyzers under the hood." )
+	SearchException analyzerNormalizerNamingConflict(String remoteName);
+
+	@Message(id = ES_BACKEND_MESSAGES_START_ID + 88,
+			value = "You cannot use @Normalizer(impl = \"%1$s\") on entities mapped to Elasticsearch:"
+					+ " there are no built-in normalizers in Elasticsearch."
+					+ " Use @Normalizer(definition = \"...\") instead." )
+	SearchException cannotUseNormalizerImpl(@FormatWith(ClassFormatter.class) Class<?> analyzerType);
 }

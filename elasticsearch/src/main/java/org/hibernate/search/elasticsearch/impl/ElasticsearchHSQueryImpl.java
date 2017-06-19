@@ -73,6 +73,7 @@ import org.hibernate.search.query.facet.Facet;
 import org.hibernate.search.query.facet.FacetSortOrder;
 import org.hibernate.search.query.facet.FacetingRequest;
 import org.hibernate.search.spatial.DistanceSortField;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
 import org.hibernate.search.util.impl.CollectionHelper;
 import org.hibernate.search.util.impl.ReflectionHelper;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
@@ -657,15 +658,10 @@ public class ElasticsearchHSQueryImpl extends AbstractHSQuery {
 				// the results. If we don't sort by distance, we need to request for the distance using a script_field.
 				payloadBuilder.add( "script_fields",
 						JsonBuilder.object().add( SPATIAL_DISTANCE_FIELD, JsonBuilder.object()
-							.add( "script", JsonBuilder.object()
-								.add( "params",
-										JsonBuilder.object()
-												.addProperty( "lat", spatialSearchCenter.getLatitude() )
-												.addProperty( "lon", spatialSearchCenter.getLongitude() )
-								)
-								// We multiply by 0.001 to Convert from meters to kilmeters
-								.addProperty( "inline", "doc['" + spatialFieldName + "'] ? doc['" + spatialFieldName + "'].arcDistance(lat,lon)*0.001 : null" )
-								.addProperty( "lang", "groovy" )
+							.add(
+									"script",
+									elasticsearchService.getQueryFactory()
+											.createSpatialDistanceScript( spatialSearchCenter, spatialFieldName )
 							)
 						)
 				);
@@ -745,10 +741,10 @@ public class ElasticsearchHSQueryImpl extends AbstractHSQuery {
 			}
 
 			DocumentBuilderIndexedEntity documentBuilder = binding.getDocumentBuilder();
-			Class<?> clazz = documentBuilder.getBeanClass();
+			IndexedTypeIdentifier typeId = documentBuilder.getTypeIdentifier();
 
 			ConversionContext conversionContext = new ContextualExceptionBridgeHelper();
-			conversionContext.setClass( clazz );
+			conversionContext.setConvertedTypeId( typeId );
 			FieldProjection idProjection = idProjectionByEntityBinding.get( binding );
 			Object id = idProjection.convertHit( hit, conversionContext );
 			Object[] projections = null;
@@ -769,7 +765,7 @@ public class ElasticsearchHSQueryImpl extends AbstractHSQuery {
 							projections[i] = id;
 							break;
 						case ElasticsearchProjectionConstants.OBJECT_CLASS:
-							projections[i] = clazz;
+							projections[i] = typeId.getPojoType();
 							break;
 						case ElasticsearchProjectionConstants.SCORE:
 							projections[i] = hit.getAsJsonObject().get( "_score" ).getAsFloat();
@@ -830,7 +826,7 @@ public class ElasticsearchHSQueryImpl extends AbstractHSQuery {
 				}
 			}
 
-			return new EntityInfoImpl( clazz, documentBuilder.getIdPropertyName(), (Serializable) id, projections );
+			return new EntityInfoImpl( typeId, documentBuilder.getIdPropertyName(), (Serializable) id, projections );
 		}
 
 	}

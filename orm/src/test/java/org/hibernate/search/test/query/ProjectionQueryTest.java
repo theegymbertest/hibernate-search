@@ -436,7 +436,7 @@ public class ProjectionQueryTest extends SearchTestBase {
 
 		Query query = parser.parse( "dept:Accounting" );
 		org.hibernate.search.FullTextQuery hibQuery = s.createFullTextQuery( query, Employee.class );
-		hibQuery.setSort( new Sort( new SortField( "lastname", SortField.Type.STRING ) ) );
+		hibQuery.setSort( new Sort( new SortField( "id", SortField.Type.STRING ) ) );
 		hibQuery.setProjection(
 				FullTextQuery.SCORE, FullTextQuery.ID
 		);
@@ -682,7 +682,7 @@ public class ProjectionQueryTest extends SearchTestBase {
 
 	@Override
 	public void configure(Map<String,Object> cfg) {
-		cfg.put( "hibernate.search.default.directory_provider", "ram" );
+		cfg.put( "hibernate.search.default.directory_provider", "local-heap" );
 	}
 
 }

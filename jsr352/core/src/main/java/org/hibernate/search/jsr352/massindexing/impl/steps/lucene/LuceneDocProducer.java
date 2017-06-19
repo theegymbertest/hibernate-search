@@ -26,6 +26,8 @@ import org.hibernate.search.jsr352.logging.impl.Log;
 import org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters;
 import org.hibernate.search.jsr352.massindexing.impl.JobContextData;
 import org.hibernate.search.jsr352.massindexing.impl.util.MassIndexingPartitionProperties;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.impl.PojoIndexedTypeIdentifier;
 import org.hibernate.search.util.StringHelper;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
@@ -56,7 +58,7 @@ public class LuceneDocProducer implements ItemProcessor {
 	private EntityIndexBinding entityIndexBinding;
 	private DocumentBuilderIndexedEntity docBuilder;
 	private boolean isSetup = false;
-	private Class<?> entityType;
+	private IndexedTypeIdentifier entityTypeIdentifier;
 
 	@Override
 	public Object processItem(Object item) throws Exception {
@@ -65,7 +67,7 @@ public class LuceneDocProducer implements ItemProcessor {
 			setup();
 			isSetup = true;
 		}
-		AddLuceneWork addWork = buildAddLuceneWork( item, entityType );
+		AddLuceneWork addWork = buildAddLuceneWork( item );
 		return addWork;
 	}
 
@@ -77,9 +79,10 @@ public class LuceneDocProducer implements ItemProcessor {
 	 */
 	private void setup() throws ClassNotFoundException, NamingException {
 		JobContextData jobContextData = (JobContextData) jobContext.getTransientUserData();
-		entityType = jobContextData.getIndexedType( entityName );
+		Class<?> entityType = jobContextData.getIndexedType( entityName );
+		entityTypeIdentifier = new PojoIndexedTypeIdentifier( entityType );
 		searchIntegrator = jobContextData.getSearchIntegrator();
-		entityIndexBinding = searchIntegrator.getIndexBindings().get( entityType );
+		entityIndexBinding = searchIntegrator.getIndexBindings().get( entityTypeIdentifier );
 		docBuilder = entityIndexBinding.getDocumentBuilder();
 		emf = jobContextData.getEntityManagerFactory();
 	}
@@ -91,7 +94,7 @@ public class LuceneDocProducer implements ItemProcessor {
 	 * @param entityType the class type of selected entity
 	 * @return an addLuceneWork
 	 */
-	private AddLuceneWork buildAddLuceneWork(Object entity, Class<?> entityType) {
+	private AddLuceneWork buildAddLuceneWork(Object entity) {
 		ConversionContext conversionContext = new ContextualExceptionBridgeHelper();
 
 		Serializable id = (Serializable) emf.getPersistenceUnitUtil()
@@ -101,7 +104,7 @@ public class LuceneDocProducer implements ItemProcessor {
 		String idInString = null;
 		try {
 			idInString = conversionContext
-					.setClass( entityType )
+					.setConvertedTypeId( entityTypeIdentifier )
 					.twoWayConversionContext( idBridge )
 					.objectToString( id );
 		}
@@ -115,7 +118,7 @@ public class LuceneDocProducer implements ItemProcessor {
 		}
 		return docBuilder.createAddWork(
 				tenantId,
-				entityType,
+				entityTypeIdentifier,
 				entity,
 				id,
 				idInString,
