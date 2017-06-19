@@ -24,7 +24,6 @@
         <hibernate.search.version>${project.version}</hibernate.search.version>
         <hibernate.search.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.search.module.slot>
         <infinispan.integration.slot>for-hibernatesearch-${hibernate.search.module.slot}</infinispan.integration.slot>
-        <tika.module.slot>${tikaVersion}</tika.module.slot>
     </properties>
 
     <dependencies>
