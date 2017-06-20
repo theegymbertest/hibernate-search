@@ -16,4 +16,9 @@
             <module name="org.javassist" />
         </exclusions>
     </deployment>
+    <module name="deployment.org.apache.tika" slot="${tika.module.slot}">
+        <resources>
+            <resource-root path="tika-core.jar" />
+        </resources>
+    </module>
 </jboss-deployment-structure>

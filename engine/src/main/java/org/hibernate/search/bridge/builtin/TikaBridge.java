@@ -6,10 +6,13 @@
  */
 package org.hibernate.search.bridge.builtin;
 
+import static org.apache.tika.io.IOUtils.closeQuietly;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
@@ -17,6 +20,8 @@ import java.sql.Blob;
 import java.sql.SQLException;
 
 import org.apache.lucene.document.Document;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -28,11 +33,11 @@ import org.hibernate.search.bridge.MetadataProvidingTikaMetadataProcessor;
 import org.hibernate.search.bridge.TikaMetadataProcessor;
 import org.hibernate.search.bridge.TikaParseContextProvider;
 import org.hibernate.search.bridge.spi.FieldMetadataBuilder;
+import org.hibernate.search.exception.AssertionFailure;
+import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.util.impl.ClassLoaderHelper;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
-
-import static org.apache.tika.io.IOUtils.closeQuietly;
 
 /**
  * Bridge implementation which uses Apache Tika to extract data from provided input.
@@ -42,13 +47,19 @@ import static org.apache.tika.io.IOUtils.closeQuietly;
 public class TikaBridge implements MetadataProvidingFieldBridge {
 	private static final Log log = LoggerFactory.make();
 
-	// Expensive, so only do it once. The Parser is threadsafe.
-	private final Parser parser = new AutoDetectParser();
+	private final Parser parser;
 
 	private TikaMetadataProcessor metadataProcessor;
 	private TikaParseContextProvider parseContextProvider;
 
 	public TikaBridge() {
+		try {
+			// Expensive, so only do it once. The Parser is threadsafe.
+			this.parser = new AutoDetectParser( new TikaConfig() );
+		}
+		catch (IOException | TikaException e) {
+			throw new AssertionFailure( "Unable to get default Tika configuration", e );
+		}
 		setMetadataProcessorClass( null );
 		setParseContextProviderClass( null );
 	}

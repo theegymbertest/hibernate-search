@@ -66,7 +66,7 @@ class TikaBridgeProvider extends ExtendedBridgeProvider {
 			tikaBridge = ClassLoaderHelper.instanceFromClass( FieldBridge.class, tikaBridgeClass, "Tika bridge" );
 		}
 		catch (ClassLoadingException e) {
-			throw new AssertionFailure( "Unable to find Tika bridge class: " + TIKA_BRIDGE_NAME );
+			throw new AssertionFailure( "Unable to find Tika bridge class: " + TIKA_BRIDGE_NAME, e );
 		}
 
 		Class<?> tikaMetadataProcessorClass = annotation.metadataProcessor();
