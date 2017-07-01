@@ -8,6 +8,9 @@ package org.hibernate.search.jsr352.massindexing.impl.steps.lucene;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -16,6 +19,9 @@ import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.SingularAttribute;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -289,11 +295,11 @@ public class EntityReader extends AbstractItemReader {
 			PartitionBound unit, Object checkpointId, JobContextData jobData) {
 		boolean cacheable = SerializationUtil.parseBooleanParameter( CACHEABLE, serializedCacheable );
 		int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
-		Class<?> entityType = unit.getEntityType();
-		String idName = sessionFactory.getClassMetadata( entityType )
+		Class<?> entity = unit.getEntityType();
+		String idName = sessionFactory.getClassMetadata( entity )
 				.getIdentifierPropertyName();
 
-		Criteria criteria = ss.createCriteria( entityType );
+		Criteria criteria = ss.createCriteria( entity );
 
 		// build criteria using checkpoint ID
 		if ( checkpointId != null ) {
@@ -322,8 +328,17 @@ public class EntityReader extends AbstractItemReader {
 			int maxResults = SerializationUtil.parseIntegerParameter( CUSTOM_QUERY_LIMIT, serializedCustomQueryLimit );
 			criteria.setMaxResults( maxResults );
 		}
-		return criteria.addOrder( Order.asc( idName ) )
-				.setReadOnly( true )
+		EntityType<?> entityType = emf.getMetamodel().entity( entity );
+		if ( entityType.hasSingleIdAttribute() ) {
+			criteria.addOrder( Order.asc( idName ) );
+		}
+		else {
+			List<SingularAttribute<?, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
+			attributeList.sort( Comparator.comparing( Attribute::getName ) );
+			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
+		}
+
+		return criteria.setReadOnly( true )
 				.setCacheable( cacheable )
 				.setFetchSize( fetchSize )
 				.scroll( ScrollMode.FORWARD_ONLY );
