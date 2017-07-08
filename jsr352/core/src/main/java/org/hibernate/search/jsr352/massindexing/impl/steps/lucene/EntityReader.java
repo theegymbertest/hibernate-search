@@ -299,7 +299,7 @@ public class EntityReader extends AbstractItemReader {
 		String idName = sessionFactory.getClassMetadata( entity )
 				.getIdentifierPropertyName();
 
-		Criteria criteria = ss.createCriteria( entity );
+		Criteria criteria = PersistenceUtil.createNormalCriteria( emf, ss, entity );
 
 		// build criteria using checkpoint ID
 		if ( checkpointId != null ) {
@@ -307,6 +307,7 @@ public class EntityReader extends AbstractItemReader {
 		}
 
 		// build criteria using partition unit
+		// TODO This chaining if-statement should be moved to PersistenceUtil#createCriteria
 		if ( unit.isUniquePartition() ) {
 			// no bounds if the partition unit is unique
 		}
@@ -327,15 +328,6 @@ public class EntityReader extends AbstractItemReader {
 		if ( StringHelper.isNotEmpty( serializedCustomQueryLimit ) ) {
 			int maxResults = SerializationUtil.parseIntegerParameter( CUSTOM_QUERY_LIMIT, serializedCustomQueryLimit );
 			criteria.setMaxResults( maxResults );
-		}
-		EntityType<?> entityType = emf.getMetamodel().entity( entity );
-		if ( entityType.hasSingleIdAttribute() ) {
-			criteria.addOrder( Order.asc( idName ) );
-		}
-		else {
-			List<SingularAttribute<?, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
-			attributeList.sort( Comparator.comparing( Attribute::getName ) );
-			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
 		}
 
 		return criteria.setReadOnly( true )

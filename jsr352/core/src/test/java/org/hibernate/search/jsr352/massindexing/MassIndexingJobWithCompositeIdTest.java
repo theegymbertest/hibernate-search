@@ -83,7 +83,7 @@ public class MassIndexingJobWithCompositeIdTest {
 	public void tearDown() throws Exception {
 		ftem.getTransaction().begin();
 
-		ftem.createQuery( "delete from EntityWithMultipleId" ).executeUpdate();
+		ftem.createQuery( "delete from EntityWithIdClass" ).executeUpdate();
 		ftem.createQuery( "delete from EntityWithComparableId" ).executeUpdate();
 		ftem.createQuery( "delete from EntityWithNonComparableId" ).executeUpdate();
 

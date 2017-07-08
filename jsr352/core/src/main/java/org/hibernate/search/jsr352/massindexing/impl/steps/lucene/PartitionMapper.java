@@ -7,7 +7,6 @@
 package org.hibernate.search.jsr352.massindexing.impl.steps.lucene;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -18,9 +17,6 @@ import javax.batch.api.partition.PartitionPlanImpl;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.SingularAttribute;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -28,8 +24,6 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.search.jsr352.logging.impl.Log;
 import org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters;
 import org.hibernate.search.jsr352.massindexing.impl.JobContextData;
@@ -129,10 +123,12 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 			emf = jobData.getEntityManagerFactory();
 			session = PersistenceUtil.openSession( emf, tenantId );
 			ss = PersistenceUtil.openStatelessSession( emf, tenantId );
+			int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
 
 			List<Class<?>> entityTypes = jobData.getEntityTypes();
 			List<PartitionBound> partitionBounds = new ArrayList<>();
 			Class<?> entityType;
+			Criteria criteria;
 
 			switch ( typeOfSelection( customQueryHql, jobData.getCustomQueryCriteria() ) ) {
 				case HQL:
@@ -142,13 +138,19 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 
 				case CRITERIA:
 					entityType = entityTypes.get( 0 );
-					scroll = buildScrollableResults( ss, entityType, jobData.getCustomQueryCriteria() );
+					criteria = PersistenceUtil.createProjectionCriteria( emf, ss, entityType, jobData.getCustomQueryCriteria() );
+					scroll = criteria.setFetchSize( fetchSize )
+							.setReadOnly( true )
+							.scroll( ScrollMode.FORWARD_ONLY );
 					partitionBounds = buildPartitionUnitsFrom( scroll, entityType );
 					break;
 
 				case FULL_ENTITY:
 					for ( Class<?> clz : entityTypes ) {
-						scroll = buildScrollableResults( ss, clz, null );
+						criteria = PersistenceUtil.createProjectionCriteria( emf, ss, clz );
+						scroll = criteria.setFetchSize( fetchSize )
+								.setReadOnly( true )
+								.scroll( ScrollMode.FORWARD_ONLY );
 						partitionBounds.addAll( buildPartitionUnitsFrom( scroll, clz ) );
 					}
 					break;
@@ -241,31 +243,5 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 		partitionUnits.add( new PartitionBound( clazz, lowerID, upperID ) );
 		return partitionUnits;
 	}
-	//@formatter:on
-	private <X> ScrollableResults buildScrollableResults(
-			StatelessSession ss, Class<X> entity, Set<Criterion> criterions) {
-		Criteria criteria = ss.createCriteria( entity );
-		if ( criterions != null ) {
-			criterions.forEach( c -> criteria.add( c ) );
-		}
-		int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
 
-		// Retrieve all id attributes from @Entity annotations, then build a customized sort
-		EntityType<X> entityType = emf.getMetamodel().entity( entity );
-		if ( entityType.hasSingleIdAttribute() ) {
-			// TODO Find embedded id?
-			criteria.setProjection( Projections.alias( Projections.id(), "aliasedId" ) );
-			criteria.addOrder( Order.asc( "aliasedId" ) );
-		}
-		else {
-			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
-			attributeList.sort( Comparator.comparing( Attribute::getName ) );
-			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
-			criteria.setProjection( Projections.id() );
-		}
-
-		return criteria.setFetchSize( fetchSize )
-				.setReadOnly( true )
-				.scroll( ScrollMode.FORWARD_ONLY );
-	}
 }
