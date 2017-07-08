@@ -19,11 +19,11 @@ import javax.persistence.Persistence;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.hibernate.search.jsr352.massindexing.test.embeddable.ComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.id.ComparableDateId;
 import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithComparableId;
-import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithMultipleId;
+import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithIdClass;
 import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithNonComparableId;
-import org.hibernate.search.jsr352.massindexing.test.embeddable.NonComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
 import org.hibernate.search.jsr352.test.util.JobTestUtil;
 import org.hibernate.search.testsupport.TestForIssue;
 
@@ -39,13 +39,12 @@ import static org.hibernate.search.jsr352.test.util.JobTestUtil.findIndexedResul
 /**
  * Tests that mass indexing job can handle entity having
  * {@link javax.persistence.EmbeddedId} annotation, or
- * multiple {@link javax.persistence.Id} annotations.
+ * {@link javax.persistence.IdClass} annotation.
  *
  * @author Mincong Huang
  */
 @TestForIssue(jiraKey = "HSEARCH-2615")
-// TODO Rename this test
-public class MassIndexingJobWithEmbeddedIdTest {
+public class MassIndexingJobWithCompositeIdTest {
 
 	private static final LocalDate START = LocalDate.of( 2017, 6, 1 );
 
@@ -69,13 +68,13 @@ public class MassIndexingJobWithEmbeddedIdTest {
 		ftem = Search.getFullTextEntityManager( emf.createEntityManager() );
 		ftem.getTransaction().begin();
 		for ( LocalDate d = START; d.isBefore( END ); d = d.plusDays( 1 ) ) {
-			ftem.persist( new EntityWithMultipleId( d ) );
+			ftem.persist( new EntityWithIdClass( d ) );
 			ftem.persist( new EntityWithComparableId( d ) );
 			ftem.persist( new EntityWithNonComparableId( d ) );
 		}
 		ftem.getTransaction().commit();
 
-		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithMultipleId.class ) ).isEqualTo( 0 );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class ) ).isEqualTo( 0 );
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithComparableId.class ) ).isEqualTo( 0 );
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class ) ).isEqualTo( 0 );
 	}
@@ -88,7 +87,7 @@ public class MassIndexingJobWithEmbeddedIdTest {
 		ftem.createQuery( "delete from EntityWithComparableId" ).executeUpdate();
 		ftem.createQuery( "delete from EntityWithNonComparableId" ).executeUpdate();
 
-		ftem.purgeAll( EntityWithMultipleId.class );
+		ftem.purgeAll( EntityWithIdClass.class );
 		ftem.purgeAll( EntityWithComparableId.class );
 		ftem.purgeAll( EntityWithNonComparableId.class );
 		ftem.flushToIndexes();
@@ -98,14 +97,14 @@ public class MassIndexingJobWithEmbeddedIdTest {
 	}
 
 	@Test
-	public void canHandleMultipleId() throws Exception {
+	public void canHandleIdClass() throws Exception {
 		Properties props = MassIndexingJob.parameters()
-				.forEntities( EntityWithMultipleId.class )
+				.forEntities( EntityWithIdClass.class )
 				.build();
 		startJobAndWait( MassIndexingJob.NAME, props );
 
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
-		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithMultipleId.class ) ).isEqualTo( expectedDays );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class ) ).isEqualTo( expectedDays );
 	}
 
 	@Test

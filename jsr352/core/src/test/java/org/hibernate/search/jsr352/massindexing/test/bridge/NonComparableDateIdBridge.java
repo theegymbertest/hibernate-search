@@ -12,7 +12,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.TwoWayFieldBridge;
-import org.hibernate.search.jsr352.massindexing.test.embeddable.NonComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
 
 /**
  * @author Mincong Huang

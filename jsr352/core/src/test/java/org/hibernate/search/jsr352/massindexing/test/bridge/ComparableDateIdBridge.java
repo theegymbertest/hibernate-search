@@ -14,7 +14,7 @@ import org.apache.lucene.index.IndexableField;
 
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.TwoWayFieldBridge;
-import org.hibernate.search.jsr352.massindexing.test.embeddable.ComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.id.ComparableDateId;
 
 /**
  * @author Mincong Huang

@@ -14,7 +14,7 @@ import javax.persistence.IdClass;
 
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.jsr352.massindexing.test.embeddable.DatePK;
+import org.hibernate.search.jsr352.massindexing.test.id.DatePK;
 
 /**
  * Entity containing multiple {@link Id} attributes.
@@ -24,7 +24,7 @@ import org.hibernate.search.jsr352.massindexing.test.embeddable.DatePK;
 @Entity
 @Indexed
 @IdClass( DatePK.class )
-public class EntityWithMultipleId implements Serializable {
+public class EntityWithIdClass implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -36,10 +36,10 @@ public class EntityWithMultipleId implements Serializable {
 
 	private int documentId;
 
-	public EntityWithMultipleId() {
+	public EntityWithIdClass() {
 	}
 
-	public EntityWithMultipleId(LocalDate d) {
+	public EntityWithIdClass(LocalDate d) {
 		year = d.getYear();
 		month = d.getMonthValue();
 		day = d.getDayOfMonth();

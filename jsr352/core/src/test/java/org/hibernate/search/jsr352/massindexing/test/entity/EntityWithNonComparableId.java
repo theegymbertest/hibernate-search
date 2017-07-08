@@ -17,7 +17,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.jsr352.massindexing.test.bridge.NonComparableDateIdBridge;
-import org.hibernate.search.jsr352.massindexing.test.embeddable.NonComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
 
 /**
  * @author Mincong Huang

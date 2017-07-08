@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.jsr352.massindexing.test.embeddable;
+package org.hibernate.search.jsr352.massindexing.test.id;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -13,14 +13,14 @@ import java.util.Locale;
 import javax.persistence.Embeddable;
 
 /**
- * Primary key for {@link org.hibernate.search.jsr352.massindexing.test.entity.EntityWithComparableId}.
+ * Primary key for {@link org.hibernate.search.jsr352.massindexing.test.entity.EntityWithNonComparableId}.
  *
  * @author Mincong Huang
  */
 @Embeddable
-public class ComparableDateId implements Serializable, Comparable<ComparableDateId> {
+public class NonComparableDateId implements Serializable {
 
-	private static final long serialVersionUID = -3941766084997859100L;
+	private static final long serialVersionUID = 1L;
 
 	private int year;
 
@@ -28,38 +28,38 @@ public class ComparableDateId implements Serializable, Comparable<ComparableDate
 
 	private int day;
 
-	public ComparableDateId() {
+	public NonComparableDateId() {
 
 	}
 
-	public ComparableDateId(LocalDate d) {
-		year = d.getYear();
-		month = d.getMonthValue();
-		day = d.getDayOfMonth();
-	}
-
-	public void setYear(int year) {
-		this.year = year;
+	public NonComparableDateId(LocalDate d) {
+		this.year = d.getYear();
+		this.month = d.getMonthValue();
+		this.day = d.getDayOfMonth();
 	}
 
 	public int getYear() {
 		return year;
 	}
 
-	public void setMonth(int month) {
-		this.month = month;
+	public void setYear(int year) {
+		this.year = year;
 	}
 
 	public int getMonth() {
 		return month;
 	}
 
-	public void setDay(int day) {
-		this.day = day;
+	public void setMonth(int month) {
+		this.month = month;
 	}
 
 	public int getDay() {
 		return day;
+	}
+
+	public void setDay(int day) {
+		this.day = day;
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class ComparableDateId implements Serializable, Comparable<ComparableDate
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		ComparableDateId that = (ComparableDateId) obj;
+		NonComparableDateId that = (NonComparableDateId) obj;
 		if ( day != that.day ) {
 			return false;
 		}
@@ -99,17 +99,6 @@ public class ComparableDateId implements Serializable, Comparable<ComparableDate
 	@Override
 	public String toString() {
 		return String.format( Locale.ROOT, "%04d-%02d-%02d", year, month, day );
-	}
-
-	@Override
-	public int compareTo(ComparableDateId that) {
-		if ( year != that.year ) {
-			return year - that.year;
-		}
-		if ( month != that.month ) {
-			return month - that.month;
-		}
-		return day - that.day;
 	}
 
 }
