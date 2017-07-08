@@ -28,6 +28,7 @@ import org.hibernate.search.jsr352.massindexing.test.entity.Company;
 import org.hibernate.search.jsr352.massindexing.test.entity.CompanyManager;
 import org.hibernate.search.jsr352.massindexing.test.entity.Person;
 import org.hibernate.search.jsr352.massindexing.test.entity.PersonManager;
+import org.hibernate.search.jsr352.massindexing.test.id.DatePK;
 import org.hibernate.search.jsr352.test.util.JobTestUtil;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
@@ -79,6 +80,7 @@ public class PerformanceIT {
 				.addAsWebInfResource( "jboss-deployment-structure.xml" )
 				.addAsWebInfResource( EmptyAsset.INSTANCE, "beans.xml" )
 				.addPackage( JobTestUtil.class.getPackage() )
+				.addPackage( DatePK.class.getPackage() )
 				.addPackage( Company.class.getPackage() );
 		return war;
 	}
