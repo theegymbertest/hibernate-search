@@ -141,11 +141,14 @@ public class MassIndexingJobWithCompositeIdTest {
 	@Test
 	public void canHandleEmbeddedId_strategyFull() throws Exception {
 		Properties props = MassIndexingJob.parameters()
-			.forEntities( EntityWithNonComparableId.class )
-			.build();
+				.forEntities( EntityWithNonComparableId.class )
+				.rowsPerPartition( 40 ) // Ensure there're more than 1 partitions, so that WHERE clause is applied.
+				.checkpointInterval( 20 )
+				.build();
 
 		startJobAndWait( MassIndexingJob.NAME, props );
 
+		// TODO Inspect the HQL, then compare it with the _strategyCriteria
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
 		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class );
 		assertThat( actualDays ).isEqualTo( expectedDays );
