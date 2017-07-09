@@ -202,7 +202,7 @@ public class EntityReader extends AbstractItemReader {
 	 * Initialize the environment. If checkpoint does not exist, then it should be the first open. If checkpoint exists,
 	 * then it isn't the first open, re-use the input object "checkpoint" as the last ID already read.
 	 *
-	 * @param checkpoint The last checkpoint info persisted in the batch runtime, previously given by checkpointInfo().
+	 * @param checkpointId The last checkpoint info persisted in the batch runtime, previously given by checkpointInfo().
 	 * If this is the first start, then the checkpoint will be null.
 	 * @throws Exception thrown for any errors.
 	 */
@@ -296,6 +296,7 @@ public class EntityReader extends AbstractItemReader {
 
 		// build criteria using checkpoint ID
 		if ( checkpointId != null ) {
+//			PersistenceUtil.IdRestriction.GE.generate( emf )
 			criteria.add( Restrictions.ge( idName, checkpointId ) );
 		}
 

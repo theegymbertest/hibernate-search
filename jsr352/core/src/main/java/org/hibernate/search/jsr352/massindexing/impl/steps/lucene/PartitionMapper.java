@@ -236,6 +236,7 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 		scroll.next();
 
 		while ( scroll.scroll( rowsPerPartition ) ) {
+			// TODO See the type of lowerID
 			lowerID = upperID;
 			upperID = scroll.get( 0 );
 			partitionUnits.add( new PartitionBound( clazz, lowerID, upperID ) );

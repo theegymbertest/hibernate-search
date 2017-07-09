@@ -6,6 +6,9 @@
  */
 package org.hibernate.search.jsr352.massindexing.impl.util;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,9 +24,12 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.search.util.StringHelper;
 
 /**
@@ -32,6 +38,65 @@ import org.hibernate.search.util.StringHelper;
  * @author Mincong Huang
  */
 public final class PersistenceUtil {
+
+	public enum IdRestriction {
+		GE {
+			@Override
+			public <X, T> Criterion generate(SingularAttribute<X, T>[] idAttributes, Object idObj)
+					throws Exception {
+				Conjunction[] or = new Conjunction[idAttributes.length];
+				for ( int i = 0; i < or.length; i++ ) {
+					// Group expressions together in a single conjunction (A and B and C...).
+					SimpleExpression[] and = new SimpleExpression[i + 1];
+					int j = 0;
+					for ( ; j < and.length - 1; j++ ) {
+						// The first N-1 expressions have equal-to symbol (=)
+						String key = idAttributes[j].getName();
+						Object val = getProperty( idObj, key );
+						and[j] = Restrictions.eq( key, val );
+					}
+					// The last expression has greater-than or equal-to symbol (>=)
+					String key = idAttributes[j].getName();
+					Object val = getProperty( idObj, key );
+					and[j] = Restrictions.ge( key, val );
+
+					or[i] = Restrictions.conjunction( and );
+				}
+				// Group the disjunction of multiple expressions (X or Y or Z...).
+				return Restrictions.or( or );
+			}
+		},
+		LT {
+			@Override
+			public <X, T> Criterion generate(SingularAttribute<X, T>[] idAttributes, Object idObj)
+					throws Exception {
+				Conjunction[] or = new Conjunction[idAttributes.length];
+				for ( int i = 0; i < or.length; i++ ) {
+					// Group expressions together in a single conjunction (A and B and C...).
+					SimpleExpression[] and = new SimpleExpression[i + 1];
+					int j = 0;
+					for ( ; j < and.length - 1; j++ ) {
+						// The first N-1 expressions have equal-to symbol (=)
+						String key = idAttributes[j].getName();
+						Object val = getProperty( idObj, key );
+						and[j] = Restrictions.eq( key, val );
+					}
+					// The last expression has greater-than or equal-to symbol (<)
+					String key = idAttributes[j].getName();
+					Object val = getProperty( idObj, key );
+					and[j] = Restrictions.lt( key, val );
+
+					or[i] = Restrictions.conjunction( and );
+				}
+				// Group the disjunction of multiple expressions (X or Y or Z...).
+				return Restrictions.or( or );
+			}
+		};
+//		EQUAL_TO, GREATER_THAN_OR_EQUAL_TO, GREATER_THAN, LESS_THAN_OR_EQUAL_TO ,LESS_THAN
+
+		public abstract <X, T> Criterion generate(SingularAttribute<X, T>[] idAttributes, Object idObj)
+				throws Exception;
+	}
 
 	private PersistenceUtil() {
 		// Private constructor, do not use it.
@@ -86,10 +151,12 @@ public final class PersistenceUtil {
 
 	/**
 	 * TODO
+	 *
 	 * @param entityManagerFactory
 	 * @param statelessSession
 	 * @param entity
 	 * @param <X>
+	 *
 	 * @return
 	 */
 	@Deprecated
@@ -221,6 +288,11 @@ public final class PersistenceUtil {
 			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
 		}
 		return criteria;
+	}
+
+	private static Object getProperty(Object obj, String propertyName)
+			throws IntrospectionException, InvocationTargetException, IllegalAccessException {
+		return new PropertyDescriptor( propertyName, obj.getClass() ).getReadMethod().invoke( obj );
 	}
 
 }

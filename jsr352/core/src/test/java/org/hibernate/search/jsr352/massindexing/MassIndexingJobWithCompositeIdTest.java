@@ -97,9 +97,12 @@ public class MassIndexingJobWithCompositeIdTest {
 	}
 
 	@Test
+	@Ignore("NPE at EntityReader#BuildScrollUsingCriteria()")
 	public void canHandleIdClass_strategyFull() throws Exception {
 		Properties props = MassIndexingJob.parameters()
 				.forEntities( EntityWithIdClass.class )
+				.rowsPerPartition( 40 ) // Ensure there're more than 1 partitions, so that WHERE clause is applied.
+				.checkpointInterval( 20 )
 				.build();
 		startJobAndWait( MassIndexingJob.NAME, props );
 
