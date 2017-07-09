@@ -24,6 +24,7 @@ import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
  */
 @Entity
 @Indexed
+// TODO Rename to EntityWithEmbeddedId
 public class EntityWithNonComparableId {
 
 	@EmbeddedId

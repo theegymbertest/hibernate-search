@@ -21,9 +21,12 @@ import org.hibernate.search.jsr352.massindexing.test.id.ComparableDateId;
 
 /**
  * @author Mincong Huang
+ * @deprecated It's not important whether an entity is comparable.
+ * Use {@link EntityWithNonComparableId} instead.
  */
 @Entity
 @Indexed
+@Deprecated
 public class EntityWithComparableId {
 
 	@EmbeddedId

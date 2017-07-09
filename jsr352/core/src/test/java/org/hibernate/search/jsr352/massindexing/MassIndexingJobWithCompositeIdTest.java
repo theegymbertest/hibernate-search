@@ -121,7 +121,7 @@ public class MassIndexingJobWithCompositeIdTest {
 	}
 
 	@Test
-	@Ignore("The PartitionMapper is not yet ready for @EmbeddedId.")
+	@Ignore("Should be deleted")
 	public void canHandleEmbeddedId_whenComparable() throws Exception {
 		Properties props = MassIndexingJob.parameters()
 				.forEntities( EntityWithComparableId.class )
@@ -139,22 +139,27 @@ public class MassIndexingJobWithCompositeIdTest {
 	}
 
 	@Test
-	@Ignore("Should be deleted")
-	public void cannotHandleEmbeddedId_whenNonComparable() throws Exception {
+	public void canHandleEmbeddedId_strategyFull() throws Exception {
 		Properties props = MassIndexingJob.parameters()
 				.forEntities( EntityWithNonComparableId.class )
-				.restrictedBy( Restrictions.ge(
-						"nonComparableDateId",
-						new NonComparableDateId( LocalDate.of( 2017, 6, 20 ) )
-				) )
 				.build();
 
 		startJobAndWait( MassIndexingJob.NAME, props );
 
-		assertThat( findIndexedResults( emf, EntityWithNonComparableId.class, "value", "20170701" ) ).hasSize( 0 );
-		int err = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), LocalDate.of( 2017, 7, 20 ) );
-		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 6, 20 ), END ) - err;
-		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class ) ).isEqualTo( expectedDays );
+		// TODO Normally, the ID sorting is not applied to singleIdAttribute yet, where embeddable should be within
+		// but it is OK for full strategy
+//		assertThat( findIndexedResults( emf, EntityWithNonComparableId.class, "value", "20170701" ) ).hasSize( 0 );
+//		int err = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), LocalDate.of( 2017, 7, 20 ) );
+//		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 6, 20 ), END ) - err;
+//		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class ) ).isEqualTo( expectedDays );
+		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
+		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class );
+		assertThat( actualDays ).isEqualTo( expectedDays );
+	}
+
+	@Test
+	public void canHandleEmbeddedId_strategyCriteria() throws Exception {
+		// TODO Implement the test logic
 	}
 
 	private void startJobAndWait(String jobName, Properties jobParams) throws InterruptedException {
