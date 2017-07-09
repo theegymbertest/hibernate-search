@@ -10,10 +10,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import javax.persistence.Embeddable;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EmbeddableType;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.Type;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -113,9 +116,60 @@ public final class PersistenceUtil {
 		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
 
 		if ( entityType.hasSingleIdAttribute() ) {
-			// TODO Find embedded id?
-			criteria.setProjection( Projections.alias( Projections.id(), "aliasedId" ) );
-			criteria.addOrder( Order.asc( "aliasedId" ) );
+			// TODO Can @EmbeddedId and @Id be handled together?
+			Type<?> idType = entityType.getIdType();
+			Class<?> idJavaType = idType.getJavaType();
+			String idName = entityType.getId( idJavaType ).getName();
+
+			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
+				// TODO Extract this part into a private method
+				// HQL without ID sorting:
+//				Hibernate:
+//				select
+//					this_.day as y0_,
+//					this_.month as y1_,
+//					this_.year as y2_
+//				from
+//					EntityWithNonComparableId this_
+//				where
+//					(
+//						this_.day>=?
+//						and this_.month>=?
+//						and this_.year>=?
+//					)
+				// HQL with ID sorting:
+				// TODO The WHERE clause need to be changed
+//				Hibernate:
+//				select
+//					this_.day as y0_,
+//					this_.month as y1_,
+//					this_.year as y2_
+//				from
+//					EntityWithNonComparableId this_
+//				where
+//					(
+//						this_.day>=?
+//						and this_.month>=?
+//						and this_.year>=?
+//					)
+//				order by
+//					this_.day asc,
+//					this_.month asc,
+//					this_.year asc
+
+				List<SingularAttribute<?, ?>> attributeList;
+				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
+				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				// idName is necessary: embedded ID's properties cannot be resolved from EntityType itself
+				attributeList.forEach( attr -> criteria.addOrder( Order.asc( idName + "." + attr.getName() ) ) );
+				criteria.setProjection( Projections.id() );
+			}
+			else {
+				// TODO Find @Id
+				criteria.setProjection( Projections.alias( Projections.id(), "aliasedId" ) );
+				criteria.addOrder( Order.asc( "aliasedId" ) );
+			}
 		}
 		else {
 			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
@@ -135,7 +189,7 @@ public final class PersistenceUtil {
 		Criteria criteria = statelessSession.createCriteria( entity );
 
 		if ( entityType.hasSingleIdAttribute() ) {
-			// TODO Find embedded id?
+			// TODO Implement the logic, should be similar to #createProjectionCriteria()
 		}
 		else {
 			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
