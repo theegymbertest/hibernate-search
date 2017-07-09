@@ -378,21 +378,25 @@ public class EntityReader extends AbstractItemReader {
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
 				// TODO Check generic warning
+				// FIXME the embedded id prefix is missing
 				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
 			}
 			else {
 				switch ( idRestriction ) {
-					case LT: return Restrictions.lt( idName, idObj );
-					case GE: return Restrictions.ge( idName, idObj );
+					case LT:
+						return Restrictions.lt( idName, idObj );
+					case GE:
+						return Restrictions.ge( idName, idObj );
+					default:
+						throw new UnsupportedOperationException("bla bla bla");
 				}
-
 			}
 		}
 		else {
 			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
 			attributeList.sort( Comparator.comparing( Attribute::getName ) );
 			// TODO Check generic warning
-			return PersistenceUtil.IdRestriction.LT.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
+			return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
 		}
 	}
 }
