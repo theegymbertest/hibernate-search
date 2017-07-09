@@ -8,9 +8,6 @@ package org.hibernate.search.jsr352.massindexing.impl.steps.lucene;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -19,9 +16,6 @@ import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.SingularAttribute;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -29,7 +23,6 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import org.hibernate.search.jsr352.context.jpa.EntityManagerFactoryRegistry;
