@@ -42,7 +42,7 @@ public final class PersistenceUtil {
 	public enum IdRestriction {
 		GE {
 			@Override
-			public <X, T> Criterion generate(SingularAttribute<X, T>[] idAttributes, Object idObj)
+			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj)
 					throws Exception {
 				Conjunction[] or = new Conjunction[idAttributes.length];
 				for ( int i = 0; i < or.length; i++ ) {
@@ -68,7 +68,7 @@ public final class PersistenceUtil {
 		},
 		LT {
 			@Override
-			public <X, T> Criterion generate(SingularAttribute<X, T>[] idAttributes, Object idObj)
+			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj)
 					throws Exception {
 				Conjunction[] or = new Conjunction[idAttributes.length];
 				for ( int i = 0; i < or.length; i++ ) {
@@ -94,7 +94,7 @@ public final class PersistenceUtil {
 		};
 //		EQUAL_TO, GREATER_THAN_OR_EQUAL_TO, GREATER_THAN, LESS_THAN_OR_EQUAL_TO ,LESS_THAN
 
-		public abstract <X, T> Criterion generate(SingularAttribute<X, T>[] idAttributes, Object idObj)
+		public abstract <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj)
 				throws Exception;
 	}
 

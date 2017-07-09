@@ -8,6 +8,9 @@ package org.hibernate.search.jsr352.massindexing.impl.steps.lucene;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -16,6 +19,11 @@ import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EmbeddableType;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.Type;
 
 import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
@@ -23,6 +31,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import org.hibernate.search.jsr352.context.jpa.EntityManagerFactoryRegistry;
@@ -285,19 +294,19 @@ public class EntityReader extends AbstractItemReader {
 	}
 
 	private ScrollableResults buildScrollUsingCriteria(StatelessSession ss,
-			PartitionBound unit, Object checkpointId, JobContextData jobData) {
+			PartitionBound unit, Object checkpointId, JobContextData jobData) throws Exception {
 		boolean cacheable = SerializationUtil.parseBooleanParameter( CACHEABLE, serializedCacheable );
 		int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
 		Class<?> entity = unit.getEntityType();
-		String idName = sessionFactory.getClassMetadata( entity )
-				.getIdentifierPropertyName();
+//		String idName = sessionFactory.getClassMetadata( entity )
+//				.getIdentifierPropertyName();
 
 		Criteria criteria = PersistenceUtil.createCriteria( emf, ss, entity );
 
 		// build criteria using checkpoint ID
 		if ( checkpointId != null ) {
-//			PersistenceUtil.IdRestriction.GE.generate( emf )
-			criteria.add( Restrictions.ge( idName, checkpointId ) );
+			criteria.add( handlePartition( entity, checkpointId, PersistenceUtil.IdRestriction.GE ) );
+//			criteria.add( Restrictions.ge( idName, checkpointId ) );
 		}
 
 		// build criteria using partition unit
@@ -306,14 +315,18 @@ public class EntityReader extends AbstractItemReader {
 			// no bounds if the partition unit is unique
 		}
 		else if ( unit.isFirstPartition() ) {
-			criteria.add( Restrictions.lt( idName, unit.getUpperBound() ) );
+			criteria.add( handlePartition( entity, unit.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
+//			criteria.add( Restrictions.lt( idName, unit.getUpperBound() ) );
 		}
 		else if ( unit.isLastPartition() ) {
-			criteria.add( Restrictions.ge( idName, unit.getLowerBound() ) );
+			criteria.add( handlePartition( entity, unit.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
+//			criteria.add( Restrictions.ge( idName, unit.getLowerBound() ) );
 		}
 		else {
-			criteria.add( Restrictions.ge( idName, unit.getLowerBound() ) )
-					.add( Restrictions.lt( idName, unit.getUpperBound() ) );
+			criteria.add( handlePartition( entity, unit.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
+			criteria.add( handlePartition( entity, unit.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
+//			criteria.add( Restrictions.ge( idName, unit.getLowerBound() ) )
+//					.add( Restrictions.lt( idName, unit.getUpperBound() ) );
 		}
 
 		// build criteria using job context data
@@ -349,5 +362,37 @@ public class EntityReader extends AbstractItemReader {
 			log.noMoreResults();
 		}
 		return entity;
+	}
+
+	private <X> Criterion handlePartition(Class<X> entity, Object idObj, PersistenceUtil.IdRestriction idRestriction) throws Exception {
+		EntityType<X> entityType = emf.getMetamodel().entity( entity );
+		// Determine the type of Id
+		if ( entityType.hasSingleIdAttribute() ) {
+			Type<?> idType = entityType.getIdType();
+			Class<?> idJavaType = idType.getJavaType();
+			String idName = entityType.getId( idJavaType ).getName();
+
+			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
+				List<SingularAttribute<?, ?>> attributeList;
+				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( idJavaType );
+				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				// TODO Check generic warning
+				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
+			}
+			else {
+				switch ( idRestriction ) {
+					case LT: return Restrictions.lt( idName, idObj );
+					case GE: return Restrictions.ge( idName, idObj );
+				}
+
+			}
+		}
+		else {
+			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
+			attributeList.sort( Comparator.comparing( Attribute::getName ) );
+			// TODO Check generic warning
+			return PersistenceUtil.IdRestriction.LT.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
+		}
 	}
 }
