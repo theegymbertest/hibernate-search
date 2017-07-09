@@ -177,47 +177,11 @@ public final class PersistenceUtil {
 		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
 
 		if ( entityType.hasSingleIdAttribute() ) {
-			// TODO Can @EmbeddedId and @Id be handled together?
 			Type<?> idType = entityType.getIdType();
 			Class<?> idJavaType = idType.getJavaType();
 			String idName = entityType.getId( idJavaType ).getName();
 
 			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
-				// TODO Extract this part into a private method
-				// HQL without ID sorting:
-//				Hibernate:
-//				select
-//					this_.day as y0_,
-//					this_.month as y1_,
-//					this_.year as y2_
-//				from
-//					EntityWithNonComparableId this_
-//				where
-//					(
-//						this_.day>=?
-//						and this_.month>=?
-//						and this_.year>=?
-//					)
-				// HQL with ID sorting:
-				// TODO The WHERE clause need to be changed
-//				Hibernate:
-//				select
-//					this_.day as y0_,
-//					this_.month as y1_,
-//					this_.year as y2_
-//				from
-//					EntityWithNonComparableId this_
-//				where
-//					(
-//						this_.day>=?
-//						and this_.month>=?
-//						and this_.year>=?
-//					)
-//				order by
-//					this_.day asc,
-//					this_.month asc,
-//					this_.year asc
-
 				List<SingularAttribute<?, ?>> attributeList;
 				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
@@ -227,7 +191,6 @@ public final class PersistenceUtil {
 				criteria.setProjection( Projections.id() );
 			}
 			else {
-				// TODO Find @Id
 				criteria.setProjection( Projections.alias( Projections.id(), "aliasedId" ) );
 				criteria.addOrder( Order.asc( "aliasedId" ) );
 			}
@@ -254,26 +217,6 @@ public final class PersistenceUtil {
 			String idName = entityType.getId( idJavaType ).getName();
 
 			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
-				// HQL with ID sorting:
-				// TODO The WHERE clause need to be changed
-//				Hibernate:
-//				select
-//					this_.day as y0_,
-//					this_.month as y1_,
-//					this_.year as y2_
-//				from
-//					EntityWithNonComparableId this_
-//				where
-//					(
-//						this_.day>=?
-//						and this_.month>=?
-//						and this_.year>=?
-//					)
-//				order by
-//					this_.day asc,
-//					this_.month asc,
-//					this_.year asc
-
 				List<SingularAttribute<?, ?>> attributeList;
 				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
@@ -292,6 +235,46 @@ public final class PersistenceUtil {
 			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
 		}
 		return criteria;
+	}
+
+	public static <X> Criterion getCriteriaFromId(
+			EntityManagerFactory emf,
+			Class<X> entity,
+			Object idObj,
+			PersistenceUtil.IdRestriction idRestriction) throws Exception {
+		EntityType<X> entityType = emf.getMetamodel().entity( entity );
+		// Determine the type of Id
+		if ( entityType.hasSingleIdAttribute() ) {
+			Type<?> idType = entityType.getIdType();
+			Class<?> idJavaType = idType.getJavaType();
+			String idName = entityType.getId( idJavaType ).getName();
+
+			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
+				List<SingularAttribute<?, ?>> attributeList;
+				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( idJavaType );
+				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				// TODO Check generic warning
+				// FIXME the embedded id prefix is missing
+				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, idName + "." );
+			}
+			else {
+				switch ( idRestriction ) {
+					case LT:
+						return Restrictions.lt( idName, idObj );
+					case GE:
+						return Restrictions.ge( idName, idObj );
+					default:
+						throw new UnsupportedOperationException( "bla bla bla" );
+				}
+			}
+		}
+		else {
+			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
+			attributeList.sort( Comparator.comparing( Attribute::getName ) );
+			// TODO Check generic warning
+			return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
+		}
 	}
 
 	private static Object getProperty(Object obj, String propertyName)
