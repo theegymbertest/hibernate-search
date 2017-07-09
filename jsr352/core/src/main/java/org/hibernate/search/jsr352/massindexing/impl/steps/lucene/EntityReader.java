@@ -379,7 +379,7 @@ public class EntityReader extends AbstractItemReader {
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
 				// TODO Check generic warning
 				// FIXME the embedded id prefix is missing
-				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
+				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, idName + "." );
 			}
 			else {
 				switch ( idRestriction ) {
@@ -396,7 +396,7 @@ public class EntityReader extends AbstractItemReader {
 			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
 			attributeList.sort( Comparator.comparing( Attribute::getName ) );
 			// TODO Check generic warning
-			return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj);
+			return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null);
 		}
 	}
 }

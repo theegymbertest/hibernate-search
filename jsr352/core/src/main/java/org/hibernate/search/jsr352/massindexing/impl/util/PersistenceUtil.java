@@ -42,9 +42,11 @@ public final class PersistenceUtil {
 	public enum IdRestriction {
 		GE {
 			@Override
-			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj)
+			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 					throws Exception {
 				Conjunction[] or = new Conjunction[idAttributes.length];
+				prefix = prefix != null ? prefix : "";
+
 				for ( int i = 0; i < or.length; i++ ) {
 					// Group expressions together in a single conjunction (A and B and C...).
 					SimpleExpression[] and = new SimpleExpression[i + 1];
@@ -53,12 +55,12 @@ public final class PersistenceUtil {
 						// The first N-1 expressions have equal-to symbol (=)
 						String key = idAttributes[j].getName();
 						Object val = getProperty( idObj, key );
-						and[j] = Restrictions.eq( key, val );
+						and[j] = Restrictions.eq( prefix + key, val );
 					}
 					// The last expression has greater-than or equal-to symbol (>=)
 					String key = idAttributes[j].getName();
 					Object val = getProperty( idObj, key );
-					and[j] = Restrictions.ge( key, val );
+					and[j] = Restrictions.ge( prefix + key, val );
 
 					or[i] = Restrictions.conjunction( and );
 				}
@@ -68,9 +70,11 @@ public final class PersistenceUtil {
 		},
 		LT {
 			@Override
-			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj)
+			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 					throws Exception {
 				Conjunction[] or = new Conjunction[idAttributes.length];
+				prefix = prefix != null ? prefix : "";
+
 				for ( int i = 0; i < or.length; i++ ) {
 					// Group expressions together in a single conjunction (A and B and C...).
 					SimpleExpression[] and = new SimpleExpression[i + 1];
@@ -79,12 +83,12 @@ public final class PersistenceUtil {
 						// The first N-1 expressions have equal-to symbol (=)
 						String key = idAttributes[j].getName();
 						Object val = getProperty( idObj, key );
-						and[j] = Restrictions.eq( key, val );
+						and[j] = Restrictions.eq( prefix + key, val );
 					}
 					// The last expression has greater-than or equal-to symbol (<)
 					String key = idAttributes[j].getName();
 					Object val = getProperty( idObj, key );
-					and[j] = Restrictions.lt( key, val );
+					and[j] = Restrictions.lt( prefix + key, val );
 
 					or[i] = Restrictions.conjunction( and );
 				}
@@ -94,7 +98,7 @@ public final class PersistenceUtil {
 		};
 //		EQUAL_TO, GREATER_THAN_OR_EQUAL_TO, GREATER_THAN, LESS_THAN_OR_EQUAL_TO ,LESS_THAN
 
-		public abstract <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj)
+		public abstract <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 				throws Exception;
 	}
 

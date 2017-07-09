@@ -97,7 +97,6 @@ public class MassIndexingJobWithCompositeIdTest {
 	}
 
 	@Test
-//	@Ignore("NPE at EntityReader#BuildScrollUsingCriteria()")
 	public void canHandleIdClass_strategyFull() throws Exception {
 		Properties props = MassIndexingJob.parameters()
 				.forEntities( EntityWithIdClass.class )
