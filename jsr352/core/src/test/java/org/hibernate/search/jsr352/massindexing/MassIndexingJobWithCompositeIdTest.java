@@ -97,7 +97,7 @@ public class MassIndexingJobWithCompositeIdTest {
 	}
 
 	@Test
-	public void canHandleIdClass() throws Exception {
+	public void canHandleIdClass_strategyFull() throws Exception {
 		Properties props = MassIndexingJob.parameters()
 				.forEntities( EntityWithIdClass.class )
 				.build();
@@ -105,6 +105,19 @@ public class MassIndexingJobWithCompositeIdTest {
 
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class ) ).isEqualTo( expectedDays );
+	}
+
+	@Test
+	public void canHandleIdClass_strategyCriteria() throws Exception {
+		Properties props = MassIndexingJob.parameters()
+				.forEntities( EntityWithIdClass.class )
+				.restrictedBy( Restrictions.gt( "month", 6 ) )
+				.build();
+		startJobAndWait( MassIndexingJob.NAME, props );
+
+		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), END );
+		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class );
+		assertThat( actualDays ).isEqualTo( expectedDays );
 	}
 
 	@Test
