@@ -24,6 +24,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Projections;
 import org.hibernate.search.jsr352.logging.impl.Log;
 import org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters;
 import org.hibernate.search.jsr352.massindexing.impl.JobContextData;
@@ -138,8 +139,10 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 
 				case CRITERIA:
 					entityType = entityTypes.get( 0 );
-					criteria = PersistenceUtil.createProjectionCriteria( emf, ss, entityType, jobData.getCustomQueryCriteria() );
-					scroll = criteria.setFetchSize( fetchSize )
+					criteria = PersistenceUtil.createCriteria( emf, ss, entityType );
+					jobData.getCustomQueryCriteria().forEach( criteria::add );
+					scroll = criteria.setProjection( Projections.id() )
+							.setFetchSize( fetchSize )
 							.setReadOnly( true )
 							.scroll( ScrollMode.FORWARD_ONLY );
 					partitionBounds = buildPartitionUnitsFrom( scroll, entityType );
@@ -147,8 +150,9 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 
 				case FULL_ENTITY:
 					for ( Class<?> clz : entityTypes ) {
-						criteria = PersistenceUtil.createProjectionCriteria( emf, ss, clz );
-						scroll = criteria.setFetchSize( fetchSize )
+						criteria = PersistenceUtil.createCriteria( emf, ss, clz );
+						scroll = criteria.setProjection( Projections.id() )
+								.setFetchSize( fetchSize )
 								.setReadOnly( true )
 								.scroll( ScrollMode.FORWARD_ONLY );
 						partitionBounds.addAll( buildPartitionUnitsFrom( scroll, clz ) );

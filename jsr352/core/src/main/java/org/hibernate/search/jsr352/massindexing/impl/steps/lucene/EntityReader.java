@@ -292,7 +292,7 @@ public class EntityReader extends AbstractItemReader {
 		String idName = sessionFactory.getClassMetadata( entity )
 				.getIdentifierPropertyName();
 
-		Criteria criteria = PersistenceUtil.createNormalCriteria( emf, ss, entity );
+		Criteria criteria = PersistenceUtil.createCriteria( emf, ss, entity );
 
 		// build criteria using checkpoint ID
 		if ( checkpointId != null ) {

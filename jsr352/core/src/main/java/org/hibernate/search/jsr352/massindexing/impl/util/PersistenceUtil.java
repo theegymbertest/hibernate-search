@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.Embeddable;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EmbeddableType;
@@ -86,16 +85,6 @@ public final class PersistenceUtil {
 	}
 
 	/**
-	 * @see #createProjectionCriteria(EntityManagerFactory, StatelessSession, Class, Set)
-	 */
-	public static <X> Criteria createProjectionCriteria(
-			EntityManagerFactory entityManagerFactory,
-			StatelessSession statelessSession,
-			Class<X> entity) {
-		return createProjectionCriteria( entityManagerFactory, statelessSession, entity, null );
-	}
-
-	/**
 	 * TODO
 	 * @param entityManagerFactory
 	 * @param statelessSession
@@ -103,6 +92,7 @@ public final class PersistenceUtil {
 	 * @param <X>
 	 * @return
 	 */
+	@Deprecated
 	public static <X> Criteria createProjectionCriteria(
 			EntityManagerFactory entityManagerFactory,
 			StatelessSession statelessSession,
@@ -180,16 +170,50 @@ public final class PersistenceUtil {
 		return criteria;
 	}
 
-	// TODO Merge with the method above
-	public static <X> Criteria createNormalCriteria(
+	public static <X> Criteria createCriteria(
 			EntityManagerFactory entityManagerFactory,
 			StatelessSession statelessSession,
 			Class<X> entity) {
-		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
 		Criteria criteria = statelessSession.createCriteria( entity );
+		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
 
 		if ( entityType.hasSingleIdAttribute() ) {
-			// TODO Implement the logic, should be similar to #createProjectionCriteria()
+			Type<?> idType = entityType.getIdType();
+			Class<?> idJavaType = idType.getJavaType();
+			String idName = entityType.getId( idJavaType ).getName();
+
+			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
+				// HQL with ID sorting:
+				// TODO The WHERE clause need to be changed
+//				Hibernate:
+//				select
+//					this_.day as y0_,
+//					this_.month as y1_,
+//					this_.year as y2_
+//				from
+//					EntityWithNonComparableId this_
+//				where
+//					(
+//						this_.day>=?
+//						and this_.month>=?
+//						and this_.year>=?
+//					)
+//				order by
+//					this_.day asc,
+//					this_.month asc,
+//					this_.year asc
+
+				List<SingularAttribute<?, ?>> attributeList;
+				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
+				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				// idName is necessary: embedded ID's properties cannot be resolved from EntityType itself
+				attributeList.forEach( attr -> criteria.addOrder( Order.asc( idName + "." + attr.getName() ) ) );
+			}
+			else {
+				SingularAttribute<?, ?> idAttribute = entityType.getId( idJavaType );
+				criteria.addOrder( Order.asc( idAttribute.getName() ) );
+			}
 		}
 		else {
 			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
