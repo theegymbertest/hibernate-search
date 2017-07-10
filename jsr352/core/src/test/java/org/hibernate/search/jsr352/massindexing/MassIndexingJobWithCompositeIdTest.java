@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
+import javax.persistence.EmbeddedId;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
@@ -123,14 +124,21 @@ public class MassIndexingJobWithCompositeIdTest {
 
 		JobTestUtil.startJobAndWait( MassIndexingJob.NAME, props );
 
-		// TODO Inspect the HQL, then compare it with the _strategyCriteria
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
 		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithEmbeddedId.class );
 		assertThat( actualDays ).isEqualTo( expectedDays );
 	}
 
+	/**
+	 * Tests that entity having {@link EmbeddedId} can NOT be handled properly
+	 * when adding a restriction on {@link EmbeddedId} field. This is the limit
+	 * of our customized solution: we use our own comparator—a lexicographical
+	 * order of attribute's name—for ID attributes sorting. We assume that this
+	 * order is always true during the entire indexing process, but it can't be
+	 * when user adds his own restriction on the ID field.
+	 */
 	@Test
-	public void canHandleEmbeddedId_strategyCriteria() throws Exception {
+	public void cannotHandleEmbeddedId_restrictedById() throws Exception {
 		Properties props = MassIndexingJob.parameters()
 				.forEntities( EntityWithEmbeddedId.class )
 				.restrictedBy( Restrictions.ge(
@@ -142,11 +150,10 @@ public class MassIndexingJobWithCompositeIdTest {
 		JobTestUtil.startJobAndWait( MassIndexingJob.NAME, props );
 
 		assertThat( findIndexedResults( emf, EntityWithEmbeddedId.class, "value", "20170701" ) ).hasSize( 0 );
-		// FIXME This err delta should not appear.
-		int err = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), LocalDate.of( 2017, 7, 20 ) );
+		int missingDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), LocalDate.of( 2017, 7, 20 ) );
 		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 6, 20 ), END );
 		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithEmbeddedId.class );
-		assertThat( actualDays ).isEqualTo( expectedDays - err );
+		assertThat( actualDays ).isEqualTo( expectedDays - missingDays );
 	}
 
 }
