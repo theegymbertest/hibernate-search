@@ -197,18 +197,12 @@ public final class PersistenceUtil {
 			throws Exception {
 		Class<?> entity = partitionBound.getEntityType();
 		List<Criterion> result = new ArrayList<>(  );
-		if ( partitionBound.isUniquePartition() ) {
-			// no bounds if the partition unit is unique
-		}
-		else if ( partitionBound.isFirstPartition() ) {
+
+		if ( partitionBound.hasUpperBound() ) {
 			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
 		}
-		else if ( partitionBound.isLastPartition() ) {
+		if ( partitionBound.hasLowerBound() ) {
 			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
-		}
-		else {
-			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
-			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
 		}
 		return result;
 	}

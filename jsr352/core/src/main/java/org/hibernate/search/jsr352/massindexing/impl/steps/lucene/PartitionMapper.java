@@ -37,7 +37,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.FETCH_SIZE;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.MAX_THREADS;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.ROWS_PER_PARTITION;
-//@formatter:off
+
 /**
  * This partition mapper provides a dynamic partition plan for chunk processing.
  * <p>
