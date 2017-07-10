@@ -151,6 +151,7 @@ public class MassIndexingJobWithCompositeIdTest {
 		assertThat( actualDays ).isEqualTo( expectedDays - err );
 	}
 
+	// TODO Should be moved to util
 	private void startJobAndWait(String jobName, Properties jobParams) throws InterruptedException {
 		long execId = jobOperator.start( jobName, jobParams );
 		JobExecution jobExec = jobOperator.getJobExecution( execId );
