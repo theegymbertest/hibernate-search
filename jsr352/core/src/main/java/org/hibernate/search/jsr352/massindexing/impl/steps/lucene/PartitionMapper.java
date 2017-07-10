@@ -119,6 +119,7 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 		Session session = null;
 		StatelessSession ss = null;
 		ScrollableResults scroll = null;
+		Criteria criteria;
 
 		try {
 			emf = jobData.getEntityManagerFactory();
@@ -129,7 +130,6 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 			List<Class<?>> entityTypes = jobData.getEntityTypes();
 			List<PartitionBound> partitionBounds = new ArrayList<>();
 			Class<?> entityType;
-			Criteria criteria;
 
 			switch ( typeOfSelection( customQueryHql, jobData.getCustomQueryCriteria() ) ) {
 				case HQL:
@@ -139,7 +139,8 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 
 				case CRITERIA:
 					entityType = entityTypes.get( 0 );
-					criteria = PersistenceUtil.createCriteria( emf, ss, entityType );
+					criteria = ss.createCriteria( entityType );
+					PersistenceUtil.createIdOrders( emf, entityType ).forEach( criteria::addOrder );
 					jobData.getCustomQueryCriteria().forEach( criteria::add );
 					scroll = criteria.setProjection( Projections.id() )
 							.setFetchSize( fetchSize )
@@ -150,7 +151,8 @@ public class PartitionMapper implements javax.batch.api.partition.PartitionMappe
 
 				case FULL_ENTITY:
 					for ( Class<?> clz : entityTypes ) {
-						criteria = PersistenceUtil.createCriteria( emf, ss, clz );
+						criteria = ss.createCriteria( clz );
+						PersistenceUtil.createIdOrders( emf, clz ).forEach( criteria::addOrder );
 						scroll = criteria.setProjection( Projections.id() )
 								.setFetchSize( fetchSize )
 								.setReadOnly( true )

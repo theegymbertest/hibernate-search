@@ -21,7 +21,6 @@ import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.hibernate.search.jsr352.context.jpa.EntityManagerFactoryRegistry;
@@ -126,7 +125,6 @@ public class EntityReader extends AbstractItemReader {
 	private Session session;
 	private StatelessSession ss;
 	private ScrollableResults scroll;
-	private SessionFactory sessionFactory;
 
 	public EntityReader() {
 	}
@@ -222,7 +220,6 @@ public class EntityReader extends AbstractItemReader {
 		emf = jobData.getEntityManagerFactory();
 		ss = PersistenceUtil.openStatelessSession( emf, tenantId );
 		session = PersistenceUtil.openSession( emf, tenantId );
-		sessionFactory = emf.unwrap( SessionFactory.class );
 
 		PartitionContextData partitionData = null;
 		// HQL approach
@@ -291,7 +288,10 @@ public class EntityReader extends AbstractItemReader {
 		boolean cacheable = SerializationUtil.parseBooleanParameter( CACHEABLE, serializedCacheable );
 		int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
 		Class<?> entity = unit.getEntityType();
-		Criteria criteria = PersistenceUtil.createCriteria( emf, ss, entity );
+		Criteria criteria = ss.createCriteria( entity );
+
+		// build orders for this entity
+		PersistenceUtil.createIdOrders( emf, entity ).forEach( criteria::addOrder );
 
 		// build criteria using partition unit
 		PersistenceUtil.createCriterionList( emf, unit ).forEach( criteria::add );

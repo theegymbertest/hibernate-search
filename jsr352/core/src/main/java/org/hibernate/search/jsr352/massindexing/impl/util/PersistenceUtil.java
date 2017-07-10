@@ -16,6 +16,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EmbeddableType;
 import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.Type;
 import javax.persistence.EmbeddedId;
@@ -132,7 +133,7 @@ public final class PersistenceUtil {
 
 			@Override
 			public <X> Criterion processId(SingularAttribute<X, ?> idAttribute, Object obj) {
-				return Restrictions.le( idAttribute.getName(), obj );
+				return Restrictions.lt( idAttribute.getName(), obj );
 			}
 		};
 
@@ -222,29 +223,27 @@ public final class PersistenceUtil {
 	}
 
 	/**
-	 * TODO
+	 * Creates a list of {@link Order} based on the ID attribute(s) inside the
+	 * given entity type.
 	 *
-	 * @param entityManagerFactory
-	 * @param statelessSession
-	 * @param entity
-	 * @param <X>
+	 * @param entityManagerFactory Entity manager factory.
+	 * @param entity The entity type.
+	 * @param <X> The type containing the represented attribute.
 	 *
-	 * @return
+	 * @return A list of {@link Order}, sorted by lexicographical order on the
+	 * ID attributes' name.
 	 */
-	public static <X> Criteria createCriteria(
-			EntityManagerFactory entityManagerFactory,
-			StatelessSession statelessSession,
-			Class<X> entity) {
-		Criteria criteria = statelessSession.createCriteria( entity );
+	public static <X> List<Order> createIdOrders(EntityManagerFactory entityManagerFactory, Class<X> entity) {
 		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
 		List<SingularAttribute<?, ?>> attributeList;
+		List<Order> orders = new ArrayList<>();
 
 		switch ( getIdTypeOf( entityType ) ) {
 			case SINGLE_ID:
 				Class<?> idJavaType = entityType.getIdType().getJavaType();
 				SingularAttribute<?, ?> idAttribute = entityType.getId( idJavaType );
-				criteria.addOrder( Order.asc( idAttribute.getName() ) );
-				return criteria;
+				orders.add( Order.asc( idAttribute.getName() ) );
+				return orders;
 
 			case EMBEDDED_ID:
 				Class<?> embeddable = entityType.getIdType().getJavaType();
@@ -255,47 +254,46 @@ public final class PersistenceUtil {
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
 				attributeList.forEach( attr -> {
 					String propertyName = embeddableName + "." + attr.getName();
-					criteria.addOrder( Order.asc( propertyName ) );
+					orders.add( Order.asc( propertyName ) );
 				} );
-				return criteria;
+				return orders;
 
 			case ID_CLASS:
 				attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
-				return criteria;
+				attributeList.forEach( attr -> orders.add( Order.asc( attr.getName() ) ) );
+				return orders;
 
-			case UNKNOWN:
-				break;
+			default:
+				throw new IllegalStateException( "Cannot determine IdType: this should never happen." );
 		}
-		return criteria;
 	}
 
 	public static List<Criterion> createCriterionList(
 			EntityManagerFactory entityManagerFactory,
-			PartitionBound partitionBound)
-			throws Exception {
+			PartitionBound partitionBound) throws Exception {
 		Class<?> entity = partitionBound.getEntityType();
+		Metamodel metamodel = entityManagerFactory.getMetamodel();
 		List<Criterion> result = new ArrayList<>();
 
 		if ( partitionBound.hasUpperBound() ) {
 			Object upperBound = partitionBound.getUpperBound();
-			result.add( getCriteriaFromId( entityManagerFactory, entity, upperBound, IdProcessor.LT ) );
+			result.add( processCriterion( metamodel, entity, upperBound, IdProcessor.LT ) );
 		}
 		if ( partitionBound.hasLowerBound() ) {
 			Object lowerBound = partitionBound.getLowerBound();
-			result.add( getCriteriaFromId( entityManagerFactory, entity, lowerBound, IdProcessor.GE ) );
+			result.add( processCriterion( metamodel, entity, lowerBound, IdProcessor.GE ) );
 		}
 		return result;
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <X> Criterion getCriteriaFromId(
-			EntityManagerFactory emf,
+	private static <X> Criterion processCriterion(
+			Metamodel metamodel,
 			Class<X> entity,
 			Object idObj,
 			IdProcessor processor) throws Exception {
-		EntityType<X> entityType = emf.getMetamodel().entity( entity );
+		EntityType<X> entityType = metamodel.entity( entity );
 		List<SingularAttribute<?, ?>> attributeList;
 
 		switch ( getIdTypeOf( entityType ) ) {
@@ -305,7 +303,7 @@ public final class PersistenceUtil {
 
 			case EMBEDDED_ID:
 				Class<?> embeddable = entityType.getIdType().getJavaType();
-				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( embeddable );
+				EmbeddableType<?> embeddableType = metamodel.embeddable( embeddable );
 				String embeddableName = entityType.getId( embeddable ).getName();
 				String prefix = embeddableName + ".";
 
