@@ -194,28 +194,36 @@ public final class PersistenceUtil {
 			Class<X> entity) {
 		Criteria criteria = statelessSession.createCriteria( entity );
 		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
+		List<SingularAttribute<?, ?>> attributeList;
 
-		if ( entityType.hasSingleIdAttribute() ) {
-			Type<?> idType = entityType.getIdType();
-			Class<?> idJavaType = idType.getJavaType();
-			String idName = entityType.getId( idJavaType ).getName();
-
-			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
-				List<SingularAttribute<?, ?>> attributeList;
-				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
-				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
-				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				attributeList.forEach( attr -> criteria.addOrder( Order.asc( idName + "." + attr.getName() ) ) );
-			}
-			else {
+		switch ( getIdTypeOf( entityType ) ) {
+			case SINGLE_ID:
+				Class<?> idJavaType = entityType.getIdType().getJavaType();
 				SingularAttribute<?, ?> idAttribute = entityType.getId( idJavaType );
 				criteria.addOrder( Order.asc( idAttribute.getName() ) );
-			}
-		}
-		else {
-			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
-			attributeList.sort( Comparator.comparing( Attribute::getName ) );
-			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
+				return criteria;
+
+			case EMBEDDED_ID:
+				Class<?> embeddable = entityType.getIdType().getJavaType();
+				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( embeddable );
+				String embeddableName = entityType.getId( embeddable ).getName();
+
+				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				attributeList.forEach( attr -> {
+					String propertyName = embeddableName + "." + attr.getName();
+					criteria.addOrder( Order.asc( propertyName ) );
+				} );
+				return criteria;
+
+			case ID_CLASS:
+				attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
+				return criteria;
+
+			case UNKNOWN:
+				break;
 		}
 		return criteria;
 	}
@@ -247,7 +255,6 @@ public final class PersistenceUtil {
 	}
 
 	@SuppressWarnings("unchecked")
-	// TODO Use PartitionBound as 3rd input argument instead of {Object + IdRestriction}
 	private static <X> Criterion getCriteriaFromId(
 			EntityManagerFactory emf,
 			Class<X> entity,
@@ -267,26 +274,27 @@ public final class PersistenceUtil {
 					case GE:
 						return Restrictions.ge( idName, idObj );
 					default:
-						throw new UnsupportedOperationException( "bla bla bla" );
+						throw new IllegalStateException( "Cannot determine IdRestriction: this should never happen." );
 				}
 
 			case EMBEDDED_ID:
 				Class<?> embeddable = entityType.getIdType().getJavaType();
 				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( embeddable );
 				String embeddableName = entityType.getId( embeddable ).getName();
+				String prefix = embeddableName + ".";
+
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, embeddableName + "." );
+				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, prefix );
 
 			case ID_CLASS:
 				attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
 				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
 
-			case UNKNOWN:
-				throw new UnsupportedOperationException( "bla bla bla" );
+			default:
+				throw new IllegalStateException( "Cannot determine IdType: this should never happen." );
 		}
-		throw new UnsupportedOperationException( "bla bla bla" );
 	}
 
 	private static Object getProperty(Object obj, String propertyName)
