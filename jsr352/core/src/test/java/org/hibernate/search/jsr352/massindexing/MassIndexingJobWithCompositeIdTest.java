@@ -20,8 +20,8 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithIdClass;
-import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithNonComparableId;
-import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithEmbeddedId;
+import org.hibernate.search.jsr352.massindexing.test.id.EmbeddableDateId;
 import org.hibernate.search.jsr352.test.util.JobTestUtil;
 import org.hibernate.search.testsupport.TestForIssue;
 
@@ -66,23 +66,23 @@ public class MassIndexingJobWithCompositeIdTest {
 		ftem.getTransaction().begin();
 		for ( LocalDate d = START; d.isBefore( END ); d = d.plusDays( 1 ) ) {
 			ftem.persist( new EntityWithIdClass( d ) );
-			ftem.persist( new EntityWithNonComparableId( d ) );
+			ftem.persist( new EntityWithEmbeddedId( d ) );
 		}
 		ftem.getTransaction().commit();
 
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class ) ).isEqualTo( 0 );
-		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class ) ).isEqualTo( 0 );
+		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithEmbeddedId.class ) ).isEqualTo( 0 );
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		ftem.getTransaction().begin();
 
-		ftem.createQuery( "delete from EntityWithIdClass" ).executeUpdate();
-		ftem.createQuery( "delete from EntityWithNonComparableId" ).executeUpdate();
+		ftem.createQuery( "delete from " + EntityWithIdClass.class.getSimpleName() ).executeUpdate();
+		ftem.createQuery( "delete from " + EntityWithEmbeddedId.class.getSimpleName() ).executeUpdate();
 
 		ftem.purgeAll( EntityWithIdClass.class );
-		ftem.purgeAll( EntityWithNonComparableId.class );
+		ftem.purgeAll( EntityWithEmbeddedId.class );
 		ftem.flushToIndexes();
 
 		ftem.getTransaction().commit();
@@ -118,7 +118,7 @@ public class MassIndexingJobWithCompositeIdTest {
 	@Test
 	public void canHandleEmbeddedId_strategyFull() throws Exception {
 		Properties props = MassIndexingJob.parameters()
-				.forEntities( EntityWithNonComparableId.class )
+				.forEntities( EntityWithEmbeddedId.class )
 				.rowsPerPartition( 40 ) // Ensure there're more than 1 partitions, so that WHERE clause is applied.
 				.checkpointInterval( 20 )
 				.build();
@@ -127,27 +127,27 @@ public class MassIndexingJobWithCompositeIdTest {
 
 		// TODO Inspect the HQL, then compare it with the _strategyCriteria
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
-		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class );
+		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithEmbeddedId.class );
 		assertThat( actualDays ).isEqualTo( expectedDays );
 	}
 
 	@Test
 	public void canHandleEmbeddedId_strategyCriteria() throws Exception {
 		Properties props = MassIndexingJob.parameters()
-				.forEntities( EntityWithNonComparableId.class )
+				.forEntities( EntityWithEmbeddedId.class )
 				.restrictedBy( Restrictions.ge(
-						"nonComparableDateId",
-						new NonComparableDateId( LocalDate.of( 2017, 6, 20 ) )
+						"embeddableDateId",
+						new EmbeddableDateId( LocalDate.of( 2017, 6, 20 ) )
 				) )
 				.build();
 
 		startJobAndWait( MassIndexingJob.NAME, props );
 
-		assertThat( findIndexedResults( emf, EntityWithNonComparableId.class, "value", "20170701" ) ).hasSize( 0 );
+		assertThat( findIndexedResults( emf, EntityWithEmbeddedId.class, "value", "20170701" ) ).hasSize( 0 );
 		// FIXME This err delta should not appear.
 		int err = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), LocalDate.of( 2017, 7, 20 ) );
 		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 6, 20 ), END );
-		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class );
+		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithEmbeddedId.class );
 		assertThat( actualDays ).isEqualTo( expectedDays - err );
 	}
 

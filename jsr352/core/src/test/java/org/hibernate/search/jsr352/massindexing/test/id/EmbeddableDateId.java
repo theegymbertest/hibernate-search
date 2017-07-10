@@ -12,15 +12,17 @@ import java.util.Locale;
 
 import javax.persistence.Embeddable;
 
+import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithEmbeddedId;
+
 /**
- * Primary key for {@link org.hibernate.search.jsr352.massindexing.test.entity.EntityWithComparableId}.
+ * Primary key for {@link EntityWithEmbeddedId}.
  *
  * @author Mincong Huang
  */
 @Embeddable
-public class ComparableDateId implements Serializable, Comparable<ComparableDateId> {
+public class EmbeddableDateId implements Serializable {
 
-	private static final long serialVersionUID = -3941766084997859100L;
+	private static final long serialVersionUID = 1L;
 
 	private int year;
 
@@ -28,38 +30,38 @@ public class ComparableDateId implements Serializable, Comparable<ComparableDate
 
 	private int day;
 
-	public ComparableDateId() {
+	public EmbeddableDateId() {
 
 	}
 
-	public ComparableDateId(LocalDate d) {
-		year = d.getYear();
-		month = d.getMonthValue();
-		day = d.getDayOfMonth();
-	}
-
-	public void setYear(int year) {
-		this.year = year;
+	public EmbeddableDateId(LocalDate d) {
+		this.year = d.getYear();
+		this.month = d.getMonthValue();
+		this.day = d.getDayOfMonth();
 	}
 
 	public int getYear() {
 		return year;
 	}
 
-	public void setMonth(int month) {
-		this.month = month;
+	public void setYear(int year) {
+		this.year = year;
 	}
 
 	public int getMonth() {
 		return month;
 	}
 
-	public void setDay(int day) {
-		this.day = day;
+	public void setMonth(int month) {
+		this.month = month;
 	}
 
 	public int getDay() {
 		return day;
+	}
+
+	public void setDay(int day) {
+		this.day = day;
 	}
 
 	@Override
@@ -83,7 +85,7 @@ public class ComparableDateId implements Serializable, Comparable<ComparableDate
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		ComparableDateId that = (ComparableDateId) obj;
+		EmbeddableDateId that = (EmbeddableDateId) obj;
 		if ( day != that.day ) {
 			return false;
 		}
@@ -99,17 +101,6 @@ public class ComparableDateId implements Serializable, Comparable<ComparableDate
 	@Override
 	public String toString() {
 		return String.format( Locale.ROOT, "%04d-%02d-%02d", year, month, day );
-	}
-
-	@Override
-	public int compareTo(ComparableDateId that) {
-		if ( year != that.year ) {
-			return year - that.year;
-		}
-		if ( month != that.month ) {
-			return month - that.month;
-		}
-		return day - that.day;
 	}
 
 }

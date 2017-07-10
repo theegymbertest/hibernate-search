@@ -16,39 +16,38 @@ import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.jsr352.massindexing.test.bridge.NonComparableDateIdBridge;
-import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.bridge.DateIdBridge;
+import org.hibernate.search.jsr352.massindexing.test.id.EmbeddableDateId;
 
 /**
  * @author Mincong Huang
  */
 @Entity
 @Indexed
-// TODO Rename to EntityWithEmbeddedId
-public class EntityWithNonComparableId {
+public class EntityWithEmbeddedId {
 
 	@EmbeddedId
 	@DocumentId
-	@FieldBridge(impl = NonComparableDateIdBridge.class)
-	private NonComparableDateId nonComparableDateId;
+	@FieldBridge(impl = DateIdBridge.class)
+	private EmbeddableDateId embeddableDateId;
 
 	@Field
 	private String value;
 
-	public EntityWithNonComparableId() {
+	public EntityWithEmbeddedId() {
 	}
 
-	public EntityWithNonComparableId(LocalDate d) {
-		this.nonComparableDateId = new NonComparableDateId( d );
+	public EntityWithEmbeddedId(LocalDate d) {
+		this.embeddableDateId = new EmbeddableDateId( d );
 		this.value = DateTimeFormatter.ofPattern( "yyyyMMdd", Locale.ROOT ).format( d );
 	}
 
-	public NonComparableDateId getNonComparableDateId() {
-		return nonComparableDateId;
+	public EmbeddableDateId getEmbeddableDateId() {
+		return embeddableDateId;
 	}
 
-	public void setNonComparableDateId(NonComparableDateId nonComparableDateId) {
-		this.nonComparableDateId = nonComparableDateId;
+	public void setEmbeddableDateId(EmbeddableDateId embeddableDateId) {
+		this.embeddableDateId = embeddableDateId;
 	}
 
 	public String getValue() {
@@ -61,7 +60,7 @@ public class EntityWithNonComparableId {
 
 	@Override
 	public String toString() {
-		return "MyDate [nonComparableDateId=" + nonComparableDateId + ", value=" + value + "]";
+		return "MyDate [embeddableDateId=" + embeddableDateId + ", value=" + value + "]";
 	}
 
 }

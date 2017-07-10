@@ -12,16 +12,16 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.TwoWayFieldBridge;
-import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
+import org.hibernate.search.jsr352.massindexing.test.id.EmbeddableDateId;
 
 /**
  * @author Mincong Huang
  */
-public class NonComparableDateIdBridge implements TwoWayFieldBridge {
+public class DateIdBridge implements TwoWayFieldBridge {
 
 	@Override
 	public void set(String name, Object myDateIdObj, Document document, LuceneOptions luceneOptions) {
-		NonComparableDateId myDateId = (NonComparableDateId) myDateIdObj;
+		EmbeddableDateId myDateId = (EmbeddableDateId) myDateIdObj;
 
 		// cast int to string
 		String year = String.format( Locale.ROOT, "%04d", myDateId.getYear() );
@@ -39,7 +39,7 @@ public class NonComparableDateIdBridge implements TwoWayFieldBridge {
 
 	@Override
 	public Object get(String name, Document document) {
-		NonComparableDateId myDateId = new NonComparableDateId();
+		EmbeddableDateId myDateId = new EmbeddableDateId();
 		IndexableField idxField;
 
 		idxField = document.getField( name + ".year" );
