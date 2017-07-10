@@ -12,7 +12,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EmbeddableType;
@@ -27,7 +26,6 @@ import org.hibernate.StatelessSession;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.search.util.StringHelper;
@@ -163,47 +161,6 @@ public final class PersistenceUtil {
 	 *
 	 * @return
 	 */
-	@Deprecated
-	public static <X> Criteria createProjectionCriteria(
-			EntityManagerFactory entityManagerFactory,
-			StatelessSession statelessSession,
-			Class<X> entity,
-			Set<Criterion> criterionSet) {
-		Criteria criteria = statelessSession.createCriteria( entity );
-		if ( criterionSet != null ) {
-			criterionSet.forEach( criteria::add );
-		}
-
-		EntityType<X> entityType = entityManagerFactory.getMetamodel().entity( entity );
-
-		if ( entityType.hasSingleIdAttribute() ) {
-			Type<?> idType = entityType.getIdType();
-			Class<?> idJavaType = idType.getJavaType();
-			String idName = entityType.getId( idJavaType ).getName();
-
-			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
-				List<SingularAttribute<?, ?>> attributeList;
-				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
-				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
-				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				// idName is necessary: embedded ID's properties cannot be resolved from EntityType itself
-				attributeList.forEach( attr -> criteria.addOrder( Order.asc( idName + "." + attr.getName() ) ) );
-				criteria.setProjection( Projections.id() );
-			}
-			else {
-				criteria.setProjection( Projections.alias( Projections.id(), "aliasedId" ) );
-				criteria.addOrder( Order.asc( "aliasedId" ) );
-			}
-		}
-		else {
-			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
-			attributeList.sort( Comparator.comparing( Attribute::getName ) );
-			attributeList.forEach( attr -> criteria.addOrder( Order.asc( attr.getName() ) ) );
-			criteria.setProjection( Projections.id() );
-		}
-		return criteria;
-	}
-
 	public static <X> Criteria createCriteria(
 			EntityManagerFactory entityManagerFactory,
 			StatelessSession statelessSession,
@@ -237,6 +194,7 @@ public final class PersistenceUtil {
 		return criteria;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <X> Criterion getCriteriaFromId(
 			EntityManagerFactory emf,
 			Class<X> entity,
