@@ -11,8 +11,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
@@ -96,7 +94,7 @@ public class MassIndexingJobWithCompositeIdTest {
 				.rowsPerPartition( 40 ) // Ensure there're more than 1 partitions, so that WHERE clause is applied.
 				.checkpointInterval( 20 )
 				.build();
-		startJobAndWait( MassIndexingJob.NAME, props );
+		JobTestUtil.startJobAndWait( MassIndexingJob.NAME, props );
 
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class ) ).isEqualTo( expectedDays );
@@ -108,7 +106,7 @@ public class MassIndexingJobWithCompositeIdTest {
 				.forEntities( EntityWithIdClass.class )
 				.restrictedBy( Restrictions.gt( "month", 6 ) )
 				.build();
-		startJobAndWait( MassIndexingJob.NAME, props );
+		JobTestUtil.startJobAndWait( MassIndexingJob.NAME, props );
 
 		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), END );
 		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class );
@@ -123,7 +121,7 @@ public class MassIndexingJobWithCompositeIdTest {
 				.checkpointInterval( 20 )
 				.build();
 
-		startJobAndWait( MassIndexingJob.NAME, props );
+		JobTestUtil.startJobAndWait( MassIndexingJob.NAME, props );
 
 		// TODO Inspect the HQL, then compare it with the _strategyCriteria
 		int expectedDays = (int) ChronoUnit.DAYS.between( START, END );
@@ -141,7 +139,7 @@ public class MassIndexingJobWithCompositeIdTest {
 				) )
 				.build();
 
-		startJobAndWait( MassIndexingJob.NAME, props );
+		JobTestUtil.startJobAndWait( MassIndexingJob.NAME, props );
 
 		assertThat( findIndexedResults( emf, EntityWithEmbeddedId.class, "value", "20170701" ) ).hasSize( 0 );
 		// FIXME This err delta should not appear.
@@ -149,14 +147,6 @@ public class MassIndexingJobWithCompositeIdTest {
 		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 6, 20 ), END );
 		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithEmbeddedId.class );
 		assertThat( actualDays ).isEqualTo( expectedDays - err );
-	}
-
-	// TODO Should be moved to util
-	private void startJobAndWait(String jobName, Properties jobParams) throws InterruptedException {
-		long execId = jobOperator.start( jobName, jobParams );
-		JobExecution jobExec = jobOperator.getJobExecution( execId );
-		jobExec = JobTestUtil.waitForTermination( jobOperator, jobExec, JOB_TIMEOUT_MS );
-		assertThat( jobExec.getBatchStatus() ).isEqualTo( BatchStatus.COMPLETED );
 	}
 
 }
