@@ -65,10 +65,13 @@ public final class PersistenceUtil {
 		UNKNOWN
 	}
 
-	public enum IdRestriction {
+	/**
+	 * Internal ID processor for processing customized criterion.
+	 */
+	private enum IdProcessor {
 		GE {
 			@Override
-			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
+			public <X> Criterion processIds(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 					throws Exception {
 				Conjunction[] or = new Conjunction[idAttributes.length];
 				prefix = prefix != null ? prefix : "";
@@ -93,10 +96,15 @@ public final class PersistenceUtil {
 				// Group the disjunction of multiple expressions (X or Y or Z...).
 				return Restrictions.or( or );
 			}
+
+			@Override
+			public <X> Criterion processId(SingularAttribute<X, ?> idAttribute, Object obj) {
+				return Restrictions.ge( idAttribute.getName(), obj );
+			}
 		},
 		LT {
 			@Override
-			public <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
+			public <X> Criterion processIds(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 					throws Exception {
 				Conjunction[] or = new Conjunction[idAttributes.length];
 				prefix = prefix != null ? prefix : "";
@@ -121,10 +129,45 @@ public final class PersistenceUtil {
 				// Group the disjunction of multiple expressions (X or Y or Z...).
 				return Restrictions.or( or );
 			}
+
+			@Override
+			public <X> Criterion processId(SingularAttribute<X, ?> idAttribute, Object obj) {
+				return Restrictions.le( idAttribute.getName(), obj );
+			}
 		};
 
-		public abstract <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
+		/**
+		 * Processes multiple ID attributes of the given ID object. This method
+		 * should be used when target entity has multiple ID attributes, e.g.
+		 * an entity annotated {@link IdClass}, or an entity having
+		 * {@link EmbeddedId}.
+		 *
+		 * @param idAttributes An ID attributes array, <b>sorted</b> by the
+		 * name of attribute.
+		 * @param idObj The ID object to process, in which all the ID
+		 * attributes should have a public getter method.
+		 * @param prefix The ID property prefix. Only used for entity having
+		 * {@link EmbeddedId}. In other case, set it to {@code null}.
+		 * @param <X> The type containing the represented attribute.
+		 *
+		 * @return The customized criterion.
+		 *
+		 * @throws Exception When any exception occurs.
+		 */
+		public abstract <X> Criterion processIds(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 				throws Exception;
+
+		/**
+		 * Processes a single ID attribute of the given ID object. This method
+		 * should be used when target entity has a single ID attribute.
+		 *
+		 * @param idAttribute The unique ID attribute of this entity.
+		 * @param idObj The ID object to process.
+		 * @param <X> The type containing the represented attribute.
+		 *
+		 * @return The standard criterion.
+		 */
+		public abstract <X> Criterion processId(SingularAttribute<X, ?> idAttribute, Object idObj);
 	}
 
 	private PersistenceUtil() {
@@ -236,20 +279,12 @@ public final class PersistenceUtil {
 		List<Criterion> result = new ArrayList<>();
 
 		if ( partitionBound.hasUpperBound() ) {
-			result.add( getCriteriaFromId(
-					entityManagerFactory,
-					entity,
-					partitionBound.getUpperBound(),
-					IdRestriction.LT
-			) );
+			Object upperBound = partitionBound.getUpperBound();
+			result.add( getCriteriaFromId( entityManagerFactory, entity, upperBound, IdProcessor.LT ) );
 		}
 		if ( partitionBound.hasLowerBound() ) {
-			result.add( getCriteriaFromId(
-					entityManagerFactory,
-					entity,
-					partitionBound.getLowerBound(),
-					IdRestriction.GE
-			) );
+			Object lowerBound = partitionBound.getLowerBound();
+			result.add( getCriteriaFromId( entityManagerFactory, entity, lowerBound, IdProcessor.GE ) );
 		}
 		return result;
 	}
@@ -259,23 +294,14 @@ public final class PersistenceUtil {
 			EntityManagerFactory emf,
 			Class<X> entity,
 			Object idObj,
-			IdRestriction idRestriction) throws Exception {
+			IdProcessor processor) throws Exception {
 		EntityType<X> entityType = emf.getMetamodel().entity( entity );
 		List<SingularAttribute<?, ?>> attributeList;
 
 		switch ( getIdTypeOf( entityType ) ) {
 			case SINGLE_ID:
-				Type<?> idType = entityType.getIdType();
-				Class<?> idJavaType = idType.getJavaType();
-				String idName = entityType.getId( idJavaType ).getName();
-				switch ( idRestriction ) {
-					case LT:
-						return Restrictions.lt( idName, idObj );
-					case GE:
-						return Restrictions.ge( idName, idObj );
-					default:
-						throw new IllegalStateException( "Cannot determine IdRestriction: this should never happen." );
-				}
+				Class<?> idJavaType = entityType.getIdType().getJavaType();
+				return processor.processId( entityType.getId( idJavaType ), idObj );
 
 			case EMBEDDED_ID:
 				Class<?> embeddable = entityType.getIdType().getJavaType();
@@ -285,12 +311,12 @@ public final class PersistenceUtil {
 
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, prefix );
+				return processor.processIds( attributeList.toArray( new SingularAttribute[0] ), idObj, prefix );
 
 			case ID_CLASS:
 				attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
+				return processor.processIds( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
 
 			default:
 				throw new IllegalStateException( "Cannot determine IdType: this should never happen." );
