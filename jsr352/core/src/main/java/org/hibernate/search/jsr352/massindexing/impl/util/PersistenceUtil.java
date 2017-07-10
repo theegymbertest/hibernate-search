@@ -50,12 +50,12 @@ public final class PersistenceUtil {
 					SimpleExpression[] and = new SimpleExpression[i + 1];
 					int j = 0;
 					for ( ; j < and.length - 1; j++ ) {
-						// The first N-1 expressions have equal-to symbol (=)
+						// The first N-1 expressions have symbol `=`
 						String key = idAttributes[j].getName();
 						Object val = getProperty( idObj, key );
 						and[j] = Restrictions.eq( prefix + key, val );
 					}
-					// The last expression has greater-than or equal-to symbol (>=)
+					// The last expression has symbol `>=`
 					String key = idAttributes[j].getName();
 					Object val = getProperty( idObj, key );
 					and[j] = Restrictions.ge( prefix + key, val );
@@ -78,12 +78,12 @@ public final class PersistenceUtil {
 					SimpleExpression[] and = new SimpleExpression[i + 1];
 					int j = 0;
 					for ( ; j < and.length - 1; j++ ) {
-						// The first N-1 expressions have equal-to symbol (=)
+						// The first N-1 expressions have symbol `=`
 						String key = idAttributes[j].getName();
 						Object val = getProperty( idObj, key );
 						and[j] = Restrictions.eq( prefix + key, val );
 					}
-					// The last expression has greater-than or equal-to symbol (<)
+					// The last expression has symbol `<`
 					String key = idAttributes[j].getName();
 					Object val = getProperty( idObj, key );
 					and[j] = Restrictions.lt( prefix + key, val );
@@ -94,7 +94,6 @@ public final class PersistenceUtil {
 				return Restrictions.or( or );
 			}
 		};
-//		EQUAL_TO, GREATER_THAN_OR_EQUAL_TO, GREATER_THAN, LESS_THAN_OR_EQUAL_TO ,LESS_THAN
 
 		public abstract <X> Criterion generate(SingularAttribute<X, ?>[] idAttributes, Object idObj, String prefix)
 				throws Exception;
@@ -196,19 +195,18 @@ public final class PersistenceUtil {
 	public static List<Criterion> createCriterionList(EntityManagerFactory entityManagerFactory, PartitionBound partitionBound)
 			throws Exception {
 		Class<?> entity = partitionBound.getEntityType();
-		List<Criterion> result = new ArrayList<>(  );
+		List<Criterion> result = new ArrayList<>();
 
 		if ( partitionBound.hasUpperBound() ) {
-			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
+			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), IdRestriction.LT ) );
 		}
 		if ( partitionBound.hasLowerBound() ) {
-			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
+			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), IdRestriction.GE ) );
 		}
 		return result;
 	}
 
 	@SuppressWarnings("unchecked")
-	// TODO Make checkpoint ID part of the PartitionBound
 	// TODO Use PartitionBound as 3rd input argument instead of {Object + IdRestriction}
 	public static <X> Criterion getCriteriaFromId(
 			EntityManagerFactory emf,
@@ -216,7 +214,7 @@ public final class PersistenceUtil {
 			Object idObj,
 			PersistenceUtil.IdRestriction idRestriction) throws Exception {
 		EntityType<X> entityType = emf.getMetamodel().entity( entity );
-		// Determine the type of Id
+
 		if ( entityType.hasSingleIdAttribute() ) {
 			Type<?> idType = entityType.getIdType();
 			Class<?> idJavaType = idType.getJavaType();
@@ -227,7 +225,6 @@ public final class PersistenceUtil {
 				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( idJavaType );
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				// FIXME the embedded id prefix is missing
 				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, idName + "." );
 			}
 			else {
