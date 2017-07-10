@@ -178,7 +178,6 @@ public final class PersistenceUtil {
 				EmbeddableType<?> embeddableType = entityManagerFactory.getMetamodel().embeddable( idJavaType );
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				// idName is necessary: embedded ID's properties cannot be resolved from EntityType itself
 				attributeList.forEach( attr -> criteria.addOrder( Order.asc( idName + "." + attr.getName() ) ) );
 			}
 			else {
@@ -195,6 +194,8 @@ public final class PersistenceUtil {
 	}
 
 	@SuppressWarnings("unchecked")
+	// TODO Make checkpoint ID part of the PartitionBound
+	// TODO Use PartitionBound as 3rd input argument instead of {Object + IdRestriction}
 	public static <X> Criterion getCriteriaFromId(
 			EntityManagerFactory emf,
 			Class<X> entity,
@@ -212,7 +213,6 @@ public final class PersistenceUtil {
 				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( idJavaType );
 				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
 				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				// TODO Check generic warning
 				// FIXME the embedded id prefix is missing
 				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, idName + "." );
 			}
@@ -230,7 +230,6 @@ public final class PersistenceUtil {
 		else {
 			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
 			attributeList.sort( Comparator.comparing( Attribute::getName ) );
-			// TODO Check generic warning
 			return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
 		}
 	}
