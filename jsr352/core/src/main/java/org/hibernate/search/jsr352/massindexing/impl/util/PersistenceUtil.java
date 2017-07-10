@@ -18,6 +18,9 @@ import javax.persistence.metamodel.EmbeddableType;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.Type;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -36,6 +39,35 @@ import org.hibernate.search.util.StringHelper;
  * @author Mincong Huang
  */
 public final class PersistenceUtil {
+
+	/**
+	 * The type of identifier(s) of a given {@link EntityType}.
+	 */
+	private enum IdType {
+		/**
+		 * The given entity type contains only one {@link Id}
+		 * annotation.
+		 */
+		SINGLE_ID,
+
+		/**
+		 * The given entity type contains an {@link EmbeddedId}
+		 * annotation.
+		 */
+		EMBEDDED_ID,
+
+		/**
+		 * The given entity type contains an {@link IdClass}
+		 * annotation.
+		 */
+		ID_CLASS,
+
+		/**
+		 * The given entity type does not match any other case
+		 * available from this enum. This should never happen.
+		 */
+		UNKNOWN
+	}
 
 	public enum IdRestriction {
 		GE {
@@ -192,42 +224,47 @@ public final class PersistenceUtil {
 		return criteria;
 	}
 
-	public static List<Criterion> createCriterionList(EntityManagerFactory entityManagerFactory, PartitionBound partitionBound)
+	public static List<Criterion> createCriterionList(
+			EntityManagerFactory entityManagerFactory,
+			PartitionBound partitionBound)
 			throws Exception {
 		Class<?> entity = partitionBound.getEntityType();
 		List<Criterion> result = new ArrayList<>();
 
 		if ( partitionBound.hasUpperBound() ) {
-			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), IdRestriction.LT ) );
+			result.add( getCriteriaFromId(
+					entityManagerFactory,
+					entity,
+					partitionBound.getUpperBound(),
+					IdRestriction.LT
+			) );
 		}
 		if ( partitionBound.hasLowerBound() ) {
-			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), IdRestriction.GE ) );
+			result.add( getCriteriaFromId(
+					entityManagerFactory,
+					entity,
+					partitionBound.getLowerBound(),
+					IdRestriction.GE
+			) );
 		}
 		return result;
 	}
 
 	@SuppressWarnings("unchecked")
 	// TODO Use PartitionBound as 3rd input argument instead of {Object + IdRestriction}
-	public static <X> Criterion getCriteriaFromId(
+	private static <X> Criterion getCriteriaFromId(
 			EntityManagerFactory emf,
 			Class<X> entity,
 			Object idObj,
-			PersistenceUtil.IdRestriction idRestriction) throws Exception {
+			IdRestriction idRestriction) throws Exception {
 		EntityType<X> entityType = emf.getMetamodel().entity( entity );
+		List<SingularAttribute<?, ?>> attributeList;
 
-		if ( entityType.hasSingleIdAttribute() ) {
-			Type<?> idType = entityType.getIdType();
-			Class<?> idJavaType = idType.getJavaType();
-			String idName = entityType.getId( idJavaType ).getName();
-
-			if ( idType.getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
-				List<SingularAttribute<?, ?>> attributeList;
-				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( idJavaType );
-				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
-				attributeList.sort( Comparator.comparing( Attribute::getName ) );
-				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, idName + "." );
-			}
-			else {
+		switch ( getIdTypeOf( entityType ) ) {
+			case SINGLE_ID:
+				Type<?> idType = entityType.getIdType();
+				Class<?> idJavaType = idType.getJavaType();
+				String idName = entityType.getId( idJavaType ).getName();
 				switch ( idRestriction ) {
 					case LT:
 						return Restrictions.lt( idName, idObj );
@@ -236,18 +273,48 @@ public final class PersistenceUtil {
 					default:
 						throw new UnsupportedOperationException( "bla bla bla" );
 				}
-			}
+
+			case EMBEDDED_ID:
+				Class<?> embeddable = entityType.getIdType().getJavaType();
+				EmbeddableType<?> embeddableType = emf.getMetamodel().embeddable( embeddable );
+				String embeddableName = entityType.getId( embeddable ).getName();
+				attributeList = new ArrayList<>( embeddableType.getSingularAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, embeddableName + "." );
+
+			case ID_CLASS:
+				attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
+				attributeList.sort( Comparator.comparing( Attribute::getName ) );
+				return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
+
+			case UNKNOWN:
+				throw new UnsupportedOperationException( "bla bla bla" );
 		}
-		else {
-			List<SingularAttribute<? super X, ?>> attributeList = new ArrayList<>( entityType.getIdClassAttributes() );
-			attributeList.sort( Comparator.comparing( Attribute::getName ) );
-			return idRestriction.generate( attributeList.toArray( new SingularAttribute[0] ), idObj, null );
-		}
+		throw new UnsupportedOperationException( "bla bla bla" );
 	}
 
 	private static Object getProperty(Object obj, String propertyName)
 			throws IntrospectionException, InvocationTargetException, IllegalAccessException {
 		return new PropertyDescriptor( propertyName, obj.getClass() ).getReadMethod().invoke( obj );
+	}
+
+	private static IdType getIdTypeOf(EntityType<?> entityType) {
+		if ( entityType.hasSingleIdAttribute() ) {
+			if ( entityType.getIdType().getPersistenceType() == Type.PersistenceType.EMBEDDABLE ) {
+				return IdType.EMBEDDED_ID;
+			}
+			else {
+				return IdType.SINGLE_ID;
+			}
+		}
+		try {
+			entityType.getIdClassAttributes();
+			return IdType.ID_CLASS;
+		}
+		catch (IllegalArgumentException e) {
+			// It should never happen.
+			return IdType.UNKNOWN;
+		}
 	}
 
 }
