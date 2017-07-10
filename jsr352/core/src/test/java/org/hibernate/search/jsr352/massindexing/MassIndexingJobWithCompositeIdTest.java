@@ -19,8 +19,6 @@ import javax.persistence.Persistence;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.hibernate.search.jsr352.massindexing.test.id.ComparableDateId;
-import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithComparableId;
 import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithIdClass;
 import org.hibernate.search.jsr352.massindexing.test.entity.EntityWithNonComparableId;
 import org.hibernate.search.jsr352.massindexing.test.id.NonComparableDateId;
@@ -30,7 +28,6 @@ import org.hibernate.search.testsupport.TestForIssue;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -69,13 +66,11 @@ public class MassIndexingJobWithCompositeIdTest {
 		ftem.getTransaction().begin();
 		for ( LocalDate d = START; d.isBefore( END ); d = d.plusDays( 1 ) ) {
 			ftem.persist( new EntityWithIdClass( d ) );
-			ftem.persist( new EntityWithComparableId( d ) );
 			ftem.persist( new EntityWithNonComparableId( d ) );
 		}
 		ftem.getTransaction().commit();
 
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class ) ).isEqualTo( 0 );
-		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithComparableId.class ) ).isEqualTo( 0 );
 		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithNonComparableId.class ) ).isEqualTo( 0 );
 	}
 
@@ -84,11 +79,9 @@ public class MassIndexingJobWithCompositeIdTest {
 		ftem.getTransaction().begin();
 
 		ftem.createQuery( "delete from EntityWithIdClass" ).executeUpdate();
-		ftem.createQuery( "delete from EntityWithComparableId" ).executeUpdate();
 		ftem.createQuery( "delete from EntityWithNonComparableId" ).executeUpdate();
 
 		ftem.purgeAll( EntityWithIdClass.class );
-		ftem.purgeAll( EntityWithComparableId.class );
 		ftem.purgeAll( EntityWithNonComparableId.class );
 		ftem.flushToIndexes();
 
@@ -120,24 +113,6 @@ public class MassIndexingJobWithCompositeIdTest {
 		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 7, 1 ), END );
 		int actualDays = JobTestUtil.nbDocumentsInIndex( emf, EntityWithIdClass.class );
 		assertThat( actualDays ).isEqualTo( expectedDays );
-	}
-
-	@Test
-	@Ignore("Should be deleted")
-	public void canHandleEmbeddedId_whenComparable() throws Exception {
-		Properties props = MassIndexingJob.parameters()
-				.forEntities( EntityWithComparableId.class )
-				.restrictedBy( Restrictions.ge(
-						"comparableDateId",
-						new ComparableDateId( LocalDate.of( 2017, 6, 20 ) )
-				) )
-				.build();
-
-		startJobAndWait( MassIndexingJob.NAME, props );
-
-		assertThat( findIndexedResults( emf, EntityWithComparableId.class, "value", "20170701" ) ).hasSize( 1 );
-		int expectedDays = (int) ChronoUnit.DAYS.between( LocalDate.of( 2017, 6, 20 ), END );
-		assertThat( JobTestUtil.nbDocumentsInIndex( emf, EntityWithComparableId.class ) ).isEqualTo( expectedDays );
 	}
 
 	@Test
