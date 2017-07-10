@@ -38,6 +38,10 @@ public class PartitionBound {
 		return lowerBound;
 	}
 
+	public void setLowerBound(Object lowerBound) {
+		this.lowerBound = lowerBound;
+	}
+
 	public Object getUpperBound() {
 		return upperBound;
 	}

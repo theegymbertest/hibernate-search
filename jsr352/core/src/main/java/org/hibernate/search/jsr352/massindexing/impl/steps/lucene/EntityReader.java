@@ -210,10 +210,13 @@ public class EntityReader extends AbstractItemReader {
 		log.openingReader( serializedPartitionId, entityName );
 
 		final int partitionId = SerializationUtil.parseIntegerParameter( PARTITION_ID, serializedPartitionId );
-
+		boolean isRestarted = checkpointId != null;
 		JobContextData jobData = getJobContextData();
 
 		PartitionBound bound = getPartitionBound( jobData );
+		if ( isRestarted ) {
+			bound.setLowerBound( checkpointId );
+		}
 		log.printBound( bound );
 
 		emf = jobData.getEntityManagerFactory();
@@ -234,12 +237,12 @@ public class EntityReader extends AbstractItemReader {
 		}
 		// Criteria approach
 		else {
-			scroll = buildScrollUsingCriteria( ss, bound, checkpointId, jobData );
-			if ( checkpointId == null ) {
-				partitionData = new PartitionContextData( partitionId, entityName );
+			scroll = buildScrollUsingCriteria( ss, bound, jobData );
+			if ( isRestarted ) {
+				partitionData = (PartitionContextData) stepContext.getPersistentUserData();
 			}
 			else {
-				partitionData = (PartitionContextData) stepContext.getPersistentUserData();
+				partitionData = new PartitionContextData( partitionId, entityName );
 			}
 		}
 
@@ -284,16 +287,11 @@ public class EntityReader extends AbstractItemReader {
 	}
 
 	private ScrollableResults buildScrollUsingCriteria(StatelessSession ss,
-			PartitionBound unit, Object checkpointId, JobContextData jobData) throws Exception {
+			PartitionBound unit, JobContextData jobData) throws Exception {
 		boolean cacheable = SerializationUtil.parseBooleanParameter( CACHEABLE, serializedCacheable );
 		int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
 		Class<?> entity = unit.getEntityType();
 		Criteria criteria = PersistenceUtil.createCriteria( emf, ss, entity );
-
-		// build criteria using checkpoint ID
-		if ( checkpointId != null ) {
-			criteria.add( PersistenceUtil.getCriteriaFromId( emf, entity, checkpointId, PersistenceUtil.IdRestriction.GE ) );
-		}
 
 		// build criteria using partition unit
 		PersistenceUtil.createCriterionList( emf, unit ).forEach( criteria::add );
