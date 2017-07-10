@@ -288,36 +288,15 @@ public class EntityReader extends AbstractItemReader {
 		boolean cacheable = SerializationUtil.parseBooleanParameter( CACHEABLE, serializedCacheable );
 		int fetchSize = SerializationUtil.parseIntegerParameter( FETCH_SIZE, serializedFetchSize );
 		Class<?> entity = unit.getEntityType();
-//		String idName = sessionFactory.getClassMetadata( entity )
-//				.getIdentifierPropertyName();
-
 		Criteria criteria = PersistenceUtil.createCriteria( emf, ss, entity );
 
 		// build criteria using checkpoint ID
 		if ( checkpointId != null ) {
 			criteria.add( PersistenceUtil.getCriteriaFromId( emf, entity, checkpointId, PersistenceUtil.IdRestriction.GE ) );
-//			criteria.add( Restrictions.ge( idName, checkpointId ) );
 		}
 
 		// build criteria using partition unit
-		// TODO This chaining if-statement should be moved to PersistenceUtil#createCriteria
-		if ( unit.isUniquePartition() ) {
-			// no bounds if the partition unit is unique
-		}
-		else if ( unit.isFirstPartition() ) {
-			criteria.add( PersistenceUtil.getCriteriaFromId( emf, entity, unit.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
-//			criteria.add( Restrictions.lt( idName, unit.getUpperBound() ) );
-		}
-		else if ( unit.isLastPartition() ) {
-			criteria.add( PersistenceUtil.getCriteriaFromId( emf, entity, unit.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
-//			criteria.add( Restrictions.ge( idName, unit.getLowerBound() ) );
-		}
-		else {
-			criteria.add( PersistenceUtil.getCriteriaFromId( emf, entity, unit.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
-			criteria.add( PersistenceUtil.getCriteriaFromId( emf, entity, unit.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
-//			criteria.add( Restrictions.ge( idName, unit.getLowerBound() ) )
-//					.add( Restrictions.lt( idName, unit.getUpperBound() ) );
-		}
+		PersistenceUtil.createCriterionList( emf, unit ).forEach( criteria::add );
 
 		// build criteria using job context data
 		jobData.getCustomQueryCriteria().forEach( c -> criteria.add( c ) );

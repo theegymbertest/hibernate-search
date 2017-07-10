@@ -193,6 +193,26 @@ public final class PersistenceUtil {
 		return criteria;
 	}
 
+	public static List<Criterion> createCriterionList(EntityManagerFactory entityManagerFactory, PartitionBound partitionBound)
+			throws Exception {
+		Class<?> entity = partitionBound.getEntityType();
+		List<Criterion> result = new ArrayList<>(  );
+		if ( partitionBound.isUniquePartition() ) {
+			// no bounds if the partition unit is unique
+		}
+		else if ( partitionBound.isFirstPartition() ) {
+			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
+		}
+		else if ( partitionBound.isLastPartition() ) {
+			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
+		}
+		else {
+			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getLowerBound(), PersistenceUtil.IdRestriction.GE ) );
+			result.add( getCriteriaFromId( entityManagerFactory, entity, partitionBound.getUpperBound(), PersistenceUtil.IdRestriction.LT ) );
+		}
+		return result;
+	}
+
 	@SuppressWarnings("unchecked")
 	// TODO Make checkpoint ID part of the PartitionBound
 	// TODO Use PartitionBound as 3rd input argument instead of {Object + IdRestriction}
