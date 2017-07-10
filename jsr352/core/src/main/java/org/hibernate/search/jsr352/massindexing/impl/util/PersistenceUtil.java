@@ -39,7 +39,6 @@ import org.hibernate.search.util.StringHelper;
  * @author Mincong Huang
  */
 public final class PersistenceUtil {
-
 	/**
 	 * The type of identifier(s) of a given {@link EntityType}.
 	 */
@@ -49,19 +48,16 @@ public final class PersistenceUtil {
 		 * annotation.
 		 */
 		SINGLE_ID,
-
 		/**
 		 * The given entity type contains an {@link EmbeddedId}
 		 * annotation.
 		 */
 		EMBEDDED_ID,
-
 		/**
 		 * The given entity type contains an {@link IdClass}
 		 * annotation.
 		 */
 		ID_CLASS,
-
 		/**
 		 * The given entity type does not match any other case
 		 * available from this enum. This should never happen.
