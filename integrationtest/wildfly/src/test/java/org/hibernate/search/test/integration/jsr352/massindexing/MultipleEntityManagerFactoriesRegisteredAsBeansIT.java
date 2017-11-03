@@ -133,7 +133,6 @@ public class MultipleEntityManagerFactoriesRegisteredAsBeansIT {
 
 		JobOperator jobOperator = BatchRuntime.getJobOperator();
 
-		// The 1st execution. Keep it alive and wait Byteman to stop it
 		long execId1 = jobOperator.start(
 				MassIndexingJob.NAME,
 				MassIndexingJob.parameters()

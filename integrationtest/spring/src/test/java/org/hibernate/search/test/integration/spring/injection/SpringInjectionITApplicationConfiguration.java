@@ -13,6 +13,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.transaction.jta.JtaAutoConfiguration;
 import org.springframework.context.ApplicationContext;
@@ -26,7 +27,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
  */
 @Configuration
 @SpringBootConfiguration
-@EnableAutoConfiguration(exclude = JtaAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = {JtaAutoConfiguration.class, BatchAutoConfiguration.class})
 @ComponentScan
 @EntityScan
 public class SpringInjectionITApplicationConfiguration {
