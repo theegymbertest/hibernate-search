@@ -43,6 +43,7 @@
     </step>
 
     <step id="produceLuceneDoc" next="afterChunk">
+        <!-- FIXME: commented temporarily to test with Spring Batch
         <listeners>
             <listener ref="org.hibernate.search.jsr352.massindexing.impl.steps.lucene.StepProgressSetupListener">
                 <properties>
@@ -51,6 +52,7 @@
                 </properties>
             </listener>
         </listeners>
+         -->
         <!--
              We must use a custom checkpoint policy, because Spring Batch doesn't support accessing
              partitionPlan properties in the "item" attribute of the "chunk" tag
