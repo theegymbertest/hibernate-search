@@ -8,6 +8,7 @@ package org.hibernate.search.jsr352.massindexing.impl.steps.lucene;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.Set;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -90,7 +91,7 @@ public class EntityReader extends AbstractItemReader {
 	private String serializedCustomQueryCriteria;
 
 	@Inject
-	private EntityManagerFactoryRegistry emfRegistry;
+	private Optional<EntityManagerFactoryRegistry> emfRegistry;
 
 	@Inject
 	private StepContext stepContext;

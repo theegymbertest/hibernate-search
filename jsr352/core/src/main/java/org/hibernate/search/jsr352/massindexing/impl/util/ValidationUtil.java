@@ -7,6 +7,7 @@
 package org.hibernate.search.jsr352.massindexing.impl.util;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import javax.persistence.EntityManagerFactory;
 
@@ -52,7 +53,7 @@ public final class ValidationUtil {
 	}
 
 	public static void validateEntityTypes(
-			EntityManagerFactoryRegistry emfRegistry,
+			Optional<EntityManagerFactoryRegistry> emfRegistry,
 			String entityManagerFactoryScope,
 			String entityManagerFactoryReference,
 			String serializedEntityTypes) {

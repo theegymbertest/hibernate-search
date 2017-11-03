@@ -6,6 +6,7 @@
  */
 package org.hibernate.search.jsr352.massindexing.impl;
 
+import java.util.Optional;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.AbstractJobListener;
 import javax.batch.runtime.context.JobContext;
@@ -30,8 +31,8 @@ import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.ENTITY_MANAGER_FACTORY_NAMESPACE;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.ENTITY_MANAGER_FACTORY_REFERENCE;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.ENTITY_TYPES;
-import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.MAX_RESULTS_PER_ENTITY;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.ID_FETCH_SIZE;
+import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.MAX_RESULTS_PER_ENTITY;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.MAX_THREADS;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.OPTIMIZE_AFTER_PURGE;
 import static org.hibernate.search.jsr352.massindexing.MassIndexingJobParameters.OPTIMIZE_ON_FINISH;
@@ -119,7 +120,7 @@ public class JobContextSetupListener extends AbstractJobListener {
 	private String serializedCustomQueryCriteria;
 
 	@Inject
-	private EntityManagerFactoryRegistry emfRegistry;
+	private Optional<EntityManagerFactoryRegistry> emfRegistry;
 
 	@Override
 	public void beforeJob() throws Exception {

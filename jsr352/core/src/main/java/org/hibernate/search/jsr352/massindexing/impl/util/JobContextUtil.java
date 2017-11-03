@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.batch.runtime.context.JobContext;
 import javax.persistence.EntityManagerFactory;
@@ -51,7 +52,7 @@ public final class JobContextUtil {
 	}
 
 	public static JobContextData getOrCreateData(JobContext jobContext,
-			EntityManagerFactoryRegistry emfRegistry,
+			Optional<EntityManagerFactoryRegistry> emfRegistry,
 			String entityManagerFactoryNamespace, String entityManagerFactoryReference,
 			String entityTypes, String serializedCustomQueryCriteria) throws ClassNotFoundException, IOException {
 		JobContextData data = (JobContextData) jobContext.getTransientUserData();
@@ -72,10 +73,9 @@ public final class JobContextUtil {
 		return data;
 	}
 
-	static EntityManagerFactory getEntityManagerFactory(EntityManagerFactoryRegistry emfRegistry,
+	static EntityManagerFactory getEntityManagerFactory(Optional<EntityManagerFactoryRegistry> emfRegistry,
 			String entityManagerFactoryNamespace, String entityManagerFactoryReference) {
-		EntityManagerFactoryRegistry registry =
-				emfRegistry != null ? emfRegistry : ActiveSessionFactoryRegistry.getInstance();
+		EntityManagerFactoryRegistry registry = emfRegistry.orElse( ActiveSessionFactoryRegistry.getInstance() );
 
 		if ( StringHelper.isEmpty( entityManagerFactoryNamespace ) ) {
 			if ( StringHelper.isEmpty( entityManagerFactoryReference ) ) {
