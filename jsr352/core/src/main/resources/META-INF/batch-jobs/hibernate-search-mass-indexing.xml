@@ -110,8 +110,10 @@
                     <property name="rowsPerPartition" value="#{jobParameters['rowsPerPartition']}" />
                 </properties>
             </mapper>
+            <!-- FIXME: commented temporarily to test with Spring Batch
             <collector ref="org.hibernate.search.jsr352.massindexing.impl.steps.lucene.ProgressCollector" />
             <analyzer ref="org.hibernate.search.jsr352.massindexing.impl.steps.lucene.ProgressAggregator" />
+             -->
         </partition>
     </step>
 
