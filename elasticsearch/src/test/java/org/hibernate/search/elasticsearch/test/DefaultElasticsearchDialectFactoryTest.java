@@ -25,7 +25,7 @@ import org.hibernate.search.elasticsearch.dialect.impl.es50.Elasticsearch50Diale
 import org.hibernate.search.elasticsearch.dialect.impl.es52.Elasticsearch52Dialect;
 import org.hibernate.search.elasticsearch.impl.JsonBuilder;
 import org.hibernate.search.exception.SearchException;
-import org.hibernate.search.test.util.impl.ExpectedLog4jLog;
+import org.hibernate.search.test.util.impl.ExpectedLog;
 import org.hibernate.search.testsupport.TestForIssue;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class DefaultElasticsearchDialectFactoryTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Rule
-	public ExpectedLog4jLog logged = ExpectedLog4jLog.create();
+	public ExpectedLog logged = ExpectedLog.create();
 
 	private DefaultElasticsearchDialectFactory dialectFactory = new DefaultElasticsearchDialectFactory();
 

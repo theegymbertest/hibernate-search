@@ -21,7 +21,7 @@ import org.hibernate.search.test.AlternateDocument;
 import org.hibernate.search.test.Document;
 import org.hibernate.search.test.SearchInitializationTestBase;
 import org.hibernate.search.test.util.ImmutableTestConfiguration;
-import org.hibernate.search.test.util.impl.ExpectedLog4jLog;
+import org.hibernate.search.test.util.impl.ExpectedLog;
 import org.hibernate.search.testsupport.junit.SkipOnElasticsearch;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 public class RamDirectoryTest extends SearchInitializationTestBase {
 
 	@Rule
-	public ExpectedLog4jLog logged = ExpectedLog4jLog.create();
+	public ExpectedLog logged = ExpectedLog.create();
 
 	@Test
 	public void localHeap() throws Exception {

@@ -31,7 +31,7 @@ import org.hibernate.search.elasticsearch.client.impl.URLEncodedString;
 import org.hibernate.search.elasticsearch.impl.JsonBuilder;
 import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.test.util.JsonHelper;
-import org.hibernate.search.test.util.impl.ExpectedLog4jLog;
+import org.hibernate.search.test.util.impl.ExpectedLog;
 import org.hibernate.search.testsupport.BytemanHelper;
 import org.hibernate.search.testsupport.BytemanHelper.BytemanAccessor;
 import org.hibernate.search.testsupport.TestForIssue;
@@ -69,7 +69,7 @@ public class DefaultElasticsearchClientFactoryTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Rule
-	public ExpectedLog4jLog logged = ExpectedLog4jLog.create();
+	public ExpectedLog logged = ExpectedLog.create();
 
 	@Rule
 	public BytemanAccessor byteman = BytemanHelper.createAccessor();

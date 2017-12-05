@@ -16,7 +16,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.test.util.impl.ExpectedLog4jLog;
+import org.hibernate.search.test.util.impl.ExpectedLog;
 import org.hibernate.search.testsupport.TestConstants;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class TokenizationTest {
 	private static final String DEFAULT_FIELD_NAME = "default";
 
 	@Rule
-	public ExpectedLog4jLog logged = ExpectedLog4jLog.create();
+	public ExpectedLog logged = ExpectedLog.create();
 
 	@Test
 	public void testWarningLoggedForInconsistentFieldConfiguration() throws Exception {

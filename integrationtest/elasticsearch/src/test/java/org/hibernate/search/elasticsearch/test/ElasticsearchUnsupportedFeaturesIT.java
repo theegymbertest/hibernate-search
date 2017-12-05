@@ -25,7 +25,7 @@ import org.hibernate.search.elasticsearch.testutil.junit.SkipFromElasticsearch52
 import org.hibernate.search.engine.BoostStrategy;
 import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.test.SearchInitializationTestBase;
-import org.hibernate.search.test.util.impl.ExpectedLog4jLog;
+import org.hibernate.search.test.util.impl.ExpectedLog;
 import org.hibernate.testing.TestForIssue;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import org.junit.rules.ExpectedException;
 public class ElasticsearchUnsupportedFeaturesIT extends SearchInitializationTestBase {
 
 	@Rule
-	public ExpectedLog4jLog logged = ExpectedLog4jLog.create();
+	public ExpectedLog logged = ExpectedLog.create();
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

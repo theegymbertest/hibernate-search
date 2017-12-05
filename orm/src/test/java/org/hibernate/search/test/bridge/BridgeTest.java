@@ -484,7 +484,7 @@ public class BridgeTest extends SearchTestBase {
 			final Throwable throwable = e.getCause();
 			if ( throwable instanceof BridgeException ) {
 				//expected
-				//System.out.println( throwable.getMessage() );
+				//System.out.println( throwable.getRenderedMessage() );
 				assertTrue( throwable.getMessage().contains( "class: " + IncorrectGet.class.getName() ) );
 				assertTrue( throwable.getMessage().contains( "path: subIncorrect.name" ) );
 				tx.rollback();

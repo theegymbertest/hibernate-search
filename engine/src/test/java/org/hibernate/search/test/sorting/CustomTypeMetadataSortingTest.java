@@ -31,7 +31,7 @@ import org.hibernate.search.spi.IndexedTypeIdentifier;
 import org.hibernate.search.spi.IndexedTypeMap;
 import org.hibernate.search.spi.impl.IndexedTypeMaps;
 import org.hibernate.search.spi.impl.PojoIndexedTypeIdentifier;
-import org.hibernate.search.test.util.impl.ExpectedLog4jLog;
+import org.hibernate.search.test.util.impl.ExpectedLog;
 import org.hibernate.search.testsupport.TestForIssue;
 import org.hibernate.search.testsupport.junit.SearchFactoryHolder;
 import org.hibernate.search.testsupport.junit.SearchITHelper;
@@ -55,7 +55,7 @@ public class CustomTypeMetadataSortingTest {
 			new Sort( new SortField( "properties.firstName", SortField.Type.STRING, true ) );
 
 	@Rule
-	public final ExpectedLog4jLog logged = ExpectedLog4jLog.create();
+	public final ExpectedLog logged = ExpectedLog.create();
 
 	@Rule
 	public final SearchFactoryHolder factoryHolder = new SearchFactoryHolder( PropertySet.class, ExtendedPropertySet.class, Person.class )
