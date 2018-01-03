@@ -186,7 +186,7 @@
         <slf4jVersion>1.6.4</slf4jVersion>
         <luceneVersion>5.5.5</luceneVersion>
         <lucene.module.slot>5.5</lucene.module.slot>
-        <luceneTestingModuleVersion>5.5.5-SNAPSHOT</luceneTestingModuleVersion>
+        <luceneTestingModuleVersion>5.5.5.hibernate01</luceneTestingModuleVersion>
         <infinispanVersion>9.0.1.Final</infinispanVersion>
         <jgroupsVersion>3.6.12.Final</jgroupsVersion>
 
@@ -234,13 +234,13 @@
              matching test profile as well, e.g. elasticsearch-5.2 for the 5.2+ series -->
         <elasticsearchClientVersion>5.6.4</elasticsearchClientVersion>
         <elasticsearch-client.module.slot>5.6</elasticsearch-client.module.slot>
-        <elasticsearchClientTestingModuleVersion>5.6.4-SNAPSHOT</elasticsearchClientTestingModuleVersion>
+        <elasticsearchClientTestingModuleVersion>5.6.4.hibernate01</elasticsearchClientTestingModuleVersion>
         <gsonVersion>2.8.2</gsonVersion>
         <gson.module.slot>2.8</gson.module.slot>
-        <gsonTestingModuleVersion>2.8.2-SNAPSHOT</gsonTestingModuleVersion>
+        <gsonTestingModuleVersion>2.8.2.hibernate01</gsonTestingModuleVersion>
         <awsV4SignerJavaVersion>1.3</awsV4SignerJavaVersion>
         <aws-v4-signer-java.module.slot>${awsV4SignerJavaVersion}</aws-v4-signer-java.module.slot>
-        <awsV4SignerJavaTestingModuleVersion>1.3.0-SNAPSHOT</awsV4SignerJavaTestingModuleVersion>
+        <awsV4SignerJavaTestingModuleVersion>1.3.0.hibernate01</awsV4SignerJavaTestingModuleVersion>
 
         <!-- Tests -->
         <!-- Fixes dependency convergence within Wiremock, see below -->
