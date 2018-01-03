@@ -65,6 +65,7 @@ public class ElasticsearchModuleMemberRegistrationIT {
 				.create( WebArchive.class, ElasticsearchModuleMemberRegistrationIT.class.getSimpleName() + ".war" )
 				.addClasses( Member.class, MemberRegistration.class, Resources.class )
 				.addAsResource( persistenceXml(), "META-INF/persistence.xml" )
+				.addAsWebInfResource( "jboss-deployment-structure-elasticsearch.xml", "/jboss-deployment-structure.xml" )
 				.addAsWebInfResource( EmptyAsset.INSTANCE, "beans.xml" )
 				.addAsWebInfResource( webXml(), "web.xml" );
 	}

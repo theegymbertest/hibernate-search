@@ -15,9 +15,6 @@
         <module name="org.apache.lucene" export="true" slot="${lucene.module.slot}" />
         <module name="org.jboss.logging" />
 
-        <!-- Elasticsearch support -->
-        <module name="org.hibernate.search.elasticsearch" export="true" services="import" optional="true" slot="${hibernate.search.version}" />
-
         <!-- JMS backend support -->
         <module name="org.hibernate.search.backend-jms" export="true" optional="true" slot="${hibernate.search.version}" />
 
