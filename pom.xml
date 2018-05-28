@@ -40,6 +40,7 @@
         <module>integrationtest</module>
         <module>documentation</module>
         <module>reports</module>
+        <module>legacy</module>
     </modules>
 
     <properties>
