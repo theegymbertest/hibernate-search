@@ -6,10 +6,14 @@
  */
 package org.hibernate.search.test.dsl;
 
+import java.util.function.Consumer;
+
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.exception.SearchException;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.MinimumShouldMatchContext;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.engine.spi.HSQuery;
 import org.hibernate.search.testsupport.junit.SearchFactoryHolder;
@@ -483,13 +487,175 @@ public class BoolDSLTest {
 	}
 
 	@Test
-	public void minimumShouldMatch_error_multipleConflictingConstraints() {
+	public void minimumShouldMatch_multipleConstraints() {
+		QueryBuilder queryBuilder = helper.queryBuilder( IndexedEntity.class );
+
+		Consumer<MinimumShouldMatchContext<?>> minimumShouldMatchConstraints = b -> b
+				.ifMoreThan( 2 ).thenRequireNumber( -1 )
+				.ifMoreThan( 4 ).thenRequirePercent( 70 );
+		BooleanJunction<?> junction;
+		HSQuery query;
+
+		// 0 "should" clause: expect the constraints to be ignored
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.must( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1, DOCUMENT_2 );
+
+		// 1 "should" clause: expect to require all "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// 2 "should" clauses: expect to require all "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// 3 "should" clauses: expect to require 2 "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE3 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// 4 "should" clauses: expect to require 3 "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE2 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// 5 "should" clauses: expect to require 3 "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE3 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// 6 "should" clauses: expect to require 4 "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field5" ).matching( FIELD5_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE3 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+	}
+
+	@Test
+	public void minimumShouldMatch_multipleConstraints_0ceiling() {
+		QueryBuilder queryBuilder = helper.queryBuilder( IndexedEntity.class );
+
+		Consumer<MinimumShouldMatchContext<?>> minimumShouldMatchConstraints = b -> b
+				// Test that we can set the "default" minimum by using a ceiling of 0
+				.ifMoreThan( 0 ).thenRequireNumber( 1 )
+				.ifMoreThan( 2 ).thenRequireNumber( -1 )
+				.ifMoreThan( 4 ).thenRequirePercent( 70 );
+		BooleanJunction<?> junction;
+		HSQuery query;
+
+		// 1 "should" clause: expect to require 1 "should" clause to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// 2 "should" clauses: expect to require 1 "should" clause to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE2 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1, DOCUMENT_2 );
+
+		// 3 "should" clauses: expect to require 2 "should" clauses to match
+		junction = queryBuilder.bool();
+		minimumShouldMatchConstraints.accept( junction.minimumShouldMatch() );
+		junction.should( queryBuilder.keyword().onField( "field4" ).matching( FIELD4_VALUE1AND2 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field1" ).matching( FIELD1_VALUE1 ).createQuery() );
+		junction.should( queryBuilder.keyword().onField( "field2" ).matching( FIELD2_VALUE3 ).createQuery() );
+		query = helper.hsQuery( junction.createQuery() );
+
+		helper.assertThat( query )
+				.matchesUnorderedIds( DOCUMENT_1 );
+
+		// The rest should behave exactly as in the other multiple-constraints test
+	}
+
+	@Test
+	public void minimumShouldMatch_error_negativeCeiling_number() {
+		QueryBuilder queryBuilder = helper.queryBuilder( IndexedEntity.class );
+
+		thrown.expect( IllegalArgumentException.class );
+		thrown.expectMessage( "'ignoreConstraintCeiling'" );
+		thrown.expectMessage( "must be positive or zero" );
+
+		queryBuilder.bool().minimumShouldMatch()
+						.ifMoreThan( -1 ).thenRequireNumber( 1 );
+	}
+
+	@Test
+	public void minimumShouldMatch_error_negativeCeiling_percent() {
+		QueryBuilder queryBuilder = helper.queryBuilder( IndexedEntity.class );
+
+		thrown.expect( IllegalArgumentException.class );
+		thrown.expectMessage( "'ignoreConstraintCeiling'" );
+		thrown.expectMessage( "must be positive or zero" );
+
+		queryBuilder.bool().minimumShouldMatch()
+				.ifMoreThan( -1 ).thenRequirePercent( 50 );
+	}
+
+	@Test
+	public void minimumShouldMatch_error_multipleConflictingCeilings() {
 		QueryBuilder queryBuilder = helper.queryBuilder( IndexedEntity.class );
 
 		thrown.expect( SearchException.class );
-		thrown.expectMessage( "Multiple conflicting minimumShouldMatch constraints" );
+		thrown.expectMessage( "Multiple conflicting minimumShouldMatch constraints for ceiling" );
+		thrown.expectMessage( "'4'" );
 
-		queryBuilder.bool().minimumShouldMatchNumber( -1 ).minimumShouldMatchPercent( 100 );
+		queryBuilder.bool().minimumShouldMatch()
+				.ifMoreThan( 2 ).thenRequireNumber( -1 )
+				.ifMoreThan( 4 ).thenRequirePercent( 70 )
+				.ifMoreThan( 4 ).thenRequirePercent( 70 );
 	}
 
 	private void initData() {
