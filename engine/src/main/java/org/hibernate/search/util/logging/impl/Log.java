@@ -1019,6 +1019,6 @@ public interface Log extends BaseHibernateSearchLogger {
 			+ " expected a number between 1 and '%1$s', got '%2$s'.")
 	SearchException minimumShouldMatchMinimumOutOfBounds(int minimum, int totalShouldClauseNumber);
 
-	@Message(id = 352, value = "Multiple conflicting minimumShouldMatch constraints")
-	SearchException minimumShouldMatchConflictingConstraints();
+	@Message(id = 352, value = "Multiple conflicting minimumShouldMatch constraints for ceiling '%1$s'")
+	SearchException minimumShouldMatchConflictingConstraints(int ignoreConstraintCeiling);
 }

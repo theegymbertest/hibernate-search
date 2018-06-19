@@ -18,6 +18,7 @@ import org.apache.lucene.search.Query;
 
 import org.hibernate.search.exception.AssertionFailure;
 import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.MinimumShouldMatchContext;
 import org.hibernate.search.query.dsl.MustJunction;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
@@ -33,7 +34,7 @@ class BooleanQueryBuilder implements MustJunction {
 	private final List<BooleanClause> clauses;
 	private BooleanClause lastClause;
 	private final QueryCustomizer queryCustomizer;
-	private MinimumShouldMatchContextImpl minimumShouldMatchContext;
+	private MinimumShouldMatchContextImpl<BooleanJunction> minimumShouldMatchContext;
 
 	private int shouldClauseCount = 0;
 
@@ -142,20 +143,9 @@ class BooleanQueryBuilder implements MustJunction {
 	}
 
 	@Override
-	public BooleanJunction minimumShouldMatchNumber(int matchingClausesNumber) {
-		getMinimumShouldMatchContext().requireNumber( matchingClausesNumber );
-		return this;
-	}
-
-	@Override
-	public BooleanJunction minimumShouldMatchPercent(int matchingClausesPercent) {
-		getMinimumShouldMatchContext().requirePercent( matchingClausesPercent );
-		return this;
-	}
-
-	private MinimumShouldMatchContextImpl getMinimumShouldMatchContext() {
+	public MinimumShouldMatchContext<? extends BooleanJunction> minimumShouldMatch() {
 		if ( minimumShouldMatchContext == null ) {
-			minimumShouldMatchContext = new MinimumShouldMatchContextImpl();
+			minimumShouldMatchContext = new MinimumShouldMatchContextImpl<>( this );
 		}
 		return minimumShouldMatchContext;
 	}
