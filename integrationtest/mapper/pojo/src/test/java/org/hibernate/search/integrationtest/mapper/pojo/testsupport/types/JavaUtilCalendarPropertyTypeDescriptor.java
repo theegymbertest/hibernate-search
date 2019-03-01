@@ -6,6 +6,8 @@
  */
 package org.hibernate.search.integrationtest.mapper.pojo.testsupport.types;
 
+import static org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment.withDefaultTimeZone;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,6 +22,7 @@ import java.util.TimeZone;
 
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultIdentifierBridgeExpectations;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultValueBridgeExpectations;
+import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
@@ -28,6 +31,18 @@ public class JavaUtilCalendarPropertyTypeDescriptor extends PropertyTypeDescript
 
 	JavaUtilCalendarPropertyTypeDescriptor() {
 		super( Calendar.class );
+	}
+
+	@Override
+	public List<TestEnvironment> getTestEnvironments() {
+		return Arrays.asList(
+				withDefaultTimeZone( "UTC" ),
+				withDefaultTimeZone( "UTC-8" ),
+				withDefaultTimeZone( "UTC+10" ),
+				withDefaultTimeZone( "Europe/Oslo" ),
+				withDefaultTimeZone( "Europe/Paris" ),
+				withDefaultTimeZone( "Europe/Amsterdam" )
+		);
 	}
 
 	@Override
@@ -74,7 +89,14 @@ public class JavaUtilCalendarPropertyTypeDescriptor extends PropertyTypeDescript
 								LocalDateTime.parse( "2011-10-30T02:50:00.00" ).atZone( ZoneId.of( "CET" ) )
 										.withLaterOffsetAtOverlap().toInstant().toEpochMilli(),
 								"CET"
-						)
+						),
+
+						// Test workaround for JDK-8061577/JDK-6281408
+						calendar( 1900, 1, 1, 0, 0, 0, 0, "UTC" ),
+						calendar( 1892, 1, 1, 14, 32, 0, 0, "Europe/Oslo" ),
+						calendar( 1899, 12, 31, 23, 59, 59, 999, "Europe/Paris" ),
+						calendar( 1899, 12, 31, 23, 59, 59, 999, "Europe/Amsterdam" ),
+						calendar( 1600, 1, 1, 14, 32, 0, 0, "Europe/Amsterdam" )
 				);
 			}
 
@@ -95,7 +117,13 @@ public class JavaUtilCalendarPropertyTypeDescriptor extends PropertyTypeDescript
 						zonedDateTime( "1500-03-10T12:00:00.00", "UTC" ),
 
 						zonedDateTime( "2011-10-30T02:50:00.00", "CET" ).withEarlierOffsetAtOverlap(),
-						zonedDateTime( "2011-10-30T02:50:00.00", "CET" ).withLaterOffsetAtOverlap()
+						zonedDateTime( "2011-10-30T02:50:00.00", "CET" ).withLaterOffsetAtOverlap(),
+
+						zonedDateTime( "1900-01-01T00:00:00.00", "UTC" ),
+						zonedDateTime( "1892-01-01T14:32:00.00", "Europe/Oslo" ),
+						zonedDateTime( "1899-12-31T23:59:59.999", "Europe/Paris" ),
+						zonedDateTime( "1899-12-31T23:59:59.999", "Europe/Amsterdam" ),
+						zonedDateTime( "1600-01-01T14:32:00.00", "Europe/Amsterdam" )
 				);
 			}
 

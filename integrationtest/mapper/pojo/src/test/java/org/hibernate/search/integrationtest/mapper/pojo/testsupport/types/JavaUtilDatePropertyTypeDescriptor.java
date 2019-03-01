@@ -6,7 +6,11 @@
  */
 package org.hibernate.search.integrationtest.mapper.pojo.testsupport.types;
 
+import static org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment.withDefaultTimeZone;
+
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,10 +18,10 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.TimeZone;
 
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultIdentifierBridgeExpectations;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultValueBridgeExpectations;
+import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
@@ -26,6 +30,19 @@ public class JavaUtilDatePropertyTypeDescriptor extends PropertyTypeDescriptor<D
 
 	JavaUtilDatePropertyTypeDescriptor() {
 		super( Date.class );
+	}
+
+	@Override
+	public List<TestEnvironment> getTestEnvironments() {
+		return Arrays.asList(
+				withDefaultTimeZone( "UTC" ),
+				withDefaultTimeZone( "UTC-8" ),
+				withDefaultTimeZone( "UTC+10" ),
+				// Test workaround for JDK-8061577/JDK-6281408
+				withDefaultTimeZone( "Europe/Oslo" ),
+				withDefaultTimeZone( "Europe/Paris" ),
+				withDefaultTimeZone( "Europe/Amsterdam" )
+		);
 	}
 
 	@Override
@@ -58,7 +75,12 @@ public class JavaUtilDatePropertyTypeDescriptor extends PropertyTypeDescriptor<D
 						// A february 29th on a leap year
 						date( 2000, 2, 29, 12, 0, 0, 0 ),
 						// A february 29th on a leap year in the Julian calendar (java.util), but not the Gregorian calendar (java.time)
-						date( 1500, 2, 29, 12, 0, 0, 0 )
+						date( 1500, 2, 29, 12, 0, 0, 0 ),
+
+						// Test workaround for JDK-8061577/JDK-6281408
+						date( 1900, 1, 1, 0, 0, 0, 0 ),
+						date( 1892, 1, 1, 14, 32, 0, 0 ),
+						date( 1600, 1, 1, 14, 32, 0, 0 )
 				);
 			}
 
@@ -66,15 +88,19 @@ public class JavaUtilDatePropertyTypeDescriptor extends PropertyTypeDescriptor<D
 			public List<Instant> getDocumentFieldValues() {
 				return Arrays.asList(
 						Instant.ofEpochMilli( Long.MIN_VALUE ),
-						Instant.parse( "1970-01-01T00:00:00.00Z" ),
-						Instant.parse( "1970-01-09T13:28:59.00Z" ),
-						Instant.parse( "2017-11-06T19:19:00.54Z" ),
+						LocalDateTime.parse( "1970-01-01T00:00:00.00Z" ).atZone( ZoneId.systemDefault() ).toInstant(),
+						LocalDateTime.parse( "1970-01-09T13:28:59.00Z" ).atZone( ZoneId.systemDefault() ).toInstant(),
+						LocalDateTime.parse( "2017-11-06T19:19:00.54Z" ).atZone( ZoneId.systemDefault() ).toInstant(),
 						Instant.ofEpochMilli( Long.MAX_VALUE ),
 
-						Instant.parse( "2000-02-29T12:00:00.0Z" ),
+						LocalDateTime.parse( "2000-02-29T12:00:00.0Z" ).atZone( ZoneId.systemDefault() ).toInstant(),
 						// The Julian calendar is 10 days late at this point
 						// See https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar#Difference_between_Julian_and_proleptic_Gregorian_calendar_dates
-						Instant.parse( "1500-03-10T12:00:00.0Z" )
+						LocalDateTime.parse( "1500-03-10T12:00:00.0Z" ).atZone( ZoneId.systemDefault() ).toInstant(),
+
+						LocalDateTime.parse( "1900-01-01T00:00:00.00" ).atZone( ZoneId.systemDefault() ).toInstant(),
+						LocalDateTime.parse( "1892-01-01T14:32:00.00" ).atZone( ZoneId.systemDefault() ).toInstant(),
+						LocalDateTime.parse( "1600-01-01T14:32:00.00" ).atZone( ZoneId.systemDefault() ).toInstant()
 				);
 			}
 
@@ -103,7 +129,7 @@ public class JavaUtilDatePropertyTypeDescriptor extends PropertyTypeDescriptor<D
 	}
 
 	private static Date date(int year, int month, int day, int hour, int minute, int second, int millisecond) {
-		Calendar calendar = new GregorianCalendar( TimeZone.getTimeZone( "UTC" ), Locale.ROOT );
+		Calendar calendar = new GregorianCalendar( Locale.ROOT );
 		calendar.clear();
 		calendar.set( year, month - 1, day, hour, minute, second );
 		calendar.set( Calendar.MILLISECOND, millisecond );

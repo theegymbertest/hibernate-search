@@ -8,9 +8,7 @@ package org.hibernate.search.mapper.pojo.bridge.builtin.impl;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -42,7 +40,13 @@ public final class DefaultJavaUtilCalendarValueBridge implements ValueBridge<Cal
 		}
 
 		if ( value instanceof GregorianCalendar ) {
-			return ( (GregorianCalendar) value ).toZonedDateTime();
+			GregorianCalendar calendar = (GregorianCalendar) value;
+			return ZonedDateTime.of(
+					calendar.get( Calendar.YEAR ), calendar.get( Calendar.MONTH ) + 1, calendar.get( Calendar.DAY_OF_MONTH ),
+					calendar.get( Calendar.HOUR_OF_DAY ), calendar.get( Calendar.MINUTE ), calendar.get( Calendar.SECOND ),
+					calendar.get( Calendar.MILLISECOND ) * 1_000_000,
+					calendar.getTimeZone().toZoneId()
+			);
 		}
 
 		// Using any static zone id to produce the ZonedDateTime instance,
@@ -87,11 +91,19 @@ public final class DefaultJavaUtilCalendarValueBridge implements ValueBridge<Cal
 			// it seems that the method calculates firstDayOfWeek and minimalDaysInFirstWeek
 			// in a different way GregorianCalendar.getInstance does.
 			Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( value.getZone() ), Locale.getDefault() );
+			calendar.clear();
+
 			if ( calendar instanceof GregorianCalendar ) {
-				calendar.setTimeInMillis( Math.addExact( Math.multiplyExact( value.toEpochSecond(), 1000 ), value.get( ChronoField.MILLI_OF_SECOND ) ) );
+				calendar.set( Calendar.YEAR, value.getYear() );
+				calendar.set( Calendar.MONTH, value.getMonthValue() - 1 );
+				calendar.set( Calendar.DAY_OF_MONTH, value.getDayOfMonth() );
+				calendar.set( Calendar.HOUR_OF_DAY, value.getHour() );
+				calendar.set( Calendar.MINUTE, value.getMinute() );
+				calendar.set( Calendar.SECOND, value.getSecond() );
+				calendar.set( Calendar.MILLISECOND, value.getNano() / 1_000_000 );
 			}
 			else {
-				calendar.setTime( Date.from( value.toInstant() ) );
+				calendar.setTimeInMillis( value.toInstant().toEpochMilli() );
 			}
 
 			return calendar;

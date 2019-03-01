@@ -6,6 +6,9 @@
  */
 package org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations;
 
+import java.time.ZoneId;
+import java.util.TimeZone;
+
 public interface TestEnvironment {
 
 	ActiveTestEnvironment setup();
@@ -20,6 +23,24 @@ public interface TestEnvironment {
 			@Override
 			public String toString() {
 				return "Default env.";
+			}
+		};
+	}
+
+	static TestEnvironment withDefaultTimeZone(String zoneId) {
+		return new TestEnvironment() {
+			@Override
+			public ActiveTestEnvironment setup() {
+				TimeZone previousDefaultTimeZone = TimeZone.getDefault();
+				TimeZone.setDefault( TimeZone.getTimeZone( ZoneId.of( zoneId ) ) );
+				return () -> {
+					TimeZone.setDefault( previousDefaultTimeZone );
+				};
+			}
+
+			@Override
+			public String toString() {
+				return "Default TZ = " + zoneId;
 			}
 		};
 	}
