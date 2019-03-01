@@ -20,6 +20,7 @@ import org.hibernate.search.engine.backend.types.converter.runtime.ToDocumentFie
 import org.hibernate.search.engine.backend.types.converter.runtime.spi.FromDocumentFieldValueConvertContextImpl;
 import org.hibernate.search.engine.backend.types.converter.runtime.spi.ToDocumentFieldValueConvertContextImpl;
 import org.hibernate.search.engine.search.SearchQuery;
+import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.util.rule.JavaBeanMappingSetupHelper;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultValueBridgeExpectations;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.PropertyTypeDescriptor;
@@ -34,6 +35,7 @@ import org.hibernate.search.util.impl.integrationtest.common.rule.StubSearchWork
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.document.model.StubIndexSchemaNode;
 import org.hibernate.search.util.impl.test.SubTest;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,11 +53,15 @@ import org.easymock.Capture;
 public class FieldDefaultBridgeIT<V, F> {
 	private static final String FIELD_NAME = DefaultValueBridgeExpectations.TYPE_WITH_VALUE_BRIDGE_FIELD_NAME;
 
-	@Parameterized.Parameters(name = "{0}")
-	public static Object[] types() {
-		return PropertyTypeDescriptor.getAll().stream()
-				.map( type -> new Object[] { type, type.getDefaultValueBridgeExpectations() } )
-				.toArray();
+	@Parameterized.Parameters(name = "{0} - {2}")
+	public static List<Object[]> parameters() {
+		List<Object[]> data = new ArrayList<>();
+		for ( PropertyTypeDescriptor<?> type : PropertyTypeDescriptor.getAll() ) {
+			for ( TestEnvironment env : type.getTestEnvironments() ) {
+				data.add( new Object[] { type, type.getDefaultValueBridgeExpectations(), env } );
+			}
+		}
+		return data;
 	}
 
 	@Rule
@@ -64,20 +70,28 @@ public class FieldDefaultBridgeIT<V, F> {
 	@Rule
 	public JavaBeanMappingSetupHelper setupHelper = new JavaBeanMappingSetupHelper( MethodHandles.lookup() );
 
-	private DefaultValueBridgeExpectations<V, F> expectations;
+	private final DefaultValueBridgeExpectations<V, F> expectations;
+	private final TestEnvironment environment;
 	private JavaBeanMapping mapping;
 	private StubIndexSchemaNode index1FieldSchemaNode;
 	private StubIndexSchemaNode index2FieldSchemaNode;
 
-	public FieldDefaultBridgeIT(PropertyTypeDescriptor<V> typeDescriptor, Optional<DefaultValueBridgeExpectations<V, F>> expectations) {
+	private TestEnvironment.ActiveTestEnvironment activeEnvironment;
+
+	public FieldDefaultBridgeIT(PropertyTypeDescriptor<V> typeDescriptor,
+			Optional<DefaultValueBridgeExpectations<V, F>> expectations,
+			TestEnvironment environment) {
 		Assume.assumeTrue(
 				"Type " + typeDescriptor + " does not have a default value bridge", expectations.isPresent()
 		);
 		this.expectations = expectations.get();
+		this.environment = environment;
 	}
 
 	@Before
 	public void setup() {
+		activeEnvironment = environment.setup();
+
 		Capture<StubIndexSchemaNode> schemaCapture1 = Capture.newInstance();
 		Capture<StubIndexSchemaNode> schemaCapture2 = Capture.newInstance();
 		backendMock.expectSchema(
@@ -95,6 +109,13 @@ public class FieldDefaultBridgeIT<V, F> {
 		backendMock.verifyExpectationsMet();
 		index1FieldSchemaNode = schemaCapture1.getValue().getChildren().get( FIELD_NAME ).get( 0 );
 		index2FieldSchemaNode = schemaCapture1.getValue().getChildren().get( FIELD_NAME ).get( 0 );
+	}
+
+	@After
+	public void tearDown() {
+		if ( activeEnvironment != null ) {
+			activeEnvironment.close();
+		}
 	}
 
 	@Test

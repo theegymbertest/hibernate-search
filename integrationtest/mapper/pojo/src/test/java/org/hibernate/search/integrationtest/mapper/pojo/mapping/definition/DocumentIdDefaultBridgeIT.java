@@ -9,8 +9,10 @@ package org.hibernate.search.integrationtest.mapper.pojo.mapping.definition;
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThat;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.search.engine.backend.types.converter.runtime.spi.ToDocumentIdentifierValueConvertContext;
@@ -19,6 +21,7 @@ import org.hibernate.search.engine.backend.types.converter.spi.ToDocumentIdentif
 import org.hibernate.search.engine.search.SearchQuery;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.PropertyTypeDescriptor;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultIdentifierBridgeExpectations;
+import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.util.rule.JavaBeanMappingSetupHelper;
 import org.hibernate.search.mapper.javabean.JavaBeanMapping;
 import org.hibernate.search.mapper.javabean.mapping.context.impl.JavaBeanMappingContext;
@@ -31,6 +34,7 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.StubBa
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.document.model.StubIndexSchemaNode;
 import org.hibernate.search.util.impl.test.SubTest;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,11 +51,15 @@ import org.easymock.Capture;
 @RunWith(Parameterized.class)
 public class DocumentIdDefaultBridgeIT<I> {
 
-	@Parameterized.Parameters(name = "{0}")
-	public static Object[] types() {
-		return PropertyTypeDescriptor.getAll().stream()
-				.map( type -> new Object[] { type, type.getDefaultIdentifierBridgeExpectations() } )
-				.toArray();
+	@Parameterized.Parameters(name = "{0} - {2}")
+	public static List<Object[]> parameters() {
+		List<Object[]> data = new ArrayList<>();
+		for ( PropertyTypeDescriptor<?> type : PropertyTypeDescriptor.getAll() ) {
+			for ( TestEnvironment env : type.getTestEnvironments() ) {
+				data.add( new Object[] { type, type.getDefaultIdentifierBridgeExpectations(), env } );
+			}
+		}
+		return data;
 	}
 
 	@Rule
@@ -60,21 +68,28 @@ public class DocumentIdDefaultBridgeIT<I> {
 	@Rule
 	public JavaBeanMappingSetupHelper setupHelper = new JavaBeanMappingSetupHelper( MethodHandles.lookup() );
 
-	private DefaultIdentifierBridgeExpectations<I> expectations;
+	private final DefaultIdentifierBridgeExpectations<I> expectations;
+	private final TestEnvironment environment;
 	private JavaBeanMapping mapping;
 	private StubIndexSchemaNode index1RootSchemaNode;
 	private StubIndexSchemaNode index2RootSchemaNode;
 
+	private TestEnvironment.ActiveTestEnvironment activeEnvironment;
+
 	public DocumentIdDefaultBridgeIT(PropertyTypeDescriptor<I> typeDescriptor,
-			Optional<DefaultIdentifierBridgeExpectations<I>> expectations) {
+			Optional<DefaultIdentifierBridgeExpectations<I>> expectations,
+			TestEnvironment environment) {
 		Assume.assumeTrue(
 				"Type " + typeDescriptor + " does not have a default identifier bridge", expectations.isPresent()
 		);
 		this.expectations = expectations.get();
+		this.environment = environment;
 	}
 
 	@Before
 	public void setup() {
+		activeEnvironment = environment.setup();
+
 		Capture<StubIndexSchemaNode> schemaCapture1 = Capture.newInstance();
 		Capture<StubIndexSchemaNode> schemaCapture2 = Capture.newInstance();
 		backendMock.expectSchema(
@@ -92,6 +107,13 @@ public class DocumentIdDefaultBridgeIT<I> {
 		backendMock.verifyExpectationsMet();
 		index1RootSchemaNode = schemaCapture1.getValue();
 		index2RootSchemaNode = schemaCapture2.getValue();
+	}
+
+	@After
+	public void tearDown() {
+		if ( activeEnvironment != null ) {
+			activeEnvironment.close();
+		}
 	}
 
 	@Test

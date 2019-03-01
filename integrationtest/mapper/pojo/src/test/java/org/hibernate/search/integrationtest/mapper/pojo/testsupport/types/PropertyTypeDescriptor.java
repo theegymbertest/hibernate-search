@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultIdentifierBridgeExpectations;
 import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.DefaultValueBridgeExpectations;
+import org.hibernate.search.integrationtest.mapper.pojo.testsupport.types.expectations.TestEnvironment;
 
 public abstract class PropertyTypeDescriptor<V> {
 
@@ -71,6 +72,10 @@ public abstract class PropertyTypeDescriptor<V> {
 
 	public final Class<V> getJavaType() {
 		return javaType;
+	}
+
+	public List<TestEnvironment> getTestEnvironments() {
+		return Collections.singletonList( TestEnvironment.getDefault() );
 	}
 
 	public abstract Optional<DefaultIdentifierBridgeExpectations<V>> getDefaultIdentifierBridgeExpectations();
