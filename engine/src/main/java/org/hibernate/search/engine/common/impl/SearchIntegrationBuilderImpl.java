@@ -138,8 +138,12 @@ public class SearchIntegrationBuilderImpl implements SearchIntegrationBuilder {
 				resourceResolver = defaultClassAndResourceResolver;
 			}
 
+			ReflectionBeanResolver reflectionBeanResolver = new ReflectionBeanResolver( classResolver );
 			if ( beanResolver == null ) {
-				beanResolver = new ReflectionBeanResolver( classResolver );
+				beanResolver = reflectionBeanResolver;
+			}
+			else {
+				beanResolver.initialize( new BeanResolverBuildContextImpl( reflectionBeanResolver ) );
 			}
 
 			ConfigurationPropertySource propertySource = mainPropertySource;

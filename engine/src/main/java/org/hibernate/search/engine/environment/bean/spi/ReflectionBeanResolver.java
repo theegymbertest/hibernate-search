@@ -6,10 +6,10 @@
  */
 package org.hibernate.search.engine.environment.bean.spi;
 
-
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.engine.environment.classpath.spi.ClassLoaderHelper;
 import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
+import org.hibernate.search.util.common.AssertionFailure;
 
 
 /**
@@ -21,6 +21,11 @@ public final class ReflectionBeanResolver implements BeanResolver {
 
 	public ReflectionBeanResolver(ClassResolver classResolver) {
 		this.classResolver = classResolver;
+	}
+
+	@Override
+	public void initialize(BeanResolverBuildContext buildContext) {
+		throw new AssertionFailure( "This method should not be called" );
 	}
 
 	@Override

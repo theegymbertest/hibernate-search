@@ -11,6 +11,7 @@ import org.hibernate.resource.beans.container.spi.ContainedBean;
 import org.hibernate.resource.beans.spi.BeanInstanceProducer;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
 import org.hibernate.search.engine.environment.bean.spi.BeanResolver;
+import org.hibernate.search.engine.environment.bean.spi.BeanResolverBuildContext;
 import org.hibernate.search.engine.environment.bean.spi.ReflectionBeanResolver;
 import org.hibernate.search.util.common.impl.Contracts;
 
@@ -32,27 +33,29 @@ final class HibernateOrmBeanContainerBeanResolver implements BeanResolver {
 	};
 
 	private final BeanContainer beanContainer;
+	private ReflectionBeanResolver fallback;
 
-	private final ReflectionBeanResolver fallback;
 	private final BeanInstanceProducer fallbackInstanceProducer;
 
-	HibernateOrmBeanContainerBeanResolver(BeanContainer beanContainer, ReflectionBeanResolver fallback) {
+	HibernateOrmBeanContainerBeanResolver(BeanContainer beanContainer) {
 		Contracts.assertNotNull( beanContainer, "beanContainer" );
 		this.beanContainer = beanContainer;
-		this.fallback = fallback;
 		this.fallbackInstanceProducer = new BeanInstanceProducer() {
-			private final ReflectionBeanResolver delegate = fallback;
-
 			@Override
 			public <B> B produceBeanInstance(Class<B> aClass) {
-				return delegate.resolveNoClosingNecessary( aClass );
+				return fallback.resolveNoClosingNecessary( aClass );
 			}
 
 			@Override
 			public <B> B produceBeanInstance(String s, Class<B> aClass) {
-				return delegate.resolveNoClosingNecessary( aClass, s );
+				return fallback.resolveNoClosingNecessary( aClass, s );
 			}
 		};
+	}
+
+	@Override
+	public void initialize(BeanResolverBuildContext buildContext) {
+		this.fallback = buildContext.getFallback();
 	}
 
 	@Override

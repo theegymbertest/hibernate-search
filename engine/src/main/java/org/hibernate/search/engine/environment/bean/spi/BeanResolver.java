@@ -21,6 +21,15 @@ import org.hibernate.search.util.common.SearchException;
 public interface BeanResolver extends AutoCloseable {
 
 	/**
+	 * Initialize the bean resolver using the given context.
+	 * <p>
+	 * Called exactly once per {@link BeanResolver} instance.
+	 *
+	 * @param buildContext The build context.
+	 */
+	void initialize(BeanResolverBuildContext buildContext);
+
+	/**
 	 * Release any internal resource created while resolving beans.
 	 * <p>
 	 * Provided beans will not be usable after a call to this method.
