@@ -167,8 +167,7 @@ public class LuceneBackendFactory implements BackendFactory {
 						try ( BeanHolder<? extends LuceneAnalysisConfigurer> configurerHolder = holder ) {
 							LuceneAnalysisComponentFactory analysisComponentFactory = new LuceneAnalysisComponentFactory(
 									luceneVersion,
-									buildContext.getServiceManager().getClassResolver(),
-									buildContext.getServiceManager().getResourceResolver()
+									buildContext.getServiceManager().getJavaPath()
 							);
 							InitialLuceneAnalysisDefinitionContainerContext collector =
 									new InitialLuceneAnalysisDefinitionContainerContext( analysisComponentFactory );

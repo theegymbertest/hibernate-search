@@ -4,23 +4,31 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.engine.environment.classpath.spi;
+package org.hibernate.search.engine.environment.classpath.impl;
 
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.search.engine.environment.classpath.spi.ClassLoadingException;
+import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
+import org.hibernate.search.engine.environment.classpath.spi.JavaPath;
+import org.hibernate.search.engine.environment.classpath.spi.ResourceResolver;
 import org.hibernate.search.engine.logging.impl.Log;
-import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.common.impl.StringHelper;
 import org.hibernate.search.util.common.impl.Throwables;
 
 /**
- * Utility class to load instances of other classes by using a fully qualified name,
- * or from a class type.
+ * A representation of the Java path (classpath, modulepath) allowing to perform operation on classes and resources.
+ * <p>
+ * Allows to load instances of other classes by using a fully qualified name,
+ * to load resources, to load services, ...
+ * <p>
  * Uses reflection and throws SearchException(s) with proper descriptions of the error,
  * such as the target class is missing a proper constructor, is an interface, is not found...
  *
@@ -28,72 +36,34 @@ import org.hibernate.search.util.common.impl.Throwables;
  * @author Hardy Ferentschik
  * @author Ales Justin
  */
-public class ClassLoaderHelper {
+public final class JavaPathImpl implements JavaPath {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private ClassLoaderHelper() {
+	private final ClassResolver classResolver;
+
+	private final ResourceResolver resourceResolver;
+
+	public JavaPathImpl(ClassResolver classResolver, ResourceResolver resourceResolver) {
+		this.classResolver = classResolver;
+		this.resourceResolver = resourceResolver;
 	}
 
-	/**
-	 * Creates an instance of a target class specified by the fully qualified class name using a {@link ClassLoader}
-	 * as fallback when the class cannot be found in the context one.
-	 *
-	 * @param <T> matches the type of targetSuperType: defines the return type
-	 * @param targetSuperType the return type of the function, the classNameToLoad will be checked
-	 * to be assignable to this type.
-	 * @param classNameToLoad a fully qualified class name, whose type is assignable to targetSuperType
-	 * @param componentDescription a meaningful description of the role the instance will have,
-	 * used to enrich error messages to describe the context of the error
-	 * @param classResolver the {@link ClassResolver} to use to load classes
-	 *
-	 * @return a new instance of the type given by {@code classNameToLoad}
-	 *
-	 * @throws SearchException wrapping other error types with a proper error message for all kind of problems, like
-	 * classNotFound, missing proper constructor, wrong type, security errors.
-	 */
-	public static <T> T instanceFromName(Class<T> targetSuperType,
-			String classNameToLoad,
-			String componentDescription,
-			ClassResolver classResolver) {
-		final Class<?> clazzDef = classForName( classNameToLoad, componentDescription, classResolver );
+	@Override
+	public <T> T instanceFromName(Class<T> targetSuperType, String classNameToLoad, String componentDescription) {
+		final Class<?> clazzDef = classForName( classNameToLoad, componentDescription );
 		return instanceFromClass( targetSuperType, clazzDef, componentDescription );
 	}
 
-	/**
-	 * Creates an instance of target class
-	 *
-	 * @param <T> the type of targetSuperType: defines the return type
-	 * @param targetSuperType the created instance will be checked to be assignable to this type
-	 * @param classToLoad the class to be instantiated
-	 * @param componentDescription a role name/description to contextualize error messages
-	 *
-	 * @return a new instance of classToLoad
-	 *
-	 * @throws SearchException wrapping other error types with a proper error message for all kind of problems, like
-	 * missing proper constructor, wrong type, securitymanager errors.
-	 */
-	public static <T> T instanceFromClass(Class<T> targetSuperType, Class<?> classToLoad, String componentDescription) {
+	@Override
+	public <T> T instanceFromClass(Class<T> targetSuperType, Class<?> classToLoad, String componentDescription) {
 		checkClassType( classToLoad, componentDescription );
 		final Object instance = untypedInstanceFromClass( classToLoad, componentDescription );
 		return verifySuperTypeCompatibility( targetSuperType, instance, classToLoad, componentDescription );
 	}
 
-	/**
-	 * Creates an instance of target class. Similar to {@link #instanceFromClass(Class, Class, String)} but not checking
-	 * the created instance will be of any specific type: using {@link #instanceFromClass(Class, Class, String)} should
-	 * be preferred whenever possible.
-	 *
-	 * @param <T> the type of targetSuperType: defines the return type
-	 * @param classToLoad the class to be instantiated
-	 * @param componentDescription a role name/description to contextualize error messages. Ideally should be provided, but it can handle null.
-	 *
-	 * @return a new instance of classToLoad
-	 *
-	 * @throws SearchException wrapping other error types with a proper error message for all kind of problems, like
-	 * missing proper constructor, securitymanager errors.
-	 */
-	public static <T> T untypedInstanceFromClass(final Class<T> classToLoad, final String componentDescription) {
+	@Override
+	public <T> T untypedInstanceFromClass(final Class<T> classToLoad, final String componentDescription) {
 		checkClassType( classToLoad, componentDescription );
 		Constructor<T> constructor = getNoArgConstructor( classToLoad, componentDescription );
 		try {
@@ -137,22 +107,8 @@ public class ClassLoaderHelper {
 		}
 	}
 
-	/**
-	 * Creates an instance of target class having a Map of strings as constructor parameter.
-	 * Most of the Analyzer SPIs provided by Lucene have such a constructor.
-	 *
-	 * @param <T> the type of targetSuperType: defines the return type
-	 * @param targetSuperType the created instance will be checked to be assignable to this type
-	 * @param classToLoad the class to be instantiated
-	 * @param componentDescription a role name/description to contextualize error messages
-	 * @param constructorParameter a Map to be passed to the constructor. The loaded type must have such a constructor.
-	 *
-	 * @return a new instance of classToLoad
-	 *
-	 * @throws SearchException wrapping other error types with a proper error message for all kind of problems, like
-	 * missing proper constructor, wrong type, security errors.
-	 */
-	public static <T> T instanceFromClass(Class<T> targetSuperType, Class<?> classToLoad, String componentDescription,
+	@Override
+	public <T> T instanceFromClass(Class<T> targetSuperType, Class<?> classToLoad, String componentDescription,
 			Map<String, String> constructorParameter) {
 		checkClassType( classToLoad, componentDescription );
 		Constructor<?> singleMapConstructor = getSingleMapConstructor( classToLoad, componentDescription );
@@ -208,7 +164,8 @@ public class ClassLoaderHelper {
 		}
 	}
 
-	public static Class<?> classForName(String classNameToLoad, String componentDescription, ClassResolver classResolver) {
+	@Override
+	public Class<?> classForName(String classNameToLoad, String componentDescription) {
 		Class<?> clazz;
 		try {
 			clazz = classResolver.classForName( classNameToLoad );
@@ -219,11 +176,10 @@ public class ClassLoaderHelper {
 		return clazz;
 	}
 
-	public static <T> Class<? extends T> classForName(Class<T> targetSuperType,
-			String classNameToLoad,
-			String componentDescription,
-			ClassResolver classResolver) {
-		final Class<?> clazzDef = classForName( classNameToLoad, componentDescription, classResolver );
+	@Override
+	public <T> Class<? extends T> classForName(Class<T> targetSuperType, String classNameToLoad,
+			String componentDescription) {
+		final Class<?> clazzDef = classForName( classNameToLoad, componentDescription );
 		try {
 			return clazzDef.asSubclass( targetSuperType );
 		}
@@ -232,20 +188,18 @@ public class ClassLoaderHelper {
 		}
 	}
 
-	/**
-	 * Perform resolution of a class name.
-	 * <p>
-	 * Here we first check the context classloader, if one, before delegating to
-	 * {@link Class#forName(String, boolean, ClassLoader)} using the caller's classloader
-	 *
-	 * @param classNameToLoad The class name
-	 * @param classResolver The {@link ClassResolver} to use to load classes
-	 *
-	 * @return The class reference.
-	 *
-	 * @throws ClassLoadingException From {@link Class#forName(String, boolean, ClassLoader)}.
-	 */
-	public static Class<?> classForName(String classNameToLoad, ClassResolver classResolver) {
-		return classResolver.classForName( classNameToLoad );
+	@Override
+	public <T> Iterable<T> loadJavaServices(Class<T> serviceContract) {
+		return classResolver.loadJavaServices( serviceContract );
+	}
+
+	@Override
+	public URL locateResource(String name) {
+		return resourceResolver.locateResource( name );
+	}
+
+	@Override
+	public InputStream locateResourceStream(String name) {
+		return resourceResolver.locateResourceStream( name );
 	}
 }

@@ -6,9 +6,8 @@
  */
 package org.hibernate.search.engine.environment.bean.spi;
 
+import org.hibernate.search.engine.environment.classpath.spi.JavaPath;
 import org.hibernate.search.engine.environment.bean.BeanHolder;
-import org.hibernate.search.engine.environment.classpath.spi.ClassLoaderHelper;
-import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
 import org.hibernate.search.util.common.AssertionFailure;
 
 
@@ -17,10 +16,10 @@ import org.hibernate.search.util.common.AssertionFailure;
  */
 public final class ReflectionBeanResolver implements BeanResolver {
 
-	private final ClassResolver classResolver;
+	private final JavaPath javaPath;
 
-	public ReflectionBeanResolver(ClassResolver classResolver) {
-		this.classResolver = classResolver;
+	public ReflectionBeanResolver(JavaPath javaPath) {
+		this.javaPath = javaPath;
 	}
 
 	@Override
@@ -39,7 +38,7 @@ public final class ReflectionBeanResolver implements BeanResolver {
 	}
 
 	public <T> T resolveNoClosingNecessary(Class<T> typeReference) {
-		return ClassLoaderHelper.untypedInstanceFromClass( typeReference, typeReference.getName() );
+		return javaPath.untypedInstanceFromClass( typeReference, typeReference.getName() );
 	}
 
 	@Override
@@ -48,10 +47,10 @@ public final class ReflectionBeanResolver implements BeanResolver {
 	}
 
 	public <T> T resolveNoClosingNecessary(Class<T> typeReference, String implementationFullyQualifiedClassName) {
-		Class<? extends T> implementationClass = ClassLoaderHelper.classForName(
-				typeReference, implementationFullyQualifiedClassName, typeReference.getName(), classResolver
+		Class<? extends T> implementationClass = javaPath.classForName(
+				typeReference, implementationFullyQualifiedClassName, typeReference.getName()
 		);
-		return ClassLoaderHelper.untypedInstanceFromClass( implementationClass, implementationFullyQualifiedClassName );
+		return javaPath.untypedInstanceFromClass( implementationClass, implementationFullyQualifiedClassName );
 	}
 
 }

@@ -10,9 +10,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 
 import org.hibernate.search.backend.lucene.logging.impl.Log;
-import org.hibernate.search.engine.environment.classpath.spi.ClassLoaderHelper;
-import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
-import org.hibernate.search.engine.environment.classpath.spi.ResourceResolver;
+import org.hibernate.search.engine.environment.classpath.spi.JavaPath;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
 import org.apache.lucene.analysis.util.ResourceLoader;
@@ -27,17 +25,15 @@ import org.apache.lucene.analysis.util.ResourceLoader;
 final class HibernateSearchResourceLoader implements ResourceLoader {
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final ClassResolver classResolver;
-	private final ResourceResolver resourceResolver;
+	private final JavaPath javaPath;
 
-	HibernateSearchResourceLoader(ClassResolver classResolver, ResourceResolver resourceResolver) {
-		this.classResolver = classResolver;
-		this.resourceResolver = resourceResolver;
+	HibernateSearchResourceLoader(JavaPath javaPath) {
+		this.javaPath = javaPath;
 	}
 
 	@Override
 	public InputStream openResource(String resource) {
-		InputStream inputStream = resourceResolver.locateResourceStream( resource );
+		InputStream inputStream = javaPath.locateResourceStream( resource );
 
 		if ( inputStream == null ) {
 			throw log.unableToLoadResource( resource );
@@ -49,21 +45,19 @@ final class HibernateSearchResourceLoader implements ResourceLoader {
 
 	@Override
 	public <T> Class<? extends T> findClass(String className, Class<T> expectedType) {
-		return ClassLoaderHelper.classForName(
+		return javaPath.classForName(
 				expectedType,
 				className,
-				describeComponent( className ),
-				classResolver
+				describeComponent( className )
 		);
 	}
 
 	@Override
 	public <T> T newInstance(String className, Class<T> expectedType) {
-		return ClassLoaderHelper.instanceFromName(
+		return javaPath.instanceFromName(
 				expectedType,
 				className,
-				describeComponent( className ),
-				classResolver
+				describeComponent( className )
 		);
 	}
 

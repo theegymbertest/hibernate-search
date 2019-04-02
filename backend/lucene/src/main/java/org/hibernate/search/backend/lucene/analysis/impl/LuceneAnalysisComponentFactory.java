@@ -11,9 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.hibernate.search.engine.environment.classpath.spi.ClassLoaderHelper;
-import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
-import org.hibernate.search.engine.environment.classpath.spi.ResourceResolver;
+import org.hibernate.search.engine.environment.classpath.spi.JavaPath;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
@@ -38,14 +36,13 @@ public final class LuceneAnalysisComponentFactory {
 			new KeywordTokenizerFactory( Collections.emptyMap() );
 
 	private final Version luceneMatchVersion;
-
+	private final JavaPath javaPath;
 	private final ResourceLoader resourceLoader;
 
-	public LuceneAnalysisComponentFactory(Version luceneMatchVersion,
-			ClassResolver classResolver, ResourceResolver resourceResolver) {
-		super();
+	public LuceneAnalysisComponentFactory(Version luceneMatchVersion, JavaPath javaPath) {
 		this.luceneMatchVersion = luceneMatchVersion;
-		this.resourceLoader = new HibernateSearchResourceLoader( classResolver, resourceResolver );
+		this.javaPath = javaPath;
+		this.resourceLoader = new HibernateSearchResourceLoader( javaPath );
 	}
 
 	public Analyzer createAnalyzer(TokenizerFactory tokenizerFactory,
@@ -81,7 +78,7 @@ public final class LuceneAnalysisComponentFactory {
 	private <T> T createAnalysisComponent(Class<T> expectedFactoryClass,
 			Class<? extends T> factoryClass, Map<String, String> parameters) throws IOException {
 		final Map<String, String> tokenMapsOfParameters = getMapOfParameters( parameters, luceneMatchVersion );
-		T tokenizerFactory = ClassLoaderHelper.instanceFromClass(
+		T tokenizerFactory = javaPath.instanceFromClass(
 				expectedFactoryClass,
 				factoryClass,
 				expectedFactoryClass.getName(),

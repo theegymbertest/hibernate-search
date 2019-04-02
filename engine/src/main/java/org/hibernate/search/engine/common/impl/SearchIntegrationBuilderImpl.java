@@ -28,9 +28,11 @@ import org.hibernate.search.engine.environment.bean.BeanProvider;
 import org.hibernate.search.engine.environment.bean.impl.ConfiguredBeanProvider;
 import org.hibernate.search.engine.environment.bean.spi.BeanResolver;
 import org.hibernate.search.engine.environment.bean.spi.ReflectionBeanResolver;
+import org.hibernate.search.engine.environment.classpath.impl.JavaPathImpl;
 import org.hibernate.search.engine.environment.classpath.spi.ClassResolver;
 import org.hibernate.search.engine.environment.classpath.spi.DefaultClassAndResourceResolver;
 import org.hibernate.search.engine.environment.classpath.spi.ResourceResolver;
+import org.hibernate.search.engine.environment.classpath.spi.JavaPath;
 import org.hibernate.search.engine.environment.service.impl.ServiceManagerImpl;
 import org.hibernate.search.engine.environment.service.spi.ServiceManager;
 import org.hibernate.search.engine.logging.impl.Log;
@@ -138,7 +140,9 @@ public class SearchIntegrationBuilderImpl implements SearchIntegrationBuilder {
 				resourceResolver = defaultClassAndResourceResolver;
 			}
 
-			ReflectionBeanResolver reflectionBeanResolver = new ReflectionBeanResolver( classResolver );
+			JavaPath javaPath = new JavaPathImpl( classResolver, resourceResolver );
+
+			ReflectionBeanResolver reflectionBeanResolver = new ReflectionBeanResolver( javaPath );
 			if ( beanResolver == null ) {
 				beanResolver = reflectionBeanResolver;
 			}
@@ -148,8 +152,8 @@ public class SearchIntegrationBuilderImpl implements SearchIntegrationBuilder {
 
 			ConfigurationPropertySource propertySource = mainPropertySource;
 
-			BeanProvider beanProvider = new ConfiguredBeanProvider( classResolver, beanResolver, propertySource );
-			ServiceManager serviceManager = new ServiceManagerImpl( classResolver, resourceResolver, beanProvider );
+			BeanProvider beanProvider = new ConfiguredBeanProvider( javaPath, beanResolver, propertySource );
+			ServiceManager serviceManager = new ServiceManagerImpl( javaPath, beanProvider );
 			RootBuildContext rootBuildContext = new RootBuildContext( serviceManager, failureCollector );
 
 			indexManagerBuildingStateHolder = new IndexManagerBuildingStateHolder( beanProvider, propertySource, rootBuildContext );
