@@ -146,6 +146,40 @@
         ]]></cypher>
     </concept>
 
+    <concept id="my-rules:FieldAnnotation">
+        <requiresConcept refId="my-rules:HibernateSearch" />
+        <description>
+            Contributes the :FieldAnnotation label to annotation nodes from Hibernate Search.
+        </description>
+        <cypher><![CDATA[
+            MATCH
+                (type:Annotation:HibernateSearch)
+            WHERE
+                type.name =~ ".*Field"
+            SET
+                type:FieldAnnotation
+            RETURN
+                type
+        ]]></cypher>
+    </concept>
+
+    <concept id="my-rules:GenericFieldAnnotation">
+        <requiresConcept refId="my-rules:FieldAnnotation" />
+        <description>
+            Contributes the :GenericFieldAnnotation label to annotation nodes from Hibernate Search.
+        </description>
+        <cypher><![CDATA[
+            MATCH
+                (type:Type:FieldAnnotation)
+            WHERE
+                type.name = "GenericField"
+            SET
+                type:GenericFieldAnnotation
+            RETURN
+                type
+        ]]></cypher>
+    </concept>
+
     <concept id="my-rules:UtilArtifacts">
         <requiresConcept refId="my-rules:HibernateSearch" />
         <description>
@@ -445,6 +479,38 @@
         ]]></cypher>
     </constraint>
 
+    <constraint id="my-rules:FieldAnnotationsShouldDefineGenericFieldAttributes">
+        <requiresConcept refId="my-rules:FieldAnnotation" />
+        <requiresConcept refId="my-rules:GenericFieldAnnotation" />
+        <requiresConcept refId="my-rules:Api" />
+        <requiresConcept refId="my-rules:Spi" />
+        <requiresConcept refId="my-rules:Impl" />
+        <description>
+            @*Field annotations should expose all the methods exposed by @GenericField, with the same type.
+            Exceptions are only allowed in the following cases:
+            - "sortable" for @FullTextField, because sorts do not make sense on analyzed fields.
+        </description>
+        <cypher><![CDATA[
+            MATCH (genericFieldAnnotation:GenericFieldAnnotation)-[:DECLARES]->(genericFieldAnnotationMethod)
+                -[:RETURNS]->(genericFieldAnnotationMethodReturnType)
+            MATCH (otherFieldAnnotation:FieldAnnotation)
+            OPTIONAL MATCH (otherFieldAnnotation)-[:DECLARES]->(otherFieldAnnotationMethod)
+            WHERE genericFieldAnnotationMethod.name = otherFieldAnnotationMethod.name
+            OPTIONAL MATCH (otherFieldAnnotationMethod)-[:RETURNS]->(otherFieldAnnotationMethodReturnType)
+            WHERE genericFieldAnnotationMethodReturnType = otherFieldAnnotationMethodReturnType
+            WITH otherFieldAnnotation,
+                genericFieldAnnotationMethod, genericFieldAnnotationMethodReturnType,
+                otherFieldAnnotationMethod, otherFieldAnnotationMethodReturnType
+            WHERE
+                otherFieldAnnotationMethod IS NULL OR genericFieldAnnotationMethodReturnType IS NULL
+                // Exceptions
+                AND NOT (otherFieldAnnotation.name = "FullTextField" AND otherFieldAnnotationMethod = "sortable")
+            RETURN otherFieldAnnotation,
+                genericFieldAnnotationMethod, genericFieldAnnotationMethodReturnType,
+                otherFieldAnnotationMethod, otherFieldAnnotationMethodReturnType
+        ]]></cypher>
+    </constraint>
+
     <group id="default">
         <includeConstraint refId="my-rules:PublicTypesMayNotExtendInternalTypes" />
         <includeConstraint refId="my-rules:PublicMethodsMayNotExposeInternalTypes" />
@@ -457,6 +523,7 @@
         <includeConstraint refId="my-rules:AbstractTypesShouldUseAbstractPrefix" />
         <includeConstraint refId="my-rules:TypesExtendingTypeFromAnotherModuleMustHaveModuleSpecificKeywordInName" />
         <includeConstraint refId="my-rules:TypeNamesShouldBeUniqueInInterdependentModules" />
+        <includeConstraint refId="my-rules:FieldAnnotationsShouldDefineGenericFieldAttributes" />
     </group>
 
 </jqa:jqassistant-rules>
