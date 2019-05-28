@@ -6,7 +6,9 @@
  */
 package org.hibernate.search.backend.elasticsearch.work.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,10 +29,12 @@ import com.google.gson.JsonObject;
  */
 public class DeleteByQueryWork extends AbstractSimpleElasticsearchWork<Void> {
 
+	private final List<URLEncodedString> indexNames;
 	private final ElasticsearchWork<?> refreshWork;
 
 	protected DeleteByQueryWork(Builder builder) {
 		super( builder );
+		this.indexNames = builder.indexNames;
 		this.refreshWork = builder.buildRefreshWork();
 	}
 
@@ -47,18 +51,31 @@ public class DeleteByQueryWork extends AbstractSimpleElasticsearchWork<Void> {
 		return null;
 	}
 
+	@Override
+	protected void refreshAfterWorkIfNecessary(ElasticsearchWorkExecutionContext executionContext) {
+		switch ( refreshStrategy ) {
+			case FORCE:
+				for ( URLEncodedString indexName : indexNames ) {
+					executionContext.registerIndexToRefresh( indexName );
+				}
+				break;
+			case NONE:
+				break;
+		}
+	}
+
 	public static class Builder
 			extends AbstractBuilder<Builder>
 			implements DeleteByQueryWorkBuilder {
-		private final URLEncodedString indexName;
+		private final List<URLEncodedString> indexNames = new ArrayList<>();
 		private final JsonObject payload;
 		private final Set<URLEncodedString> typeNames = new HashSet<>();
 
 		private final RefreshWorkBuilder refreshWorkBuilder;
 
 		public Builder(URLEncodedString indexName, JsonObject payload, ElasticsearchWorkBuilderFactory workFactory) {
-			super( indexName, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
-			this.indexName = indexName;
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			this.indexNames.add( indexName );
 			this.payload = payload;
 			this.refreshWorkBuilder = workFactory.refresh().index( indexName );
 		}
@@ -67,7 +84,7 @@ public class DeleteByQueryWork extends AbstractSimpleElasticsearchWork<Void> {
 		protected ElasticsearchRequest buildRequest() {
 			ElasticsearchRequest.Builder builder =
 					ElasticsearchRequest.post()
-					.pathComponent( indexName )
+					.multiValuedPathComponent( indexNames )
 					/*
 					 * Ignore conflicts: if we wrote to a document concurrently,
 					 * we just want to keep it as is.

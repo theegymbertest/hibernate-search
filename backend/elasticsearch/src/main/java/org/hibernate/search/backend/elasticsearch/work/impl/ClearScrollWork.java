@@ -33,7 +33,7 @@ public class ClearScrollWork extends AbstractSimpleElasticsearchWork<Void> {
 		private final String scrollId;
 
 		public Builder(String scrollId) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.scrollId = scrollId;
 		}
 

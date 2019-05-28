@@ -52,7 +52,7 @@ public class FlushWork extends AbstractSimpleElasticsearchWork<Void> {
 		private final Set<URLEncodedString> indexNames = new HashSet<>();
 
 		public Builder(ElasticsearchWorkBuilderFactory workFactory) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.refreshWorkBuilder = workFactory.refresh();
 		}
 

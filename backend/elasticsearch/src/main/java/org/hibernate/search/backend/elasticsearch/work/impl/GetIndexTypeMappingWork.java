@@ -85,7 +85,7 @@ public class GetIndexTypeMappingWork extends AbstractSimpleElasticsearchWork<Roo
 		}
 
 		private Builder(URLEncodedString indexName, URLEncodedString typeName, Boolean includeTypeName) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.indexName = indexName;
 			this.typeName = typeName;
 			this.includeTypeName = includeTypeName;

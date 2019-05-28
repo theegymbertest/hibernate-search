@@ -30,10 +30,12 @@ public abstract class AbstractSimpleBulkableElasticsearchWork<R>
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
+	private final URLEncodedString refreshedIndexName;
 	private final JsonObject bulkableActionMetadata;
 
 	protected AbstractSimpleBulkableElasticsearchWork(AbstractBuilder<?> builder) {
 		super( builder );
+		this.refreshedIndexName = builder.refreshedIndexName;
 		this.bulkableActionMetadata = builder.buildBulkableActionMetadata();
 	}
 
@@ -80,6 +82,17 @@ public abstract class AbstractSimpleBulkableElasticsearchWork<R>
 		return aggregator.addBulkable( this );
 	}
 
+	@Override
+	protected final void refreshAfterWorkIfNecessary(ElasticsearchWorkExecutionContext executionContext) {
+		switch ( refreshStrategy ) {
+			case FORCE:
+				executionContext.registerIndexToRefresh( refreshedIndexName );
+				break;
+			case NONE:
+				break;
+		}
+	}
+
 	protected abstract R generateResult(ElasticsearchWorkExecutionContext context, JsonObject bulkResponseItem);
 
 	private CompletableFuture<R> handleResult(ElasticsearchWorkExecutionContext executionContext, JsonObject bulkResponseItem) {
@@ -115,9 +128,11 @@ public abstract class AbstractSimpleBulkableElasticsearchWork<R>
 
 	protected abstract static class AbstractBuilder<B>
 			extends AbstractSimpleElasticsearchWork.AbstractBuilder<B> {
+		private final URLEncodedString refreshedIndexName;
 
-		public AbstractBuilder(URLEncodedString dirtiedIndexName, ElasticsearchRequestSuccessAssessor resultAssessor) {
-			super( dirtiedIndexName, resultAssessor );
+		public AbstractBuilder(URLEncodedString refreshedIndexName, ElasticsearchRequestSuccessAssessor resultAssessor) {
+			super( resultAssessor );
+			this.refreshedIndexName = refreshedIndexName;
 		}
 
 		protected abstract JsonObject buildBulkableActionMetadata();

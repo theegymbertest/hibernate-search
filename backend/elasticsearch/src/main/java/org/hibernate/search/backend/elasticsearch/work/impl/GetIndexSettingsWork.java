@@ -58,7 +58,7 @@ public class GetIndexSettingsWork extends AbstractSimpleElasticsearchWork<IndexS
 		private final URLEncodedString indexName;
 
 		public Builder(URLEncodedString indexName) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.indexName = indexName;
 		}
 

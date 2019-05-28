@@ -54,7 +54,7 @@ public class IndexExistsWork extends AbstractSimpleElasticsearchWork<Boolean> {
 		}
 
 		private Builder(URLEncodedString indexName, Boolean includeTypeName) {
-			super( null, RESULT_ASSESSOR );
+			super( RESULT_ASSESSOR );
 			this.indexName = indexName;
 			this.includeTypeName = includeTypeName;
 		}

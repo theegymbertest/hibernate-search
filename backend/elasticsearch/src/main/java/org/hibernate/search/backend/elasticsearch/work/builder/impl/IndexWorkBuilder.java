@@ -11,6 +11,7 @@ import org.hibernate.search.backend.elasticsearch.work.impl.ElasticsearchWork;
 /**
  * @author Yoann Rodiere
  */
-public interface IndexWorkBuilder extends ElasticsearchWorkBuilder<ElasticsearchWork<Void>>, IndexWriteWorkBuilder<IndexWorkBuilder> {
+public interface IndexWorkBuilder extends ElasticsearchWorkBuilder<ElasticsearchWork<Void>>,
+		DocumentWriteWorkBuilder<IndexWorkBuilder> {
 
 }

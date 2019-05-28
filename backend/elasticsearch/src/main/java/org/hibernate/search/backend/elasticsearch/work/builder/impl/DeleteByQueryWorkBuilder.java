@@ -11,6 +11,7 @@ import org.hibernate.search.backend.elasticsearch.work.impl.ElasticsearchWork;
 /**
  * @author Yoann Rodiere
  */
-public interface DeleteByQueryWorkBuilder extends ElasticsearchWorkBuilder<ElasticsearchWork<Void>>, IndexWriteWorkBuilder<DeleteByQueryWorkBuilder> {
+public interface DeleteByQueryWorkBuilder extends ElasticsearchWorkBuilder<ElasticsearchWork<Void>>,
+		DocumentWriteWorkBuilder<DeleteByQueryWorkBuilder> {
 
 }

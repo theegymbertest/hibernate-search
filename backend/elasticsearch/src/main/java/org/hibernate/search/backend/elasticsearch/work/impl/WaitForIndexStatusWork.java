@@ -35,7 +35,7 @@ public class WaitForIndexStatusWork extends AbstractSimpleElasticsearchWork<Void
 		private final String timeout;
 
 		public Builder(URLEncodedString indexName, ElasticsearchIndexStatus requiredStatus, String timeout) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.indexName = indexName;
 			this.requiredStatus = requiredStatus;
 			this.timeout = timeout;

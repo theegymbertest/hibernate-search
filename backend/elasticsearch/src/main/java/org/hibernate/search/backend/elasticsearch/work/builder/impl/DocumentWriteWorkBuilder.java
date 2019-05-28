@@ -11,7 +11,7 @@ import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrateg
 /**
  * @author Yoann Rodiere
  */
-public interface IndexWriteWorkBuilder<B> {
+public interface DocumentWriteWorkBuilder<B> {
 
 	B refresh(DocumentRefreshStrategy refresh);
 

@@ -64,7 +64,7 @@ public class PutIndexTypeMappingWork extends AbstractSimpleElasticsearchWork<Voi
 				GsonProvider gsonProvider,
 				URLEncodedString indexName, URLEncodedString typeName, Boolean includeTypeName,
 				RootTypeMapping typeMapping) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.indexName = indexName;
 			this.typeName = typeName;
 			this.includeTypeName = includeTypeName;

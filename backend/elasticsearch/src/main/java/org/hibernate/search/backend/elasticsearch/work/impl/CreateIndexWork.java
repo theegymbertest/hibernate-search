@@ -68,7 +68,7 @@ public class CreateIndexWork extends AbstractSimpleElasticsearchWork<CreateIndex
 
 		private Builder(GsonProvider gsonProvider, URLEncodedString indexName, URLEncodedString typeName,
 				Boolean includeTypeName) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.gsonProvider = gsonProvider;
 			this.indexName = indexName;
 			this.typeName = typeName;

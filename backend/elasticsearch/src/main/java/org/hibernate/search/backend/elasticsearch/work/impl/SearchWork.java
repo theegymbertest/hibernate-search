@@ -79,7 +79,7 @@ public class SearchWork<H> extends AbstractSimpleElasticsearchWork<Elasticsearch
 		private Set<String> routingKeys;
 
 		private Builder(JsonObject payload, ElasticsearchSearchResultExtractor<H> resultExtractor, Boolean trackTotalHits) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.payload = payload;
 			this.resultExtractor = resultExtractor;
 			this.trackTotalHits = trackTotalHits;

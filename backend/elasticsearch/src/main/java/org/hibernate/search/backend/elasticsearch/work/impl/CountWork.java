@@ -41,7 +41,7 @@ public class CountWork extends AbstractSimpleElasticsearchWork<Long> {
 		private Set<String> routingKeys;
 
 		public Builder(Collection<URLEncodedString> indexNames) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.indexNames.addAll( indexNames );
 		}
 

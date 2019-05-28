@@ -40,7 +40,7 @@ public class ScrollWork<H> extends AbstractSimpleElasticsearchWork<Elasticsearch
 		private final ElasticsearchSearchResultExtractor<H> resultExtractor;
 
 		public Builder(String scrollId, String scrollTimeout, ElasticsearchSearchResultExtractor<H> resultExtractor) {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 			this.scrollId = scrollId;
 			this.scrollTimeout = scrollTimeout;
 			this.resultExtractor = resultExtractor;

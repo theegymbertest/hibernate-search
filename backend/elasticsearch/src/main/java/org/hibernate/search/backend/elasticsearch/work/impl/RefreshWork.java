@@ -35,7 +35,7 @@ public class RefreshWork extends AbstractSimpleElasticsearchWork<Void> {
 		private final List<URLEncodedString> indexNames = new ArrayList<>();
 
 		public Builder() {
-			super( null, DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
+			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
 		}
 
 		@Override

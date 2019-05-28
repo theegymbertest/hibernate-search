@@ -70,7 +70,7 @@ public class ExplainWork extends AbstractSimpleElasticsearchWork<ExplainResult> 
 		}
 
 		private Builder(URLEncodedString indexName, URLEncodedString typeName, URLEncodedString id, JsonObject payload) {
-			super( null, SUCCESS_ASSESSOR );
+			super( SUCCESS_ASSESSOR );
 			this.indexName = indexName;
 			this.typeName = typeName;
 			this.id = id;

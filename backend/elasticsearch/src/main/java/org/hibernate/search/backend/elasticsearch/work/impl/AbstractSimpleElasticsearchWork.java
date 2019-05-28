@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import org.hibernate.search.backend.elasticsearch.client.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.spi.ElasticsearchResponse;
 import org.hibernate.search.backend.elasticsearch.logging.impl.Log;
-import org.hibernate.search.backend.elasticsearch.util.spi.URLEncodedString;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
 import org.hibernate.search.util.common.impl.Futures;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -29,13 +28,11 @@ public abstract class AbstractSimpleElasticsearchWork<R> implements Elasticsearc
 	private static final CompletableFuture<Void> SUCCESSFUL_FUTURE = CompletableFuture.completedFuture( null );
 
 	protected final ElasticsearchRequest request;
-	protected final URLEncodedString refreshedIndexName;
 	protected final ElasticsearchRequestSuccessAssessor resultAssessor;
 	protected final DocumentRefreshStrategy refreshStrategy;
 
 	protected AbstractSimpleElasticsearchWork(AbstractBuilder<?> builder) {
 		this.request = builder.buildRequest();
-		this.refreshedIndexName = builder.refreshedIndexName;
 		this.resultAssessor = builder.resultAssessor;
 		this.refreshStrategy = builder.refreshStrategy;
 	}
@@ -52,7 +49,6 @@ public abstract class AbstractSimpleElasticsearchWork<R> implements Elasticsearc
 				.append( getClass().getSimpleName() )
 				.append( "[" )
 				.append( "path = " ).append( request.getPath() )
-				.append( ", refreshedIndexName = " ).append( refreshedIndexName )
 				.append( ", refreshStrategy = " ).append( refreshStrategy )
 				.append( "]" )
 				.toString();
@@ -92,14 +88,7 @@ public abstract class AbstractSimpleElasticsearchWork<R> implements Elasticsearc
 			resultAssessor.checkSuccess( response );
 
 			result = generateResult( executionContext, response );
-
-			switch ( refreshStrategy ) {
-				case FORCE:
-					executionContext.registerIndexToRefresh( refreshedIndexName );
-					break;
-				case NONE:
-					break;
-			}
+			refreshAfterWorkIfNecessary( executionContext );
 		}
 		catch (RuntimeException e) {
 			throw log.elasticsearchRequestFailed( request, response, e );
@@ -112,15 +101,17 @@ public abstract class AbstractSimpleElasticsearchWork<R> implements Elasticsearc
 				.thenApply( ignored -> result );
 	}
 
+	protected void refreshAfterWorkIfNecessary(ElasticsearchWorkExecutionContext executionContext) {
+		// Do nothing by default
+	}
+
 	@SuppressWarnings("unchecked") // By contract, subclasses must implement B
 	protected abstract static class AbstractBuilder<B> {
-		protected final URLEncodedString refreshedIndexName;
 		protected ElasticsearchRequestSuccessAssessor resultAssessor;
 
 		protected DocumentRefreshStrategy refreshStrategy = DocumentRefreshStrategy.NONE;
 
-		public AbstractBuilder(URLEncodedString refreshedIndexName, ElasticsearchRequestSuccessAssessor resultAssessor) {
-			this.refreshedIndexName = refreshedIndexName;
+		public AbstractBuilder(ElasticsearchRequestSuccessAssessor resultAssessor) {
 			this.resultAssessor = resultAssessor;
 		}
 
