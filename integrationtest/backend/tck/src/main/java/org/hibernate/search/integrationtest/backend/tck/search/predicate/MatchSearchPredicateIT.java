@@ -38,7 +38,7 @@ import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.impl.integrationtest.common.FailureReportUtils;
 import org.hibernate.search.util.impl.integrationtest.common.stub.mapper.StubMappingIndexManager;
-import org.hibernate.search.util.impl.integrationtest.common.stub.mapper.StubMappingSearchScope;
+import org.hibernate.search.util.impl.integrationtest.common.stub.mapper.StubMappingScope;
 import org.hibernate.search.util.impl.test.SubTest;
 import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
@@ -128,7 +128,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void match() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -145,7 +145,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void withDslConverter_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -162,7 +162,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void withDslConverter_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -178,7 +178,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void emptyStringBeforeAnalysis() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		MainFieldModel fieldModel = indexMapping.analyzedStringField;
 
@@ -192,7 +192,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void noTokenAfterAnalysis() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		MainFieldModel fieldModel = indexMapping.analyzedStringField;
 
@@ -207,7 +207,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_unsupportedFieldTypes() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.unsupportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -228,7 +228,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_null() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			SubTest.expectException(
@@ -246,7 +246,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void perFieldBoostWithConstantScore_error() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SubTest.expectException(
 				() -> scope.predicate().match().onField( indexMapping.string1Field.relativeFieldName ).boostedTo( 2.1f )
@@ -261,7 +261,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void fieldLevelBoost() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -296,7 +296,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -333,7 +333,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost_andFieldLevelBoost() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -375,7 +375,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void withConstantScore() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -416,7 +416,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost_withConstantScore() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -455,7 +455,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost_multiFields() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -499,7 +499,7 @@ public class MatchSearchPredicateIT {
 	@Test
 	@PortedFromSearch5(original = "org.hibernate.search.test.dsl.DSLTest.testFuzzyQuery")
 	public void fuzzy() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 		Function<String, SearchQuery<DocumentReference>> createQuery =
 				text -> scope.query()
@@ -523,7 +523,7 @@ public class MatchSearchPredicateIT {
 	@Test
 	@PortedFromSearch5(original = "org.hibernate.search.test.dsl.DSLTest.testFuzzyQuery")
 	public void fuzzy_maxEditDistance() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 		BiFunction<String, Integer, SearchQuery<DocumentReference>> createQuery =
 				(text, maxEditDistance) -> scope.query()
@@ -567,7 +567,7 @@ public class MatchSearchPredicateIT {
 	@Test
 	@PortedFromSearch5(original = "org.hibernate.search.test.dsl.DSLTest.testFuzzyQuery")
 	public void fuzzy_exactPrefixLength() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 		BiFunction<String, Integer, SearchQuery<DocumentReference>> createQuery =
 				(text, exactPrefixLength) -> scope.query()
@@ -610,7 +610,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void fuzzy_normalizedStringField() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.normalizedStringField.relativeFieldName;
 		Function<String, SearchQuery<DocumentReference>> createQuery;
 
@@ -643,7 +643,7 @@ public class MatchSearchPredicateIT {
 	@Test
 	@PortedFromSearch5(original = "org.hibernate.search.test.dsl.DSLTest.testFuzzyQueryOnMultipleFields")
 	public void fuzzy_multipleFields() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath1 = indexMapping.analyzedStringField.relativeFieldName;
 		String absoluteFieldPath2 = indexMapping.analyzedStringField2.relativeFieldName;
 		Function<String, SearchQuery<DocumentReference>> createQuery;
@@ -663,7 +663,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_fuzzy_unsupportedFieldType() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.fuzzyUnsupportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -712,7 +712,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_fuzzy_invalidMaxEditDistance() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 
 		SubTest.expectException(
@@ -736,7 +736,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_fuzzy_invalidPrefixLength() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 
 		SubTest.expectException(
@@ -751,7 +751,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void analyzerOverride() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		String whitespaceAnalyzedField = indexMapping.whitespaceAnalyzedField.relativeFieldName;
 		String whitespaceLowercaseAnalyzedField = indexMapping.whitespaceLowercaseAnalyzedField.relativeFieldName;
@@ -781,7 +781,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void analyzerOverride_fuzzy() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		String whitespaceAnalyzedField = indexMapping.whitespaceAnalyzedField.relativeFieldName;
 		String whitespaceLowercaseAnalyzedField = indexMapping.whitespaceLowercaseAnalyzedField.relativeFieldName;
@@ -811,7 +811,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void analyzerOverride_withNormalizer() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String whitespaceAnalyzedField = indexMapping.whitespaceAnalyzedField.relativeFieldName;
 
 		SubTest.expectException( () -> scope.query()
@@ -827,7 +827,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void analyzerOverride_notExistingName() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String whitespaceAnalyzedField = indexMapping.whitespaceAnalyzedField.relativeFieldName;
 
 		SubTest.expectException( () -> scope.query()
@@ -843,7 +843,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void skipAnalysis() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.whitespaceLowercaseAnalyzedField.relativeFieldName;
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -873,7 +873,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void skipAnalysis_fuzzy() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.whitespaceLowercaseAnalyzedField.relativeFieldName;
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -903,7 +903,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void analyzerOverride_normalizedStringField() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.normalizedStringField.relativeFieldName;
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -919,7 +919,7 @@ public class MatchSearchPredicateIT {
 	@Test
 	@TestForIssue( jiraKey = "HSEARCH-2534" )
 	public void analyzerOverride_queryOnlyAnalyzer() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 		String absoluteFieldPath = indexMapping.whitespaceLowercaseAnalyzedField.relativeFieldName;
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -939,7 +939,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiFields() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		// onField(...).orField(...)
 
@@ -1018,7 +1018,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiFields_withDslConverter_dslConverterEnabled() {
-		SearchQuery<DocumentReference> query = indexManager.createSearchScope().query()
+		SearchQuery<DocumentReference> query = indexManager.createScope().query()
 				.predicate( f -> f.match()
 						.onField( indexMapping.string1FieldWithDslConverter.relativeFieldName )
 						.orField( indexMapping.string2FieldWithDslConverter.relativeFieldName )
@@ -1031,7 +1031,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiFields_withDslConverter_dslConverterDisabled() {
-		SearchQuery<DocumentReference> query = indexManager.createSearchScope().query()
+		SearchQuery<DocumentReference> query = indexManager.createScope().query()
 				.predicate( f -> f.match()
 						.onField( indexMapping.string1FieldWithDslConverter.relativeFieldName )
 						.orField( indexMapping.string2FieldWithDslConverter.relativeFieldName )
@@ -1044,7 +1044,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_unknownField() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SubTest.expectException(
 				"match() predicate with unknown field",
@@ -1085,7 +1085,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void error_invalidType() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		List<ByTypeFieldModel<?>> fieldModels = new ArrayList<>();
 		fieldModels.addAll( indexMapping.supportedFieldModels );
@@ -1112,7 +1112,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withCompatibleIndexManager_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( compatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( compatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			SubTest.expectSuccess( fieldModel, model -> {
@@ -1138,7 +1138,7 @@ public class MatchSearchPredicateIT {
 
 			SubTest.expectException(
 					() -> {
-						indexManager.createSearchScope( rawFieldCompatibleIndexManager )
+						indexManager.createScope( rawFieldCompatibleIndexManager )
 								.predicate().match().onField( fieldModel.relativeFieldName ).matching( valueToMatch );
 					}
 			)
@@ -1154,7 +1154,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withRawFieldCompatibleIndexManager_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( rawFieldCompatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( rawFieldCompatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			SubTest.expectSuccess( fieldModel, model -> {
@@ -1175,7 +1175,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withIncompatibleIndexManager_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String fieldPath = fieldModel.relativeFieldName;
@@ -1195,7 +1195,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withIncompatibleIndexManager_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String fieldPath = fieldModel.relativeFieldName;
@@ -1215,7 +1215,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_incompatibleAnalyzer() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleAnalyzerIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleAnalyzerIndexManager );
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 
 		SubTest.expectException(
@@ -1236,7 +1236,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_incompatibleAnalyzer_overrideAnalyzer() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleAnalyzerIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleAnalyzerIndexManager );
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -1252,7 +1252,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_incompatibleAnalyzer_skipAnalysis() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleAnalyzerIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleAnalyzerIndexManager );
 		String absoluteFieldPath = indexMapping.analyzedStringField.relativeFieldName;
 
 		SearchQuery<DocumentReference> query = scope.query()
@@ -1268,7 +1268,7 @@ public class MatchSearchPredicateIT {
 
 	@Test
 	public void multiIndex_incompatibleDecimalScale() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleDecimalScaleIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleDecimalScaleIndexManager );
 		String absoluteFieldPath = indexMapping.scaledBigDecimal.relativeFieldName;
 
 		SubTest.expectException(
@@ -1363,23 +1363,23 @@ public class MatchSearchPredicateIT {
 		workPlan.execute().join();
 
 		// Check that all documents are searchable
-		SearchQuery<DocumentReference> query = indexManager.createSearchScope().query()
+		SearchQuery<DocumentReference> query = indexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( INDEX_NAME, DOCUMENT_1, DOCUMENT_2, DOCUMENT_3, EMPTY );
-		query = compatibleIndexManager.createSearchScope().query()
+		query = compatibleIndexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( COMPATIBLE_INDEX_NAME, COMPATIBLE_INDEX_DOCUMENT_1 );
-		query = rawFieldCompatibleIndexManager.createSearchScope().query()
+		query = rawFieldCompatibleIndexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( RAW_FIELD_COMPATIBLE_INDEX_NAME, RAW_FIELD_COMPATIBLE_INDEX_DOCUMENT_1 );
-		query = incompatibleAnalyzerIndexManager.createSearchScope().query()
+		query = incompatibleAnalyzerIndexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( INCOMPATIBLE_ANALYZER_INDEX_NAME, INCOMPATIBLE_ANALYZER_INDEX_DOCUMENT_1 );
-		query = incompatibleDecimalScaleIndexManager.createSearchScope().query()
+		query = incompatibleDecimalScaleIndexManager.createScope().query()
 				.asReference()
 				.predicate( f -> f.matchAll() )
 				.toQuery();

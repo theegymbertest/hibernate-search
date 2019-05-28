@@ -24,7 +24,7 @@ import org.hibernate.search.engine.search.predicate.DslConverter;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.FieldModelConsumer;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.expectations.RangePredicateExpectations;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.FieldTypeDescriptor;
-import org.hibernate.search.util.impl.integrationtest.common.stub.mapper.StubMappingSearchScope;
+import org.hibernate.search.util.impl.integrationtest.common.stub.mapper.StubMappingScope;
 import org.hibernate.search.engine.backend.index.spi.IndexWorkPlan;
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.util.impl.integrationtest.common.stub.mapper.StubMappingIndexManager;
@@ -112,7 +112,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void above() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -129,7 +129,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void above_withDslConverter_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -146,7 +146,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void above_withDslConverter_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -162,7 +162,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void above_include_exclude() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -194,7 +194,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void below() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -211,7 +211,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void below_withDslConverter_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -228,7 +228,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void below_withDslConverter_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -244,7 +244,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void below_include_exclude() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -272,7 +272,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void fromTo() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -290,7 +290,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void fromTo_withDslConverter_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -308,7 +308,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void fromTo_withDslConverter_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldWithDslConverterModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -326,7 +326,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void fromTo_include_exclude() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -383,7 +383,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void unsupported_field_types() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.unsupportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -403,7 +403,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void fieldLevelBoost() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -438,7 +438,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -475,7 +475,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost_andFieldLevelBoost() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -518,7 +518,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void predicateLevelBoost_multiFields() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SearchQuery<DocumentReference> query = scope.query()
 				.predicate( f -> f.bool()
@@ -561,7 +561,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multi_fields() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		// onField(...).orField(...)
 
@@ -640,7 +640,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiField_withDslConverter_dslConverterEnabled() {
-		SearchQuery<DocumentReference> query = indexManager.createSearchScope().query()
+		SearchQuery<DocumentReference> query = indexManager.createScope().query()
 				.predicate( f -> f.range().onField( indexMapping.string1FieldWithDslConverter.relativeFieldName )
 						.orField( indexMapping.string2FieldWithDslConverter.relativeFieldName )
 						.below( new ValueWrapper<>( indexMapping.string1FieldWithDslConverter.document1Value.indexedValue ) )
@@ -652,7 +652,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiFields_withDslConverter_dslConverterDisabled() {
-		SearchQuery<DocumentReference> query = indexManager.createSearchScope().query()
+		SearchQuery<DocumentReference> query = indexManager.createScope().query()
 				.predicate( f -> f.range().onField( indexMapping.string1FieldWithDslConverter.relativeFieldName )
 						.orField( indexMapping.string2FieldWithDslConverter.relativeFieldName )
 						.below( indexMapping.string1FieldWithDslConverter.document1Value.indexedValue, DslConverter.DISABLED )
@@ -664,7 +664,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void range_error_null() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String fieldPath = fieldModel.relativeFieldName;
@@ -706,7 +706,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void unknown_field() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		SubTest.expectException(
 				"range() predicate with unknown field",
@@ -747,7 +747,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void error_invalidType() {
-		StubMappingSearchScope scope = indexManager.createSearchScope();
+		StubMappingScope scope = indexManager.createScope();
 
 		List<ByTypeFieldModel<?>> fieldModels = new ArrayList<>();
 		fieldModels.addAll( indexMapping.supportedFieldModels );
@@ -814,7 +814,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withCompatibleIndexManager_usingField() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( compatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( compatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -840,7 +840,7 @@ public class RangeSearchPredicateIT {
 
 			SubTest.expectException(
 					() -> {
-						indexManager.createSearchScope( rawFieldCompatibleIndexManager )
+						indexManager.createScope( rawFieldCompatibleIndexManager )
 								.predicate().range().onField( absoluteFieldPath ).below( upperValueToMatch );
 					}
 			)
@@ -856,7 +856,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withRawFieldCompatibleIndexManager_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( rawFieldCompatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( rawFieldCompatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String absoluteFieldPath = fieldModel.relativeFieldName;
@@ -876,7 +876,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withNoCompatibleIndexManager_dslConverterEnabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String fieldPath = fieldModel.relativeFieldName;
@@ -896,7 +896,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiIndex_withNoCompatibleIndexManager_dslConverterDisabled() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleIndexManager );
 
 		for ( ByTypeFieldModel<?> fieldModel : indexMapping.supportedFieldModels ) {
 			String fieldPath = fieldModel.relativeFieldName;
@@ -916,7 +916,7 @@ public class RangeSearchPredicateIT {
 
 	@Test
 	public void multiIndex_incompatibleDecimalScale() {
-		StubMappingSearchScope scope = indexManager.createSearchScope( incompatibleDecimalScaleIndexManager );
+		StubMappingScope scope = indexManager.createScope( incompatibleDecimalScaleIndexManager );
 		String absoluteFieldPath = indexMapping.scaledBigDecimal.relativeFieldName;
 
 		SubTest.expectException(
@@ -993,19 +993,19 @@ public class RangeSearchPredicateIT {
 		workPlan.execute().join();
 
 		// Check that all documents are searchable
-		SearchQuery<DocumentReference> query = indexManager.createSearchScope().query()
+		SearchQuery<DocumentReference> query = indexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( INDEX_NAME, DOCUMENT_1, DOCUMENT_2, DOCUMENT_3, EMPTY_ID );
-		query = compatibleIndexManager.createSearchScope().query()
+		query = compatibleIndexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( COMPATIBLE_INDEX_NAME, COMPATIBLE_INDEX_DOCUMENT_1 );
-		query = rawFieldCompatibleIndexManager.createSearchScope().query()
+		query = rawFieldCompatibleIndexManager.createScope().query()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
 		assertThat( query ).hasDocRefHitsAnyOrder( RAW_FIELD_COMPATIBLE_INDEX_NAME, RAW_FIELD_COMPATIBLE_INDEX_DOCUMENT_1 );
-		query = incompatibleDecimalScaleIndexManager.createSearchScope().query()
+		query = incompatibleDecimalScaleIndexManager.createScope().query()
 				.asReference()
 				.predicate( f -> f.matchAll() )
 				.toQuery();
