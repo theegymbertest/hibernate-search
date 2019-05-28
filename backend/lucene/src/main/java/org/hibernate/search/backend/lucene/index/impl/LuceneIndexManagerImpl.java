@@ -24,7 +24,6 @@ import org.hibernate.search.backend.lucene.document.impl.LuceneRootDocumentBuild
 import org.hibernate.search.backend.lucene.document.model.impl.LuceneIndexModel;
 import org.hibernate.search.backend.lucene.index.spi.ReaderProvider;
 import org.hibernate.search.backend.lucene.logging.impl.Log;
-import org.hibernate.search.backend.lucene.search.query.impl.SearchBackendContext;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
@@ -46,8 +45,7 @@ class LuceneIndexManagerImpl
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final IndexingBackendContext indexingBackendContext;
-	private final SearchBackendContext searchBackendContext;
+	private final IndexManagerBackendContext backendContext;
 
 	private final String indexName;
 	private final LuceneIndexModel model;
@@ -55,17 +53,15 @@ class LuceneIndexManagerImpl
 	private final LuceneWriteWorkOrchestratorImplementor writeOrchestrator;
 	private final IndexAccessor indexAccessor;
 
-	LuceneIndexManagerImpl(IndexingBackendContext indexingBackendContext,
-			SearchBackendContext searchBackendContext,
+	LuceneIndexManagerImpl(IndexManagerBackendContext backendContext,
 			String indexName, LuceneIndexModel model,
 			IndexAccessor indexAccessor) {
-		this.indexingBackendContext = indexingBackendContext;
-		this.searchBackendContext = searchBackendContext;
+		this.backendContext = backendContext;
 
 		this.indexName = indexName;
 		this.model = model;
 
-		this.writeOrchestrator = indexingBackendContext.createOrchestrator(
+		this.writeOrchestrator = backendContext.createOrchestrator(
 				indexName, indexAccessor.getIndexWriterDelegator()
 		);
 		this.indexAccessor = indexAccessor;
@@ -83,7 +79,7 @@ class LuceneIndexManagerImpl
 	@Override
 	public IndexWorkPlan<LuceneRootDocumentBuilder> createWorkPlan(SessionContextImplementor sessionContext,
 			DocumentCommitStrategy commitStrategy, DocumentRefreshStrategy refreshStrategy) {
-		return indexingBackendContext.createWorkPlan(
+		return backendContext.createWorkPlan(
 				writeOrchestrator, indexName, sessionContext,
 				commitStrategy, refreshStrategy
 		);
@@ -92,7 +88,7 @@ class LuceneIndexManagerImpl
 	@Override
 	public IndexDocumentWorkExecutor<LuceneRootDocumentBuilder> createDocumentWorkExecutor(
 			SessionContextImplementor sessionContext, DocumentCommitStrategy commitStrategy) {
-		return indexingBackendContext.createDocumentWorkExecutor(
+		return backendContext.createDocumentWorkExecutor(
 				writeOrchestrator, indexName, sessionContext,
 				commitStrategy
 		);
@@ -100,24 +96,26 @@ class LuceneIndexManagerImpl
 
 	@Override
 	public IndexWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
-		return indexingBackendContext.createWorkExecutor( writeOrchestrator, indexName, sessionContext );
+		return backendContext.createWorkExecutor( writeOrchestrator, indexName, sessionContext );
 	}
 
 	@Override
 	public IndexScopeBuilder createScopeBuilder(MappingContextImplementor mappingContext) {
-		return new LuceneIndexScopeBuilder( searchBackendContext, mappingContext, this );
+		return new LuceneIndexScopeBuilder(
+				backendContext, mappingContext, this
+		);
 	}
 
 	@Override
 	public void addTo(IndexScopeBuilder builder) {
 		if ( ! ( builder instanceof LuceneIndexScopeBuilder ) ) {
 			throw log.cannotMixLuceneScopeWithOtherType(
-					builder, this, searchBackendContext.getEventContext()
+					builder, this, backendContext.getEventContext()
 			);
 		}
 
 		LuceneIndexScopeBuilder luceneBuilder = (LuceneIndexScopeBuilder) builder;
-		luceneBuilder.add( searchBackendContext, this );
+		luceneBuilder.add( backendContext, this );
 	}
 
 	@Override
@@ -183,7 +181,7 @@ class LuceneIndexManagerImpl
 	}
 
 	private EventContext getBackendAndIndexEventContext() {
-		return indexingBackendContext.getEventContext().append(
+		return backendContext.getEventContext().append(
 				EventContexts.fromIndexName( indexName )
 		);
 	}

@@ -12,7 +12,6 @@ import org.hibernate.search.backend.lucene.scope.model.impl.LuceneScopeModel;
 import org.hibernate.search.backend.lucene.search.predicate.impl.LuceneSearchPredicateBuilderFactoryImpl;
 import org.hibernate.search.backend.lucene.search.projection.impl.LuceneSearchProjectionBuilderFactory;
 import org.hibernate.search.backend.lucene.search.query.impl.LuceneSearchQueryBuilderFactory;
-import org.hibernate.search.backend.lucene.search.query.impl.SearchBackendContext;
 import org.hibernate.search.backend.lucene.search.sort.impl.LuceneSearchSortBuilderFactoryImpl;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScope;
@@ -29,15 +28,15 @@ public class LuceneIndexScope
 	private final LuceneSearchQueryBuilderFactory searchQueryFactory;
 	private final LuceneSearchProjectionBuilderFactory searchProjectionFactory;
 
-	public LuceneIndexScope(SearchBackendContext searchBackendContext,
+	public LuceneIndexScope(ScopeBackendContext backendContext,
 			MappingContextImplementor mappingContext,
 			LuceneScopeModel model) {
-		LuceneSearchContext searchContext = searchBackendContext.createSearchContext( mappingContext, model );
 		this.model = model;
+		LuceneSearchContext searchContext = backendContext.createSearchContext( mappingContext, model );
 		this.searchPredicateFactory = new LuceneSearchPredicateBuilderFactoryImpl( searchContext, model );
 		this.searchSortFactory = new LuceneSearchSortBuilderFactoryImpl( searchContext, model );
 		this.searchProjectionFactory = new LuceneSearchProjectionBuilderFactory( model );
-		this.searchQueryFactory = new LuceneSearchQueryBuilderFactory( searchBackendContext, searchContext, this.searchProjectionFactory );
+		this.searchQueryFactory = new LuceneSearchQueryBuilderFactory( backendContext, searchContext, this.searchProjectionFactory );
 	}
 
 	@Override

@@ -11,12 +11,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hibernate.search.backend.lucene.scope.impl.ScopeBackendContext;
 import org.hibernate.search.backend.lucene.scope.model.impl.LuceneScopeModel;
 import org.hibernate.search.backend.lucene.document.model.impl.LuceneIndexModel;
 import org.hibernate.search.backend.lucene.index.spi.ReaderProvider;
 import org.hibernate.search.backend.lucene.logging.impl.Log;
 import org.hibernate.search.backend.lucene.scope.impl.LuceneIndexScope;
-import org.hibernate.search.backend.lucene.search.query.impl.SearchBackendContext;
 import org.hibernate.search.engine.backend.scope.spi.IndexScopeBuilder;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScope;
@@ -27,23 +27,23 @@ class LuceneIndexScopeBuilder implements IndexScopeBuilder {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final SearchBackendContext searchBackendContext;
+	private final ScopeBackendContext backendContext;
 	private final MappingContextImplementor mappingContext;
 
 	// Use LinkedHashSet to ensure stable order when generating requests
 	private final Set<LuceneIndexManagerImpl> indexManagers = new LinkedHashSet<>();
 
-	LuceneIndexScopeBuilder(SearchBackendContext searchBackendContext, MappingContextImplementor mappingContext,
+	LuceneIndexScopeBuilder(ScopeBackendContext backendContext, MappingContextImplementor mappingContext,
 			LuceneIndexManagerImpl indexManager) {
-		this.searchBackendContext = searchBackendContext;
+		this.backendContext = backendContext;
 		this.mappingContext = mappingContext;
 		this.indexManagers.add( indexManager );
 	}
 
-	void add(SearchBackendContext searchBackendContext, LuceneIndexManagerImpl indexManager) {
-		if ( ! this.searchBackendContext.equals( searchBackendContext ) ) {
+	void add(IndexManagerBackendContext backendContext, LuceneIndexManagerImpl indexManager) {
+		if ( ! this.backendContext.equals( backendContext ) ) {
 			throw log.cannotMixLuceneScopeWithOtherBackend(
-					this, indexManager, searchBackendContext.getEventContext()
+					this, indexManager, backendContext.getEventContext()
 			);
 		}
 		indexManagers.add( indexManager );
@@ -61,14 +61,14 @@ class LuceneIndexScopeBuilder implements IndexScopeBuilder {
 
 		LuceneScopeModel model = new LuceneScopeModel( indexModels, readerProviders );
 
-		return new LuceneIndexScope( searchBackendContext, mappingContext, model );
+		return new LuceneIndexScope( backendContext, mappingContext, model );
 	}
 
 	@Override
 	public String toString() {
 		return new StringBuilder( getClass().getSimpleName() )
 				.append( "[" )
-				.append( "searchBackendContext=" ).append( searchBackendContext )
+				.append( "backendContext=" ).append( backendContext )
 				.append( ", indexManagers=" ).append( indexManagers )
 				.append( "]" )
 				.toString();
