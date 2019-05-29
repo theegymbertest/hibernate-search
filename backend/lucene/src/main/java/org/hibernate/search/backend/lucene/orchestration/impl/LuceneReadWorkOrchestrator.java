@@ -16,6 +16,6 @@ import org.hibernate.search.backend.lucene.work.impl.LuceneReadWork;
  */
 public interface LuceneReadWorkOrchestrator {
 
-	<T> T submit(Set<String> indexNames, Set<ReaderProvider> readerProviders, LuceneReadWork<T> work);
+	<T> T submit(Set<String> indexNames, Set<? extends ReaderProvider> readerProviders, LuceneReadWork<T> work);
 
 }

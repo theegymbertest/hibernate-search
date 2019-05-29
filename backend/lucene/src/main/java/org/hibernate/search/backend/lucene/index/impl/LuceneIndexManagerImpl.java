@@ -12,6 +12,7 @@ import java.lang.invoke.MethodHandles;
 import org.hibernate.search.backend.lucene.index.LuceneIndexManager;
 import org.hibernate.search.backend.lucene.lowlevel.index.impl.IndexAccessor;
 import org.hibernate.search.backend.lucene.orchestration.impl.LuceneWriteWorkOrchestratorImplementor;
+import org.hibernate.search.backend.lucene.scope.model.impl.LuceneScopeIndexManagerContext;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.index.IndexManager;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerStartContext;
@@ -39,9 +40,11 @@ import org.apache.lucene.index.IndexReader;
 /**
  * @author Guillaume Smet
  */
-// TODO HSEARCH-3117 in the end the IndexManager won't implement ReaderProvider as it's far more complex than that
 class LuceneIndexManagerImpl
-		implements IndexManagerImplementor<LuceneRootDocumentBuilder>, LuceneIndexManager, ReaderProvider {
+		implements IndexManagerImplementor<LuceneRootDocumentBuilder>, LuceneIndexManager,
+		LuceneScopeIndexManagerContext,
+		// TODO HSEARCH-3117 in the end the IndexManager won't implement ReaderProvider as it's far more complex than that
+		ReaderProvider {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
@@ -138,10 +141,6 @@ class LuceneIndexManagerImpl
 		catch (IOException | RuntimeException e) {
 			throw log.failedToShutdownBackend( e, getBackendAndIndexEventContext() );
 		}
-	}
-
-	ReaderProvider getReaderProvider() {
-		return this;
 	}
 
 	@Override
