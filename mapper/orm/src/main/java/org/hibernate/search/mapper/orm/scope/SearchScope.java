@@ -17,6 +17,7 @@ import org.hibernate.search.engine.search.dsl.query.SearchQueryContext;
 import org.hibernate.search.engine.search.dsl.query.SearchQueryResultContext;
 import org.hibernate.search.engine.search.dsl.sort.SearchSortContainerContext;
 import org.hibernate.search.engine.search.dsl.sort.SearchSortTerminalContext;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexer;
 import org.hibernate.search.mapper.orm.search.dsl.query.HibernateOrmSearchQueryResultDefinitionContext;
 import org.hibernate.search.mapper.pojo.search.PojoReference;
 
@@ -90,5 +91,7 @@ public interface SearchScope<E> {
 	 * @see SearchProjectionFactoryContext
 	 */
 	SearchProjectionFactoryContext<PojoReference, E> projection();
+
+	SearchIndexer indexer();
 
 }

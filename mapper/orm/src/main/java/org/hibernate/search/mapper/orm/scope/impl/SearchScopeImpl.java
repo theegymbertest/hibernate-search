@@ -10,6 +10,8 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext;
 import org.hibernate.search.engine.search.dsl.projection.SearchProjectionFactoryContext;
 import org.hibernate.search.engine.search.dsl.sort.SearchSortContainerContext;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexer;
+import org.hibernate.search.mapper.orm.indexing.impl.SearchIndexerImpl;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.search.dsl.query.HibernateOrmSearchQueryResultDefinitionContext;
 import org.hibernate.search.mapper.orm.search.dsl.query.impl.HibernateOrmSearchQueryResultDefinitionContextImpl;
@@ -57,5 +59,10 @@ public class SearchScopeImpl<E> implements SearchScope<E>, org.hibernate.search.
 	@Override
 	public SearchProjectionFactoryContext<PojoReference, E> projection() {
 		return delegate.projection();
+	}
+
+	@Override
+	public SearchIndexer indexer() {
+		return new SearchIndexerImpl( delegate.executor() );
 	}
 }
