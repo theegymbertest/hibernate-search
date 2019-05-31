@@ -32,7 +32,6 @@ import org.hibernate.search.mapper.pojo.work.spi.PojoWorkPlan;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingDelegate;
 import org.hibernate.search.mapper.pojo.session.spi.AbstractPojoSearchSession;
 import org.hibernate.search.mapper.pojo.scope.spi.PojoScopeDelegate;
-import org.hibernate.search.mapper.pojo.session.context.spi.AbstractPojoSessionContextImplementor;
 import org.hibernate.search.mapper.pojo.work.spi.PojoSessionWorkExecutor;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
@@ -44,12 +43,17 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final SessionImplementor sessionImplementor;
+	private final HibernateOrmSessionContextImpl sessionContext;
 	private AutomaticIndexingSynchronizationStrategy synchronizationStrategy;
 
 	private HibernateOrmSearchSession(HibernateOrmSearchSessionBuilder builder) {
-		super( builder );
-		this.sessionImplementor = builder.sessionImplementor;
+		this( builder, builder.buildSessionContext() );
+	}
+
+	private HibernateOrmSearchSession(HibernateOrmSearchSessionBuilder builder,
+			HibernateOrmSessionContextImpl sessionContext) {
+		super( builder, sessionContext );
+		this.sessionContext = sessionContext;
 		this.synchronizationStrategy = builder.synchronizationStrategy;
 	}
 
@@ -60,12 +64,12 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 
 	@Override
 	public EntityManager toEntityManager() {
-		return sessionImplementor;
+		return sessionContext.getSession();
 	}
 
 	@Override
 	public Session toOrmSession() {
-		return sessionImplementor;
+		return sessionContext.getSession();
 	}
 
 	@Override
@@ -73,7 +77,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		checkOrmSessionIsOpen();
 
 		PojoScopeDelegate<T, T> scopeDelegate = getDelegate().createPojoScope( types );
-		return new SearchScopeImpl<>( scopeDelegate, sessionImplementor );
+		return new SearchScopeImpl<>( scopeDelegate, sessionContext );
 	}
 
 	@Override
@@ -88,7 +92,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		PojoScopeDelegate<?, ?> scopeDelegate = getDelegate().createPojoScope( Arrays.asList( types ) );
 
 		return new MassIndexerImpl(
-				sessionImplementor.getFactory(), scopeDelegate.getIncludedIndexedTypes(),
+				sessionContext.getSession().getFactory(), scopeDelegate.getIncludedIndexedTypes(),
 				DetachedSessionContextImplementor.of( getDelegate().getSessionContext() ),
 				scopeDelegate.executor()
 		);
@@ -117,7 +121,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 
 	private void checkOrmSessionIsOpen() {
 		try {
-			sessionImplementor.checkOpen();
+			sessionContext.getSession().checkOpen();
 		}
 		catch (IllegalStateException e) {
 			throw log.hibernateSessionIsClosed( e );
@@ -140,8 +144,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 			this.synchronizationStrategy = synchronizationStrategy;
 		}
 
-		@Override
-		protected AbstractPojoSessionContextImplementor buildSessionContext() {
+		private HibernateOrmSessionContextImpl buildSessionContext() {
 			return new HibernateOrmSessionContextImpl( mappingContext, sessionImplementor );
 		}
 

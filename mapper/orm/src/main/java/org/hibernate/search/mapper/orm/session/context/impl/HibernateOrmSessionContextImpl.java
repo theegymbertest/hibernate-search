@@ -43,7 +43,7 @@ public class HibernateOrmSessionContextImpl extends AbstractPojoSessionContextIm
 	}
 
 	@Override
-	public Session getSession() {
+	public SessionImplementor getSession() {
 		return sessionImplementor;
 	}
 }
