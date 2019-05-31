@@ -6,6 +6,8 @@
  */
 package org.hibernate.search.engine.mapper.scope.spi;
 
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.SessionContextImplementor;
 import org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext;
 import org.hibernate.search.engine.search.dsl.projection.SearchProjectionFactoryContext;
@@ -43,5 +45,7 @@ public interface MappedIndexScope<R, E> {
 	 * will be wrong.
 	 */
 	SearchProjectionFactoryContext<R, E> projection();
+
+	IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext);
 
 }

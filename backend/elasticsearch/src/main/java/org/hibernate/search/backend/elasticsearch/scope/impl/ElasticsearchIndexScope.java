@@ -13,12 +13,15 @@ import org.hibernate.search.backend.elasticsearch.search.predicate.impl.Elastics
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjectionBuilderFactory;
 import org.hibernate.search.backend.elasticsearch.search.query.impl.ElasticsearchSearchQueryBuilderFactory;
 import org.hibernate.search.backend.elasticsearch.search.sort.impl.ElasticsearchSearchSortBuilderFactoryImpl;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScope;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 
 public class ElasticsearchIndexScope
 		implements IndexScope<ElasticsearchSearchQueryElementCollector> {
 
+	private final ScopeBackendContext backendContext;
 	private final ElasticsearchScopeModel model;
 	private final ElasticsearchSearchPredicateBuilderFactoryImpl searchPredicateFactory;
 	private final ElasticsearchSearchSortBuilderFactoryImpl searchSortFactory;
@@ -29,6 +32,7 @@ public class ElasticsearchIndexScope
 			MappingContextImplementor mappingContext,
 			ScopeBackendContext backendContext,
 			ElasticsearchScopeModel model) {
+		this.backendContext = backendContext;
 		ElasticsearchSearchContext searchContext = backendContext.createSearchContext(
 				mappingContext, model
 		);
@@ -72,5 +76,10 @@ public class ElasticsearchIndexScope
 	@Override
 	public ElasticsearchSearchProjectionBuilderFactory getSearchProjectionFactory() {
 		return searchProjectionFactory;
+	}
+
+	@Override
+	public IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
+		return backendContext.createWorkExecutor( model, sessionContext );
 	}
 }

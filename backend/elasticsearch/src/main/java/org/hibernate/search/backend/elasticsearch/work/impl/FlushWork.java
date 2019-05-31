@@ -51,28 +51,17 @@ public class FlushWork extends AbstractSimpleElasticsearchWork<Void> {
 		private final RefreshWorkBuilder refreshWorkBuilder;
 		private final Set<URLEncodedString> indexNames = new HashSet<>();
 
-		public Builder(ElasticsearchWorkBuilderFactory workFactory) {
+		public Builder(Set<URLEncodedString> indexNames, ElasticsearchWorkBuilderFactory workFactory) {
 			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
-			this.refreshWorkBuilder = workFactory.refresh();
-		}
-
-		@Override
-		public Builder index(URLEncodedString indexName) {
-			this.indexNames.add( indexName );
-			this.refreshWorkBuilder.index( indexName );
-			return this;
+			this.indexNames.addAll( indexNames );
+			this.refreshWorkBuilder = workFactory.refresh( indexNames );
 		}
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
-			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.post();
-
-			if ( !indexNames.isEmpty() ) {
-				builder.multiValuedPathComponent( indexNames );
-			}
-
-			builder.pathComponent( Paths._FLUSH );
+			ElasticsearchRequest.Builder builder = ElasticsearchRequest.post()
+					.multiValuedPathComponent( indexNames )
+					.pathComponent( Paths._FLUSH );
 
 			return builder.build();
 		}

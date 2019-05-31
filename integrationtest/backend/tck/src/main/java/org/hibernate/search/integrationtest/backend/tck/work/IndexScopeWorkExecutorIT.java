@@ -15,7 +15,7 @@ import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.search.DocumentReference;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
@@ -30,10 +30,10 @@ import org.assertj.core.api.Assertions;
 
 /**
  * Verify that the work executor operations:
- * {@link IndexWorkExecutor#optimize()}, {@link IndexWorkExecutor#purge()}, {@link IndexWorkExecutor#flush()}
+ * {@link IndexScopeWorkExecutor#optimize()}, {@link IndexScopeWorkExecutor#purge()}, {@link IndexScopeWorkExecutor#flush()}
  * work properly, in every backends.
  */
-public class IndexWorkExecutorIT {
+public class IndexScopeWorkExecutorIT {
 
 	private static final String CONFIGURATION_ID = "multi-tenancy";
 
@@ -67,7 +67,8 @@ public class IndexWorkExecutorIT {
 				.setup();
 
 		// Do not provide a tenant
-		IndexWorkExecutor workExecutor = indexManager.createWorkExecutor();
+		IndexScopeWorkExecutor workExecutor = indexManager.createScope()
+				.createWorkExecutor();
 		createBookIndexes( noTenantSessionContext );
 
 		workExecutor.flush().join();
@@ -76,7 +77,6 @@ public class IndexWorkExecutorIT {
 		workExecutor.optimize().join();
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, noTenantSessionContext );
 
-		// purge without providing a tenant
 		workExecutor.purge().join();
 		workExecutor.flush().join();
 
@@ -95,7 +95,8 @@ public class IndexWorkExecutorIT {
 				.setup();
 
 		// Do provide a tenant ID
-		IndexWorkExecutor workExecutor = indexManager.createWorkExecutor( tenant1SessionContext );
+		IndexScopeWorkExecutor workExecutor = indexManager.createScope()
+				.createWorkExecutor( tenant1SessionContext );
 
 		createBookIndexes( tenant1SessionContext );
 		createBookIndexes( tenant2SessionContext );

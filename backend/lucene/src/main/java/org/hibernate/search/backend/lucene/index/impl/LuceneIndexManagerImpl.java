@@ -13,11 +13,11 @@ import org.hibernate.search.backend.lucene.index.LuceneIndexManager;
 import org.hibernate.search.backend.lucene.lowlevel.index.impl.IndexAccessor;
 import org.hibernate.search.backend.lucene.orchestration.impl.LuceneWriteWorkOrchestratorImplementor;
 import org.hibernate.search.backend.lucene.scope.model.impl.LuceneScopeIndexManagerContext;
+import org.hibernate.search.backend.lucene.work.execution.impl.LuceneIndexWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.index.IndexManager;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerStartContext;
 import org.hibernate.search.engine.backend.scope.spi.IndexScopeBuilder;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerImplementor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkPlan;
@@ -27,7 +27,6 @@ import org.hibernate.search.backend.lucene.index.spi.ReaderProvider;
 import org.hibernate.search.backend.lucene.logging.impl.Log;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
-import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.SessionContextImplementor;
 import org.hibernate.search.util.common.reporting.EventContext;
 import org.hibernate.search.engine.reporting.spi.EventContexts;
@@ -98,8 +97,8 @@ class LuceneIndexManagerImpl
 	}
 
 	@Override
-	public IndexWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
-		return backendContext.createWorkExecutor( writeOrchestrator, indexName, sessionContext );
+	public LuceneIndexWorkExecutor createWorkExecutor() {
+		return new LuceneIndexWorkExecutor( writeOrchestrator, indexName );
 	}
 
 	@Override

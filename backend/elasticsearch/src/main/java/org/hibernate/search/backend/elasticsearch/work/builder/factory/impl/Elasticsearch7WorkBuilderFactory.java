@@ -82,23 +82,23 @@ public class Elasticsearch7WorkBuilderFactory implements ElasticsearchWorkBuilde
 	}
 
 	@Override
-	public DeleteByQueryWorkBuilder deleteByQuery(URLEncodedString indexName, JsonObject payload) {
-		return new DeleteByQueryWork.Builder( indexName, payload, this );
+	public DeleteByQueryWorkBuilder deleteByQuery(Set<URLEncodedString> indexNames, JsonObject payload) {
+		return new DeleteByQueryWork.Builder( indexNames, payload, this );
 	}
 
 	@Override
-	public FlushWorkBuilder flush() {
-		return new FlushWork.Builder( this );
+	public FlushWorkBuilder flush(Set<URLEncodedString> indexNames) {
+		return new FlushWork.Builder( indexNames, this );
 	}
 
 	@Override
-	public RefreshWorkBuilder refresh() {
-		return new RefreshWork.Builder();
+	public RefreshWorkBuilder refresh(Set<URLEncodedString> indexNames) {
+		return new RefreshWork.Builder( indexNames );
 	}
 
 	@Override
-	public OptimizeWorkBuilder optimize() {
-		return new OptimizeWork.Builder();
+	public OptimizeWorkBuilder optimize(Set<URLEncodedString> indexNames) {
+		return new OptimizeWork.Builder( indexNames );
 	}
 
 	@Override

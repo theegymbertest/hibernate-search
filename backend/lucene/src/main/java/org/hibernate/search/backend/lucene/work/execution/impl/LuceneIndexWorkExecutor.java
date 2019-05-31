@@ -9,50 +9,27 @@ package org.hibernate.search.backend.lucene.work.execution.impl;
 import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.backend.lucene.orchestration.impl.LuceneWriteWorkOrchestrator;
-import org.hibernate.search.backend.lucene.work.impl.LuceneWorkFactory;
+import org.hibernate.search.backend.lucene.work.impl.LuceneWriteWork;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
-import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 
-public class LuceneIndexWorkExecutor implements IndexWorkExecutor {
+public class LuceneIndexWorkExecutor {
 
-	private final LuceneWorkFactory factory;
 	private final LuceneWriteWorkOrchestrator orchestrator;
 	private final String indexName;
-	private final DetachedSessionContextImplementor sessionContext;
 
-	public LuceneIndexWorkExecutor(LuceneWorkFactory factory,
-			LuceneWriteWorkOrchestrator orchestrator, String indexName,
-			DetachedSessionContextImplementor sessionContext) {
-		this.factory = factory;
+	public LuceneIndexWorkExecutor(LuceneWriteWorkOrchestrator orchestrator, String indexName) {
 		this.orchestrator = orchestrator;
 		this.indexName = indexName;
-		this.sessionContext = sessionContext;
 	}
 
-	@Override
-	public CompletableFuture<?> optimize() {
-		return orchestrator.submit(
-				factory.optimize( indexName ),
-				DocumentCommitStrategy.FORCE,
-				DocumentRefreshStrategy.NONE
-		);
+	String getIndexName() {
+		return indexName;
 	}
 
-	@Override
-	public CompletableFuture<?> purge() {
+	<T> CompletableFuture<T> submit(LuceneWriteWork<T> work) {
 		return orchestrator.submit(
-				factory.deleteAll( indexName, sessionContext.getTenantIdentifier() ),
-				DocumentCommitStrategy.FORCE,
-				DocumentRefreshStrategy.NONE
-		);
-	}
-
-	@Override
-	public CompletableFuture<?> flush() {
-		return orchestrator.submit(
-				factory.flush( indexName ),
+				work,
 				DocumentCommitStrategy.FORCE,
 				DocumentRefreshStrategy.NONE
 		);

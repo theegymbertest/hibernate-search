@@ -11,8 +11,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.search.engine.backend.scope.spi.IndexScopeBuilder;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScope;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.search.projection.spi.SearchProjectionBuilderFactory;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.document.model.StubIndexSchemaNode;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search.StubQueryElementCollector;
@@ -22,16 +24,19 @@ import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search.sort.StubSearchSortBuilderFactory;
 
 class StubIndexScope implements IndexScope<StubQueryElementCollector> {
+	private final StubBackend backend;
+	private final StubScopeModel model;
 	private final StubSearchPredicateBuilderFactory predicateFactory;
 	private final StubSearchSortBuilderFactory sortFactory;
 	private final StubSearchQueryBuilderFactory queryFactory;
 	private final StubSearchProjectionBuilderFactory projectionFactory;
 
 	private StubIndexScope(Builder builder) {
+		this.backend = builder.backend;
 		List<String> immutableIndexNames = Collections.unmodifiableList( new ArrayList<>( builder.indexNames ) );
 		List<StubIndexSchemaNode> immutableRootSchemaNodes =
 				Collections.unmodifiableList( new ArrayList<>( builder.rootSchemaNodes ) );
-		StubScopeModel model = new StubScopeModel( immutableIndexNames, immutableRootSchemaNodes );
+		this.model = new StubScopeModel( immutableIndexNames, immutableRootSchemaNodes );
 		this.predicateFactory = new StubSearchPredicateBuilderFactory();
 		this.sortFactory = new StubSearchSortBuilderFactory();
 		this.projectionFactory = new StubSearchProjectionBuilderFactory( model );
@@ -56,6 +61,11 @@ class StubIndexScope implements IndexScope<StubQueryElementCollector> {
 	@Override
 	public SearchProjectionBuilderFactory getSearchProjectionFactory() {
 		return projectionFactory;
+	}
+
+	@Override
+	public IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
+		return new StubIndexScopeWorkExecutor( backend.getBehavior(), sessionContext, model );
 	}
 
 	static class Builder implements IndexScopeBuilder {

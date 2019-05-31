@@ -15,11 +15,11 @@ import java.util.concurrent.Future;
 
 import org.hibernate.CacheMode;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.mapper.orm.logging.impl.Log;
 import org.hibernate.search.mapper.orm.mapping.spi.HibernateOrmMapping;
 import org.hibernate.search.mapper.orm.massindexing.monitor.MassIndexingMonitor;
-import org.hibernate.search.mapper.pojo.work.spi.PojoScopeWorkExecutor;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.Executors;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -40,7 +40,7 @@ public class BatchCoordinator extends ErrorHandledRunnable {
 	private final HibernateOrmMapping mapping;
 	private final DetachedSessionContextImplementor sessionContext;
 	private final Set<Class<?>> rootEntities; //entity types to reindex excluding all subtypes of each-other
-	private final PojoScopeWorkExecutor scopeWorkExecutor;
+	private final IndexScopeWorkExecutor scopeWorkExecutor;
 
 	private final int typesToIndexInParallel;
 	private final int documentBuilderThreads;
@@ -58,7 +58,7 @@ public class BatchCoordinator extends ErrorHandledRunnable {
 
 	public BatchCoordinator(SessionFactoryImplementor sessionFactory, HibernateOrmMapping mapping,
 			DetachedSessionContextImplementor sessionContext,
-			Set<Class<?>> rootEntities, PojoScopeWorkExecutor scopeWorkExecutor,
+			Set<Class<?>> rootEntities, IndexScopeWorkExecutor scopeWorkExecutor,
 			int typesToIndexInParallel, int documentBuilderThreads, CacheMode cacheMode,
 			int objectLoadingBatchSize, long objectsLimit, boolean optimizeAtEnd,
 			boolean purgeAtStart, boolean optimizeAfterPurge, MassIndexingMonitor monitor,

@@ -6,31 +6,31 @@
  */
 package org.hibernate.search.util.impl.integrationtest.common.stub.backend.index.impl;
 
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.StubBackendBehavior;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.index.StubIndexScopeWork;
+import org.hibernate.search.util.impl.integrationtest.common.stub.backend.search.impl.StubScopeModel;
 
-class StubIndexWorkExecutor implements IndexWorkExecutor {
+class StubIndexScopeWorkExecutor implements IndexScopeWorkExecutor {
 
-	private final String indexName;
 	private final StubBackendBehavior behavior;
 	private final DetachedSessionContextImplementor sessionContext;
+	private final StubScopeModel scopeModel;
 
-	StubIndexWorkExecutor(String indexName, StubBackendBehavior behavior,
-			DetachedSessionContextImplementor sessionContext) {
-		this.indexName = indexName;
+	StubIndexScopeWorkExecutor(StubBackendBehavior behavior, DetachedSessionContextImplementor sessionContext,
+			StubScopeModel scopeModel) {
 		this.behavior = behavior;
 		this.sessionContext = sessionContext;
+		this.scopeModel = scopeModel;
 	}
 
 	@Override
 	public CompletableFuture<?> optimize() {
 		StubIndexScopeWork work = StubIndexScopeWork.builder( StubIndexScopeWork.Type.OPTIMIZE ).build();
-		return behavior.executeIndexScopeWork( Collections.singletonList( indexName ), work );
+		return behavior.executeIndexScopeWork( scopeModel.getIndexNames(), work );
 	}
 
 	@Override
@@ -38,12 +38,12 @@ class StubIndexWorkExecutor implements IndexWorkExecutor {
 		StubIndexScopeWork work = StubIndexScopeWork.builder( StubIndexScopeWork.Type.PURGE )
 				.tenantIdentifier( sessionContext.getTenantIdentifier() )
 				.build();
-		return behavior.executeIndexScopeWork( Collections.singletonList( indexName ), work );
+		return behavior.executeIndexScopeWork( scopeModel.getIndexNames(), work );
 	}
 
 	@Override
 	public CompletableFuture<?> flush() {
 		StubIndexScopeWork work = StubIndexScopeWork.builder( StubIndexScopeWork.Type.FLUSH ).build();
-		return behavior.executeIndexScopeWork( Collections.singletonList( indexName ), work );
+		return behavior.executeIndexScopeWork( scopeModel.getIndexNames(), work );
 	}
 }

@@ -13,11 +13,9 @@ import org.hibernate.search.engine.backend.document.DocumentElement;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.spi.DocumentReferenceProvider;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
 import org.hibernate.search.engine.mapper.scope.spi.MappedIndexScopeBuilder;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.mapper.mapping.spi.MappedIndexManager;
-import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.mapper.pojo.session.context.spi.AbstractPojoSessionContextImplementor;
 import org.hibernate.search.mapper.pojo.dirtiness.impl.PojoImplicitReindexingResolver;
 import org.hibernate.search.mapper.pojo.dirtiness.impl.PojoReindexingCollector;
@@ -90,10 +88,6 @@ public class PojoIndexedTypeManager<I, E, D extends DocumentElement> implements 
 				this, sessionContext,
 				indexManager.createDocumentWorkExecutor( sessionContext, commitStrategy )
 		);
-	}
-
-	public IndexWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
-		return indexManager.createWorkExecutor( sessionContext );
 	}
 
 	IdentifierMapping<I, E> getIdentifierMapping() {

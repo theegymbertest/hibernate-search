@@ -6,6 +6,8 @@
  */
 package org.hibernate.search.engine.backend.scope.spi;
 
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.search.predicate.spi.SearchPredicateBuilderFactory;
 import org.hibernate.search.engine.search.projection.spi.SearchProjectionBuilderFactory;
 import org.hibernate.search.engine.search.query.spi.SearchQueryBuilderFactory;
@@ -25,5 +27,7 @@ public interface IndexScope<C> {
 	SearchQueryBuilderFactory<C> getSearchQueryBuilderFactory();
 
 	SearchProjectionBuilderFactory getSearchProjectionFactory();
+
+	IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext);
 
 }

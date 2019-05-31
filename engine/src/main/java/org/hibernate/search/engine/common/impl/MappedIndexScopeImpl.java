@@ -6,7 +6,9 @@
  */
 package org.hibernate.search.engine.common.impl;
 
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.scope.spi.MappedIndexScope;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.SessionContextImplementor;
 import org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext;
 import org.hibernate.search.engine.search.dsl.predicate.impl.DefaultSearchPredicateFactoryContext;
@@ -56,5 +58,10 @@ class MappedIndexScopeImpl<C, R, E> implements MappedIndexScope<R, E> {
 	@Override
 	public SearchProjectionFactoryContext<R, E> projection() {
 		return new DefaultSearchProjectionFactoryContext<>( delegate.getSearchProjectionFactory() );
+	}
+
+	@Override
+	public IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
+		return delegate.createWorkExecutor( sessionContext );
 	}
 }

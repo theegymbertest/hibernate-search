@@ -16,7 +16,6 @@ import org.hibernate.search.backend.elasticsearch.gson.spi.GsonProvider;
 import org.hibernate.search.backend.elasticsearch.logging.impl.Log;
 import org.hibernate.search.backend.elasticsearch.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.work.builder.factory.impl.ElasticsearchWorkBuilderFactory;
-import org.hibernate.search.backend.elasticsearch.work.builder.impl.RefreshWorkBuilder;
 import org.hibernate.search.backend.elasticsearch.work.impl.ElasticsearchWork;
 import org.hibernate.search.backend.elasticsearch.work.impl.ElasticsearchWorkExecutionContext;
 import org.hibernate.search.engine.common.spi.ErrorHandler;
@@ -86,11 +85,7 @@ class ElasticsearchDefaultWorkExecutionContext implements ElasticsearchRefreshab
 			log.tracef( "Refreshing index(es) %s", indexesToRefresh );
 		}
 
-		RefreshWorkBuilder builder = workFactory.refresh();
-		for ( URLEncodedString index : indexesToRefresh ) {
-			builder.index( index );
-		}
-		ElasticsearchWork<?> work = builder.build();
+		ElasticsearchWork<?> work = workFactory.refresh( indexesToRefresh ).build();
 
 		return work.execute( refreshExecutionContext )
 				.handle( Futures.handler(

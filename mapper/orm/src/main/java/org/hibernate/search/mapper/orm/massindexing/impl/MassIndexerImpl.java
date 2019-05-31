@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.CacheMode;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.hibernate.search.mapper.orm.impl.HibernateSearchContextService;
@@ -21,7 +22,7 @@ import org.hibernate.search.mapper.orm.logging.impl.Log;
 import org.hibernate.search.mapper.orm.mapping.spi.HibernateOrmMapping;
 import org.hibernate.search.mapper.orm.massindexing.monitor.MassIndexingMonitor;
 import org.hibernate.search.mapper.orm.massindexing.monitor.impl.SimpleIndexingProgressMonitor;
-import org.hibernate.search.mapper.pojo.work.spi.PojoScopeWorkExecutor;
+import org.hibernate.search.util.common.impl.Executors;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
 /**
@@ -41,7 +42,7 @@ public class MassIndexerImpl implements MassIndexer {
 	private final DetachedSessionContextImplementor sessionContext;
 
 	private final Set<Class<?>> rootEntities;
-	private final PojoScopeWorkExecutor scopeWorkExecutor;
+	private final IndexScopeWorkExecutor scopeWorkExecutor;
 
 	// default settings defined here:
 	private int typesToIndexInParallel = 1;
@@ -58,7 +59,7 @@ public class MassIndexerImpl implements MassIndexer {
 
 	public MassIndexerImpl(SessionFactoryImplementor sessionFactory, Set<? extends Class<?>> targetedIndexedTypes,
 			DetachedSessionContextImplementor sessionContext,
-			PojoScopeWorkExecutor scopeWorkExecutor) {
+			IndexScopeWorkExecutor scopeWorkExecutor) {
 		this.sessionFactory = sessionFactory;
 		this.mapping = sessionFactory.getServiceRegistry().getService( HibernateSearchContextService.class ).getMapping();
 		this.sessionContext = sessionContext;

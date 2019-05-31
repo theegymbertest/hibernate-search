@@ -13,8 +13,10 @@ import org.hibernate.search.backend.lucene.search.predicate.impl.LuceneSearchPre
 import org.hibernate.search.backend.lucene.search.projection.impl.LuceneSearchProjectionBuilderFactory;
 import org.hibernate.search.backend.lucene.search.query.impl.LuceneSearchQueryBuilderFactory;
 import org.hibernate.search.backend.lucene.search.sort.impl.LuceneSearchSortBuilderFactoryImpl;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScope;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 
 /**
  * @author Guillaume Smet
@@ -22,6 +24,7 @@ import org.hibernate.search.engine.backend.scope.spi.IndexScope;
 public class LuceneIndexScope
 		implements IndexScope<LuceneSearchQueryElementCollector> {
 
+	private final ScopeBackendContext backendContext;
 	private final LuceneScopeModel model;
 	private final LuceneSearchPredicateBuilderFactoryImpl searchPredicateFactory;
 	private final LuceneSearchSortBuilderFactoryImpl searchSortFactory;
@@ -31,6 +34,7 @@ public class LuceneIndexScope
 	public LuceneIndexScope(ScopeBackendContext backendContext,
 			MappingContextImplementor mappingContext,
 			LuceneScopeModel model) {
+		this.backendContext = backendContext;
 		this.model = model;
 		LuceneSearchContext searchContext = backendContext.createSearchContext( mappingContext, model );
 		this.searchPredicateFactory = new LuceneSearchPredicateBuilderFactoryImpl( searchContext, model );
@@ -66,5 +70,10 @@ public class LuceneIndexScope
 	@Override
 	public LuceneSearchProjectionBuilderFactory getSearchProjectionFactory() {
 		return searchProjectionFactory;
+	}
+
+	@Override
+	public IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
+		return backendContext.createIndexScopeWorkExecutor( model, sessionContext );
 	}
 }

@@ -8,6 +8,7 @@ package org.hibernate.search.mapper.pojo.scope.spi;
 
 import java.util.Set;
 
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.search.DocumentReference;
 import org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext;
 import org.hibernate.search.engine.search.dsl.projection.SearchProjectionFactoryContext;
@@ -15,7 +16,6 @@ import org.hibernate.search.engine.search.dsl.query.SearchQueryResultDefinitionC
 import org.hibernate.search.engine.search.dsl.sort.SearchSortContainerContext;
 import org.hibernate.search.engine.search.loading.context.spi.LoadingContextBuilder;
 import org.hibernate.search.mapper.pojo.search.PojoReference;
-import org.hibernate.search.mapper.pojo.work.spi.PojoScopeWorkExecutor;
 
 /**
  * @param <E> A common supertype of the indexed types included in this scope.
@@ -37,6 +37,6 @@ public interface PojoScopeDelegate<E, E2> {
 
 	SearchProjectionFactoryContext<PojoReference, E2> projection();
 
-	PojoScopeWorkExecutor executor();
+	IndexScopeWorkExecutor executor();
 
 }

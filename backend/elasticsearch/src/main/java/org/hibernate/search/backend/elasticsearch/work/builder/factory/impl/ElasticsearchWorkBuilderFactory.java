@@ -49,13 +49,13 @@ public interface ElasticsearchWorkBuilderFactory {
 
 	DeleteWorkBuilder delete(URLEncodedString indexName, URLEncodedString id, String routingKey);
 
-	DeleteByQueryWorkBuilder deleteByQuery(URLEncodedString indexName, JsonObject payload);
+	DeleteByQueryWorkBuilder deleteByQuery(Set<URLEncodedString> indexNames, JsonObject payload);
 
-	FlushWorkBuilder flush();
+	FlushWorkBuilder flush(Set<URLEncodedString> indexNames);
 
-	RefreshWorkBuilder refresh();
+	RefreshWorkBuilder refresh(Set<URLEncodedString> indexNames);
 
-	OptimizeWorkBuilder optimize();
+	OptimizeWorkBuilder optimize(Set<URLEncodedString> indexNames);
 
 	BulkWorkBuilder bulk(List<? extends BulkableElasticsearchWork<?>> bulkableWorks);
 

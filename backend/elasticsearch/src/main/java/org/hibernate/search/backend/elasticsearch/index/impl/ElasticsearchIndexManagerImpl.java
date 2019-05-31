@@ -25,14 +25,12 @@ import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy
 import org.hibernate.search.engine.backend.index.IndexManager;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerStartContext;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerImplementor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScopeBuilder;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkPlan;
 import org.hibernate.search.engine.cfg.ConfigurationPropertySource;
 import org.hibernate.search.engine.cfg.spi.ConfigurationProperty;
-import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.reporting.spi.EventContexts;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.SessionContextImplementor;
@@ -149,13 +147,6 @@ class ElasticsearchIndexManagerImpl implements IndexManagerImplementor<Elasticse
 			SessionContextImplementor sessionContext, DocumentCommitStrategy commitStrategy) {
 		// The commit strategy is ignored, because Elasticsearch always commits changes to its transaction log.
 		return backendContext.createDocumentWorkExecutor(
-				parallelOrchestrator, elasticsearchIndexName, sessionContext
-		);
-	}
-
-	@Override
-	public IndexWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
-		return backendContext.createWorkExecutor(
 				parallelOrchestrator, elasticsearchIndexName, sessionContext
 		);
 	}

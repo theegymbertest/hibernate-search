@@ -13,13 +13,11 @@ import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy
 import org.hibernate.search.engine.backend.index.IndexManager;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerStartContext;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
 import org.hibernate.search.engine.backend.scope.spi.IndexScopeBuilder;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkPlan;
 import org.hibernate.search.engine.backend.index.spi.IndexManagerImplementor;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
-import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.SessionContextImplementor;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.document.impl.StubDocumentElement;
@@ -80,11 +78,6 @@ public class StubIndexManager implements IndexManagerImplementor<StubDocumentEle
 	public IndexDocumentWorkExecutor<StubDocumentElement> createDocumentWorkExecutor(SessionContextImplementor context,
 			DocumentCommitStrategy commitStrategy) {
 		return new StubIndexDocumentWorkExecutor( this, context, commitStrategy );
-	}
-
-	@Override
-	public IndexWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
-		return new StubIndexWorkExecutor( name, backend.getBehavior(), sessionContext );
 	}
 
 	@Override

@@ -7,6 +7,7 @@
 package org.hibernate.search.backend.lucene.scope.impl;
 
 import org.hibernate.search.backend.lucene.search.query.impl.SearchBackendContext;
+import org.hibernate.search.backend.lucene.work.execution.impl.WorkExecutionBackendContext;
 
-public interface ScopeBackendContext extends SearchBackendContext {
+public interface ScopeBackendContext extends WorkExecutionBackendContext, SearchBackendContext {
 }

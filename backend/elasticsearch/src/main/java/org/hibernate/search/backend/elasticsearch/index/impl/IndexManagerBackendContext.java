@@ -10,13 +10,13 @@ import java.util.function.Function;
 
 import org.hibernate.search.backend.elasticsearch.orchestration.impl.ElasticsearchWorkOrchestratorImplementor;
 import org.hibernate.search.backend.elasticsearch.link.impl.ElasticsearchLink;
-import org.hibernate.search.backend.elasticsearch.scope.impl.ScopeBackendContext;
 import org.hibernate.search.backend.elasticsearch.scope.model.impl.ElasticsearchScopeModel;
 import org.hibernate.search.backend.elasticsearch.search.impl.ElasticsearchSearchContext;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.DocumentReferenceExtractorHelper;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.ElasticsearchSearchProjection;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.SearchProjectionBackendContext;
 import org.hibernate.search.backend.elasticsearch.search.query.impl.ElasticsearchSearchQueryBuilder;
+import org.hibernate.search.backend.elasticsearch.scope.impl.ScopeBackendContext;
 import org.hibernate.search.backend.elasticsearch.search.query.impl.SearchBackendContext;
 import org.hibernate.search.backend.elasticsearch.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.document.impl.ElasticsearchDocumentObjectBuilder;
@@ -27,12 +27,12 @@ import org.hibernate.search.backend.elasticsearch.multitenancy.impl.MultiTenancy
 import org.hibernate.search.backend.elasticsearch.orchestration.impl.ElasticsearchWorkOrchestrator;
 import org.hibernate.search.backend.elasticsearch.orchestration.impl.ElasticsearchWorkOrchestratorProvider;
 import org.hibernate.search.backend.elasticsearch.work.execution.impl.ElasticsearchIndexDocumentWorkExecutor;
-import org.hibernate.search.backend.elasticsearch.work.execution.impl.ElasticsearchIndexWorkExecutor;
+import org.hibernate.search.backend.elasticsearch.work.execution.impl.ElasticsearchIndexScopeWorkExecutor;
 import org.hibernate.search.backend.elasticsearch.work.execution.impl.ElasticsearchIndexWorkPlan;
 import org.hibernate.search.backend.elasticsearch.work.execution.impl.WorkExecutionBackendContext;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkPlan;
 import org.hibernate.search.engine.mapper.mapping.context.spi.MappingContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
@@ -107,13 +107,13 @@ public class IndexManagerBackendContext implements SearchBackendContext, WorkExe
 	}
 
 	@Override
-	public IndexWorkExecutor createWorkExecutor(ElasticsearchWorkOrchestrator orchestrator, URLEncodedString indexName,
+	public IndexScopeWorkExecutor createWorkExecutor(ElasticsearchScopeModel scopeModel,
 			DetachedSessionContextImplementor sessionContext) {
 		multiTenancyStrategy.checkTenantId( sessionContext.getTenantIdentifier(), eventContext );
 
-		return new ElasticsearchIndexWorkExecutor(
-				link.getWorkBuilderFactory(), multiTenancyStrategy, orchestrator, indexName,
-				sessionContext
+		return new ElasticsearchIndexScopeWorkExecutor(
+				link.getWorkBuilderFactory(), multiTenancyStrategy, orchestratorProvider.getRootParallelOrchestrator(),
+				scopeModel, sessionContext
 		);
 	}
 

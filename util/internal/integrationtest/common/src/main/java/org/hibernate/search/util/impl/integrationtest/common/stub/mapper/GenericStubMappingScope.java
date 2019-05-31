@@ -6,7 +6,9 @@
  */
 package org.hibernate.search.util.impl.integrationtest.common.stub.mapper;
 
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.scope.spi.MappedIndexScope;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext;
 import org.hibernate.search.engine.search.dsl.projection.SearchProjectionFactoryContext;
 import org.hibernate.search.engine.search.dsl.query.SearchQueryResultDefinitionContext;
@@ -47,5 +49,17 @@ public class GenericStubMappingScope<R, E> {
 
 	public SearchProjectionFactoryContext<R, E> projection() {
 		return delegate.projection();
+	}
+
+	public IndexScopeWorkExecutor createWorkExecutor() {
+		return createWorkExecutor( new StubSessionContext() );
+	}
+
+	public IndexScopeWorkExecutor createWorkExecutor(StubSessionContext sessionContext) {
+		return createWorkExecutor( DetachedSessionContextImplementor.of( sessionContext ) );
+	}
+
+	public IndexScopeWorkExecutor createWorkExecutor(DetachedSessionContextImplementor sessionContext) {
+		return delegate.createWorkExecutor( sessionContext );
 	}
 }

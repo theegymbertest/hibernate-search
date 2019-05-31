@@ -8,6 +8,8 @@ package org.hibernate.search.backend.lucene.index.impl;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.search.backend.lucene.analysis.model.impl.LuceneAnalysisDefinitionRegistry;
 import org.hibernate.search.backend.lucene.logging.impl.Log;
@@ -19,6 +21,7 @@ import org.hibernate.search.backend.lucene.orchestration.impl.LuceneReadWorkOrch
 import org.hibernate.search.backend.lucene.orchestration.impl.LuceneWriteWorkOrchestratorImplementor;
 import org.hibernate.search.backend.lucene.orchestration.impl.LuceneWriteWorkProcessor;
 import org.hibernate.search.backend.lucene.scope.impl.ScopeBackendContext;
+import org.hibernate.search.backend.lucene.scope.model.impl.LuceneScopeIndexManagerContext;
 import org.hibernate.search.backend.lucene.scope.model.impl.LuceneScopeModel;
 import org.hibernate.search.backend.lucene.search.extraction.impl.LuceneDocumentStoredFieldVisitorBuilder;
 import org.hibernate.search.backend.lucene.search.impl.LuceneSearchContext;
@@ -26,12 +29,13 @@ import org.hibernate.search.backend.lucene.search.projection.impl.LuceneSearchPr
 import org.hibernate.search.backend.lucene.search.query.impl.LuceneSearchQueryBuilder;
 import org.hibernate.search.backend.lucene.search.query.impl.SearchBackendContext;
 import org.hibernate.search.backend.lucene.work.execution.impl.LuceneIndexDocumentWorkExecutor;
+import org.hibernate.search.backend.lucene.work.execution.impl.LuceneIndexScopeWorkExecutor;
 import org.hibernate.search.backend.lucene.work.execution.impl.LuceneIndexWorkExecutor;
 import org.hibernate.search.backend.lucene.work.execution.impl.LuceneIndexWorkPlan;
 import org.hibernate.search.backend.lucene.work.execution.impl.WorkExecutionBackendContext;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkPlan;
 import org.hibernate.search.backend.lucene.document.impl.LuceneRootDocumentBuilder;
@@ -124,11 +128,18 @@ public class IndexManagerBackendContext implements WorkExecutionBackendContext, 
 	}
 
 	@Override
-	public IndexWorkExecutor createWorkExecutor(LuceneWriteWorkOrchestrator orchestrator, String indexName,
+	public IndexScopeWorkExecutor createIndexScopeWorkExecutor(LuceneScopeModel scopeModel,
 			DetachedSessionContextImplementor sessionContext) {
 		multiTenancyStrategy.checkTenantId( sessionContext.getTenantIdentifier(), eventContext );
 
-		return new LuceneIndexWorkExecutor( workFactory, orchestrator, indexName, sessionContext );
+		List<LuceneIndexWorkExecutor> indexWorkExecutors = new ArrayList<>();
+		for ( LuceneScopeIndexManagerContext indexManagerContext : scopeModel.getIndexManagerContexts() ) {
+			indexWorkExecutors.add( indexManagerContext.createWorkExecutor() );
+		}
+
+		return new LuceneIndexScopeWorkExecutor(
+				workFactory, indexWorkExecutors, sessionContext
+		);
 	}
 
 	@Override

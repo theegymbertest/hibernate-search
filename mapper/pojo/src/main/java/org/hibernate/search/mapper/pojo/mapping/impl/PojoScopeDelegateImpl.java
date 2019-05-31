@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.scope.spi.MappedIndexScope;
 import org.hibernate.search.engine.mapper.scope.spi.MappedIndexScopeBuilder;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
@@ -24,8 +25,6 @@ import org.hibernate.search.engine.search.DocumentReference;
 import org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext;
 import org.hibernate.search.engine.search.dsl.projection.SearchProjectionFactoryContext;
 import org.hibernate.search.engine.search.dsl.sort.SearchSortContainerContext;
-import org.hibernate.search.mapper.pojo.work.impl.PojoScopeWorkExecutorImpl;
-import org.hibernate.search.mapper.pojo.work.spi.PojoScopeWorkExecutor;
 import org.hibernate.search.util.common.AssertionFailure;
 
 class PojoScopeDelegateImpl<E, E2> implements PojoScopeDelegate<E, E2> {
@@ -34,7 +33,7 @@ class PojoScopeDelegateImpl<E, E2> implements PojoScopeDelegate<E, E2> {
 	private final Set<PojoIndexedTypeManager<?, ? extends E, ?>> targetedTypeManagers;
 	private final AbstractPojoSessionContextImplementor sessionContext;
 	private MappedIndexScope<PojoReference, E2> delegate;
-	private PojoScopeWorkExecutor executor;
+	private IndexScopeWorkExecutor executor;
 
 	PojoScopeDelegateImpl(PojoIndexedTypeManagerContainer typeManagers,
 			Set<PojoIndexedTypeManager<?, ? extends E, ?>> targetedTypeManagers,
@@ -83,10 +82,10 @@ class PojoScopeDelegateImpl<E, E2> implements PojoScopeDelegate<E, E2> {
 	}
 
 	@Override
-	public PojoScopeWorkExecutor executor() {
+	public IndexScopeWorkExecutor executor() {
 		if ( executor == null ) {
-			executor = new PojoScopeWorkExecutorImpl(
-					targetedTypeManagers, DetachedSessionContextImplementor.of( sessionContext )
+			executor = getDelegate().createWorkExecutor(
+					DetachedSessionContextImplementor.of( sessionContext )
 			);
 		}
 		return executor;

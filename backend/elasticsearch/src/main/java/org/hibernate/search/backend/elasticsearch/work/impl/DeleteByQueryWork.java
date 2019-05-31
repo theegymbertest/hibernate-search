@@ -73,11 +73,11 @@ public class DeleteByQueryWork extends AbstractSimpleElasticsearchWork<Void> {
 
 		private final RefreshWorkBuilder refreshWorkBuilder;
 
-		public Builder(URLEncodedString indexName, JsonObject payload, ElasticsearchWorkBuilderFactory workFactory) {
+		public Builder(Set<URLEncodedString> indexNames, JsonObject payload, ElasticsearchWorkBuilderFactory workFactory) {
 			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
-			this.indexNames.add( indexName );
+			this.indexNames.addAll( indexNames );
 			this.payload = payload;
-			this.refreshWorkBuilder = workFactory.refresh().index( indexName );
+			this.refreshWorkBuilder = workFactory.refresh( indexNames );
 		}
 
 		@Override

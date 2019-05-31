@@ -8,6 +8,7 @@ package org.hibernate.search.backend.elasticsearch.work.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.search.backend.elasticsearch.client.spi.ElasticsearchRequest;
 import org.hibernate.search.backend.elasticsearch.client.spi.ElasticsearchResponse;
@@ -38,26 +39,16 @@ public class OptimizeWork extends AbstractSimpleElasticsearchWork<Void> {
 			implements OptimizeWorkBuilder {
 		private final List<URLEncodedString> indexNames = new ArrayList<>();
 
-		public Builder() {
+		public Builder(Set<URLEncodedString> indexNames) {
 			super( DefaultElasticsearchRequestSuccessAssessor.INSTANCE );
-		}
-
-		@Override
-		public Builder index(URLEncodedString indexName) {
-			this.indexNames.add( indexName );
-			return this;
+			this.indexNames.addAll( indexNames );
 		}
 
 		@Override
 		protected ElasticsearchRequest buildRequest() {
-			ElasticsearchRequest.Builder builder =
-					ElasticsearchRequest.post();
-
-			if ( !indexNames.isEmpty() ) {
-				builder.multiValuedPathComponent( indexNames );
-			}
-
-			builder.pathComponent( Paths._FORCEMERGE );
+			ElasticsearchRequest.Builder builder = ElasticsearchRequest.post()
+					.multiValuedPathComponent( indexNames )
+					.pathComponent( Paths._FORCEMERGE );
 
 			return builder.build();
 		}

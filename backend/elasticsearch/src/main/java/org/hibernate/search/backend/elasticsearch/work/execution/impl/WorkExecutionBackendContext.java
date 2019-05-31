@@ -8,10 +8,11 @@ package org.hibernate.search.backend.elasticsearch.work.execution.impl;
 
 import org.hibernate.search.backend.elasticsearch.document.impl.ElasticsearchDocumentObjectBuilder;
 import org.hibernate.search.backend.elasticsearch.orchestration.impl.ElasticsearchWorkOrchestrator;
+import org.hibernate.search.backend.elasticsearch.scope.model.impl.ElasticsearchScopeModel;
 import org.hibernate.search.backend.elasticsearch.util.spi.URLEncodedString;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexDocumentWorkExecutor;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkPlan;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.SessionContextImplementor;
@@ -40,7 +41,7 @@ public interface WorkExecutionBackendContext {
 			URLEncodedString indexName,
 			SessionContextImplementor sessionContext);
 
-	IndexWorkExecutor createWorkExecutor(ElasticsearchWorkOrchestrator orchestrator, URLEncodedString indexName,
+	IndexScopeWorkExecutor createWorkExecutor(ElasticsearchScopeModel scopeModel,
 			DetachedSessionContextImplementor sessionContext);
 
 }

@@ -10,35 +10,37 @@ import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.backend.elasticsearch.multitenancy.impl.MultiTenancyStrategy;
 import org.hibernate.search.backend.elasticsearch.orchestration.impl.ElasticsearchWorkOrchestrator;
-import org.hibernate.search.backend.elasticsearch.util.spi.URLEncodedString;
+import org.hibernate.search.backend.elasticsearch.scope.model.impl.ElasticsearchScopeModel;
 import org.hibernate.search.backend.elasticsearch.work.builder.factory.impl.ElasticsearchWorkBuilderFactory;
-import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkExecutor;
+import org.hibernate.search.engine.backend.work.execution.spi.IndexScopeWorkExecutor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 
 import com.google.gson.JsonObject;
 
-public class ElasticsearchIndexWorkExecutor implements IndexWorkExecutor {
+public class ElasticsearchIndexScopeWorkExecutor implements IndexScopeWorkExecutor {
 
 	private final ElasticsearchWorkBuilderFactory builderFactory;
 	private final MultiTenancyStrategy multiTenancyStrategy;
 	private final ElasticsearchWorkOrchestrator orchestrator;
-	private final URLEncodedString indexName;
+	private final ElasticsearchScopeModel scopeModel;
 	private final DetachedSessionContextImplementor sessionContext;
 
-	public ElasticsearchIndexWorkExecutor(ElasticsearchWorkBuilderFactory builderFactory,
+	public ElasticsearchIndexScopeWorkExecutor(ElasticsearchWorkBuilderFactory builderFactory,
 			MultiTenancyStrategy multiTenancyStrategy, ElasticsearchWorkOrchestrator orchestrator,
-			URLEncodedString indexName,
+			ElasticsearchScopeModel scopeModel,
 			DetachedSessionContextImplementor sessionContext) {
 		this.builderFactory = builderFactory;
 		this.multiTenancyStrategy = multiTenancyStrategy;
 		this.orchestrator = orchestrator;
-		this.indexName = indexName;
+		this.scopeModel = scopeModel;
 		this.sessionContext = sessionContext;
 	}
 
 	@Override
 	public CompletableFuture<?> optimize() {
-		return orchestrator.submit( builderFactory.optimize().index( indexName ).build() );
+		return orchestrator.submit(
+				builderFactory.optimize( scopeModel.getElasticsearchIndexNames() ).build()
+		);
 	}
 
 	@Override
@@ -51,11 +53,15 @@ public class ElasticsearchIndexWorkExecutor implements IndexWorkExecutor {
 				multiTenancyStrategy.decorateJsonQuery( matchAll, sessionContext.getTenantIdentifier() )
 		);
 
-		return orchestrator.submit( builderFactory.deleteByQuery( indexName, document ).build() );
+		return orchestrator.submit(
+				builderFactory.deleteByQuery( scopeModel.getElasticsearchIndexNames(), document ).build()
+		);
 	}
 
 	@Override
 	public CompletableFuture<?> flush() {
-		return orchestrator.submit( builderFactory.flush().index( indexName ).build() );
+		return orchestrator.submit(
+				builderFactory.flush( scopeModel.getElasticsearchIndexNames() ).build()
+		);
 	}
 }

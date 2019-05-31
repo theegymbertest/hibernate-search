@@ -7,7 +7,8 @@
 package org.hibernate.search.backend.elasticsearch.scope.impl;
 
 import org.hibernate.search.backend.elasticsearch.search.query.impl.SearchBackendContext;
+import org.hibernate.search.backend.elasticsearch.work.execution.impl.WorkExecutionBackendContext;
 
-public interface ScopeBackendContext extends SearchBackendContext {
+public interface ScopeBackendContext extends WorkExecutionBackendContext, SearchBackendContext {
 
 }
