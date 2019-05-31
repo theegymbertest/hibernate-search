@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 
 import org.hibernate.Session;
 import org.hibernate.search.engine.search.dsl.query.SearchQueryContext;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexer;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.search.dsl.query.HibernateOrmSearchQueryResultDefinitionContext;
@@ -47,6 +48,35 @@ public interface SearchSession {
 	 */
 	default <T> HibernateOrmSearchQueryResultDefinitionContext<T> search(Collection<? extends Class<? extends T>> types) {
 		return scope( types ).search();
+	}
+
+	/**
+	 * Create a {@link SearchIndexer} for all indexes.
+	 *
+	 * @return A {@link SearchIndexer}.
+	 */
+	default SearchIndexer indexer() {
+		return scope( Object.class ).indexer();
+	}
+
+	/**
+	 * Create a {@link SearchIndexer} for the indexes mapped to the given type, or to any of its sub-types.
+	 *
+	 * @param type An indexed type, or a supertype of all indexed types that will be targeted by the search query.
+	 * @return A {@link SearchIndexer}.
+	 */
+	default SearchIndexer indexer(Class<?> type) {
+		return scope( type ).indexer();
+	}
+
+	/**
+	 * Create a {@link SearchIndexer} for the indexes mapped to the given types, or to any of their sub-types.
+	 *
+	 * @param types A collection of indexed types, or supertypes of all indexed types that will be targeted by the indexer.
+	 * @return A {@link SearchIndexer}.
+	 */
+	default SearchIndexer indexer(Collection<? extends Class<?>> types) {
+		return scope( types ).indexer();
 	}
 
 	/**

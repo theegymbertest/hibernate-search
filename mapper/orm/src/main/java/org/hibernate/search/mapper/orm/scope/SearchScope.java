@@ -92,6 +92,11 @@ public interface SearchScope<E> {
 	 */
 	SearchProjectionFactoryContext<PojoReference, E> projection();
 
+	/**
+	 * Create a {@link SearchIndexer} for the indexes mapped to types in this scope, or to any of their sub-types.
+	 *
+	 * @return A {@link SearchIndexer}.
+	 */
 	SearchIndexer indexer();
 
 }
