@@ -16,6 +16,7 @@ import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.mapper.orm.logging.impl.Log;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.hibernate.search.mapper.orm.massindexing.impl.MassIndexerImpl;
@@ -87,8 +88,9 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 		PojoScopeDelegate<?, ?> scopeDelegate = getDelegate().createPojoScope( Arrays.asList( types ) );
 
 		return new MassIndexerImpl(
-				sessionImplementor.getFactory(), sessionImplementor.getTenantIdentifier(),
-				scopeDelegate.getIncludedIndexedTypes(), scopeDelegate.executor()
+				sessionImplementor.getFactory(), scopeDelegate.getIncludedIndexedTypes(),
+				DetachedSessionContextImplementor.of( getDelegate().getSessionContext() ),
+				scopeDelegate.executor()
 		);
 	}
 

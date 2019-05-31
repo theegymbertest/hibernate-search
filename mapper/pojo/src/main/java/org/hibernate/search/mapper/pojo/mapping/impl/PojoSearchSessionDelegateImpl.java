@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
+import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.work.impl.PojoSessionWorkExecutorImpl;
 import org.hibernate.search.mapper.pojo.work.spi.PojoWorkPlan;
@@ -37,6 +38,11 @@ class PojoSearchSessionDelegateImpl implements PojoSearchSessionDelegate {
 		this.indexedTypeManagers = indexedTypeManagers;
 		this.containedTypeManagers = containedTypeManagers;
 		this.sessionContext = sessionContext;
+	}
+
+	@Override
+	public AbstractPojoSessionContextImplementor getSessionContext() {
+		return sessionContext;
 	}
 
 	@Override
