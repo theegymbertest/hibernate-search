@@ -6,8 +6,6 @@
  */
 package org.hibernate.search.integrationtest.mapper.orm.nonregression.massindexing;
 
-import static org.assertj.core.api.Fail.fail;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -18,7 +16,7 @@ import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrateg
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmAutomaticIndexingStrategyName;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexer;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
@@ -58,7 +56,7 @@ public class PrimitiveIdMassIndexingIT {
 	public void entityWithPrimitiveId() {
 		OrmUtils.withinSession( sessionFactory, session -> {
 			SearchSession searchSession = Search.getSearchSession( session );
-			MassIndexer indexer = searchSession.createIndexer();
+			SearchIndexer indexer = searchSession.indexer( Object.class );
 
 			// add operations on indexes can follow any random order,
 			// since they are executed by different threads
@@ -79,13 +77,7 @@ public class PrimitiveIdMassIndexingIT {
 					.flush()
 					.executed();
 
-			try {
-				indexer.startAndWait();
-			}
-			catch (InterruptedException e) {
-				fail( "Unexpected InterruptedException: " + e.getMessage() );
-			}
-
+			indexer.reindex();
 		} );
 
 		backendMock.verifyExpectationsMet();

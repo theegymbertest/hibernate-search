@@ -81,6 +81,7 @@ public class HibernateOrmSearchSession extends AbstractPojoSearchSession
 	}
 
 	@Override
+	@Deprecated
 	public MassIndexer createIndexer(Class<?>... types) {
 		checkOrmSessionIsOpen();
 

@@ -102,7 +102,9 @@ public interface SearchSession {
 	 * @param types An array of indexed types, or supertypes of all indexed types that will be reindexed.
 	 * If empty, all indexed types will be reindexed.
 	 * @return The created mass indexer.
+	 * @deprecated Use {@code .indexer(types).reindex()} or {@code .indexer(types).reindex( c -> <options> )} instead.
 	 */
+	@Deprecated
 	MassIndexer createIndexer(Class<?>... types);
 
 	/**

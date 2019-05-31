@@ -4,23 +4,14 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.mapper.orm.massindexing;
-
-import java.util.concurrent.CompletableFuture;
+package org.hibernate.search.mapper.orm.indexing;
 
 import org.hibernate.CacheMode;
 
 /**
- * A MassIndexer is useful to rebuild the indexes from the
- * data contained in the database.
- * This process is expensive: all indexed entities and their
- * indexedEmbedded properties are scrolled from database.
- *
- * @author Sanne Grinovero
- * @deprecated Use {@link org.hibernate.search.mapper.orm.indexing.SearchIndexer} instead.
+ * A context allowing to set the options to use when reindexing.
  */
-@Deprecated
-public interface MassIndexer {
+public interface SearchIndexerReindexOptionsContext {
 
 	/**
 	 * Sets the number of entity types to be indexed in parallel.
@@ -29,7 +20,7 @@ public interface MassIndexer {
 	 * @param threadsToIndexObjects  number of entity types to be indexed in parallel
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer typesToIndexInParallel(int threadsToIndexObjects);
+	SearchIndexerReindexOptionsContext typesToIndexInParallel(int threadsToIndexObjects);
 
 	/**
 	 * Set the number of threads to be used to load
@@ -37,14 +28,14 @@ public interface MassIndexer {
 	 * @param numberOfThreads the number of threads
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer threadsToLoadObjects(int numberOfThreads);
+	SearchIndexerReindexOptionsContext threadsToLoadObjects(int numberOfThreads);
 
 	/**
 	 * Sets the batch size used to load the root entities.
 	 * @param batchSize the batch size
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer batchSizeToLoadObjects(int batchSize);
+	SearchIndexerReindexOptionsContext batchSizeToLoadObjects(int batchSize);
 
 	/**
 	 * Sets the cache interaction mode for the data loading tasks.
@@ -52,14 +43,14 @@ public interface MassIndexer {
 	 * @param cacheMode the cache interaction mode
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer cacheMode(CacheMode cacheMode);
+	SearchIndexerReindexOptionsContext cacheMode(CacheMode cacheMode);
 
 	/**
 	 * If index optimization has to be started at the end of the indexing process. Defaults to {@code true}.
 	 * @param optimize {@code true} to enable the index optimization at the end of the indexing process
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer optimizeOnFinish(boolean optimize);
+	SearchIndexerReindexOptionsContext optimizeOnFinish(boolean optimize);
 
 	/**
 	 * If index optimization should be run before starting,
@@ -68,7 +59,7 @@ public interface MassIndexer {
 	 * @param optimize {@code true} to enable the index optimization after purge
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer optimizeAfterPurge(boolean optimize);
+	SearchIndexerReindexOptionsContext optimizeAfterPurge(boolean optimize);
 
 	/**
 	 * If all entities should be removed from the index before starting
@@ -78,7 +69,7 @@ public interface MassIndexer {
 	 * @param purgeAll if {@code true} all entities will be removed from the index before starting the indexing
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer purgeAllOnStart(boolean purgeAll);
+	SearchIndexerReindexOptionsContext purgeAllOnStart(boolean purgeAll);
 
 	/**
 	 * EXPERIMENTAL method: will probably change
@@ -89,22 +80,7 @@ public interface MassIndexer {
 	 * @param maximum the maximum number of objects to index
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer limitIndexedObjectsTo(long maximum);
-
-	/**
-	 * Starts the indexing process in background (asynchronous).
-	 * Can be called only once.
-	 * @return a Future to control the indexing task.
-	 */
-	CompletableFuture<?> start();
-
-	/**
-	 * Starts the indexing process, and then block until it's finished.
-	 * Can be called only once.
-	 * @throws InterruptedException if the current thread is interrupted
-	 * while waiting.
-	 */
-	void startAndWait() throws InterruptedException;
+	SearchIndexerReindexOptionsContext limitIndexedObjectsTo(long maximum);
 
 	/**
 	 * Specifies the fetch size to be used when loading primary keys
@@ -114,7 +90,7 @@ public interface MassIndexer {
 	 * @param idFetchSize the fetch size to be used when loading primary keys
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer idFetchSize(int idFetchSize);
+	SearchIndexerReindexOptionsContext idFetchSize(int idFetchSize);
 
 	/**
 	 * Timeout of transactions for loading ids and entities to be re-indexed. Specify a timeout which is long enough to
@@ -127,5 +103,5 @@ public interface MassIndexer {
 	 * the JTA environment applies.
 	 * @return {@code this} for method chaining
 	 */
-	MassIndexer transactionTimeout(int timeoutInSeconds);
+	SearchIndexerReindexOptionsContext transactionTimeout(int timeoutInSeconds);
 }

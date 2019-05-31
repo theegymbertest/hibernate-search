@@ -7,6 +7,7 @@
 package org.hibernate.search.mapper.orm.indexing;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * The entry point for all explicit indexing operations.
@@ -60,5 +61,9 @@ public interface SearchIndexer {
 	 * @return A {@link CompletableFuture} reflecting the completion state of the operation.
 	 */
 	CompletableFuture<?> optimize();
+
+	CompletableFuture<?> reindex();
+
+	CompletableFuture<?> reindex(Consumer<SearchIndexerReindexOptionsContext> optionsContributor);
 
 }

@@ -50,6 +50,7 @@ public class LazyInitSearchSession implements SearchSession {
 	}
 
 	@Override
+	@Deprecated
 	public MassIndexer createIndexer(Class<?>... types) {
 		return getDelegate().createIndexer( types );
 	}

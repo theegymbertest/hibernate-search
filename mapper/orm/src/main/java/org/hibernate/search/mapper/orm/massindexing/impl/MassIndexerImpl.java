@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import org.hibernate.CacheMode;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.search.engine.mapper.session.context.spi.DetachedSessionContextImplementor;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexerReindexOptionsContext;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.hibernate.search.mapper.orm.impl.HibernateSearchContextService;
 import org.hibernate.search.mapper.orm.logging.impl.Log;
@@ -32,7 +33,7 @@ import org.hibernate.search.util.common.logging.impl.LoggerFactory;
  *
  * @author Sanne Grinovero
  */
-public class MassIndexerImpl implements MassIndexer {
+public class MassIndexerImpl implements MassIndexer, SearchIndexerReindexOptionsContext {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
@@ -98,7 +99,7 @@ public class MassIndexerImpl implements MassIndexer {
 	}
 
 	@Override
-	public MassIndexer typesToIndexInParallel(int numberOfThreads) {
+	public MassIndexerImpl typesToIndexInParallel(int numberOfThreads) {
 		if ( numberOfThreads < 1 ) {
 			throw new IllegalArgumentException( "numberOfThreads must be at least 1" );
 		}
@@ -107,7 +108,7 @@ public class MassIndexerImpl implements MassIndexer {
 	}
 
 	@Override
-	public MassIndexer cacheMode(CacheMode cacheMode) {
+	public MassIndexerImpl cacheMode(CacheMode cacheMode) {
 		if ( cacheMode == null ) {
 			throw new IllegalArgumentException( "cacheMode must not be null" );
 		}
@@ -116,7 +117,7 @@ public class MassIndexerImpl implements MassIndexer {
 	}
 
 	@Override
-	public MassIndexer threadsToLoadObjects(int numberOfThreads) {
+	public MassIndexerImpl threadsToLoadObjects(int numberOfThreads) {
 		if ( numberOfThreads < 1 ) {
 			throw new IllegalArgumentException( "numberOfThreads must be at least 1" );
 		}
@@ -125,7 +126,7 @@ public class MassIndexerImpl implements MassIndexer {
 	}
 
 	@Override
-	public MassIndexer batchSizeToLoadObjects(int batchSize) {
+	public MassIndexerImpl batchSizeToLoadObjects(int batchSize) {
 		if ( batchSize < 1 ) {
 			throw new IllegalArgumentException( "batchSize must be at least 1" );
 		}
@@ -134,25 +135,25 @@ public class MassIndexerImpl implements MassIndexer {
 	}
 
 	@Override
-	public MassIndexer optimizeOnFinish(boolean optimize) {
+	public MassIndexerImpl optimizeOnFinish(boolean optimize) {
 		this.optimizeAtEnd = optimize;
 		return this;
 	}
 
 	@Override
-	public MassIndexer optimizeAfterPurge(boolean optimize) {
+	public MassIndexerImpl optimizeAfterPurge(boolean optimize) {
 		this.optimizeAfterPurge = optimize;
 		return this;
 	}
 
 	@Override
-	public MassIndexer purgeAllOnStart(boolean purgeAll) {
+	public MassIndexerImpl purgeAllOnStart(boolean purgeAll) {
 		this.purgeAtStart = purgeAll;
 		return this;
 	}
 
 	@Override
-	public MassIndexer transactionTimeout(int timeoutInSeconds) {
+	public MassIndexerImpl transactionTimeout(int timeoutInSeconds) {
 		this.idLoadingTransactionTimeout = timeoutInSeconds;
 		return this;
 	}
@@ -183,13 +184,13 @@ public class MassIndexerImpl implements MassIndexer {
 	}
 
 	@Override
-	public MassIndexer limitIndexedObjectsTo(long maximum) {
+	public MassIndexerImpl limitIndexedObjectsTo(long maximum) {
 		this.objectsLimit = maximum;
 		return this;
 	}
 
 	@Override
-	public MassIndexer idFetchSize(int idFetchSize) {
+	public MassIndexerImpl idFetchSize(int idFetchSize) {
 		// don't check for positive/zero values as it's actually used by some databases
 		// as special values which might be useful.
 		this.idFetchSize = idFetchSize;

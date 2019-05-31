@@ -6,10 +6,12 @@
  */
 package org.hibernate.search.integrationtest.showcase.library.service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import javax.persistence.EntityManager;
 
 import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexerReindexOptionsContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,13 @@ public class AdminService {
 	@Autowired
 	private EntityManager entityManager;
 
-	public MassIndexer createMassIndexer() {
-		return Search.getSearchSession( entityManager ).createIndexer();
+	public CompletableFuture<?> startReindexing() {
+		return startReindexing( ignored -> { } );
+	}
+
+	public CompletableFuture<?> startReindexing(Consumer<SearchIndexerReindexOptionsContext> optionsContributor) {
+		return Search.getSearchSession( entityManager ).scope( Object.class )
+				.indexer()
+				.reindex( optionsContributor );
 	}
 }

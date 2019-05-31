@@ -16,9 +16,9 @@ import javax.persistence.Persistence;
 
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexer;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.hibernate.search.util.impl.integrationtest.orm.OrmUtils;
 
 import org.junit.After;
@@ -82,19 +82,16 @@ public class GettingStartedWithoutAnalysisIT {
 		} );
 
 		OrmUtils.withinJPATransaction( entityManagerFactory, entityManager -> {
-			try {
 			// tag::manual-index[]
-				SearchSession searchSession = Search.getSearchSession( entityManager ); // <1>
+			SearchSession searchSession = Search.getSearchSession( entityManager ); // <1>
 
-				MassIndexer indexer = searchSession.createIndexer( Book.class ) // <2>
-						.threadsToLoadObjects( 7 ); // <3>
+			SearchIndexer indexer = searchSession.indexer( Book.class ); // <2>
 
-				indexer.startAndWait(); // <4>
+			indexer.reindex( // <3>
+					c -> c.threadsToLoadObjects( 7 ) // <4>
+			)
+					.join(); // <5>
 			// end::manual-index[]
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException( e );
-			}
 		} );
 
 		OrmUtils.withinJPATransaction( entityManagerFactory, entityManager -> {

@@ -4,9 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.integrationtest.mapper.orm.massindexing;
-
-import static org.assertj.core.api.Fail.fail;
+package org.hibernate.search.integrationtest.mapper.orm.indexing;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -19,8 +17,8 @@ import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrateg
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmAutomaticIndexingStrategyName;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
+import org.hibernate.search.mapper.orm.indexing.SearchIndexer;
 import org.hibernate.search.mapper.orm.session.SearchSession;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.util.common.SearchException;
@@ -34,9 +32,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * Very basic test to probe an use of {@link MassIndexer} api.
+ * Very basic test to probe a use of {@link SearchIndexer#reindex()}.
  */
-public class BasicMassIndexingIT {
+public class SearchIndexerReindexIT {
 
 	public static final String TITLE_1 = "Oliver Twist";
 	public static final String AUTHOR_1 = "Charles Dickens";
@@ -70,7 +68,7 @@ public class BasicMassIndexingIT {
 	public void defaultMassIndexerStartAndWait() throws Exception {
 		OrmUtils.withinSession( sessionFactory, session -> {
 			SearchSession searchSession = Search.getSearchSession( session );
-			MassIndexer indexer = searchSession.createIndexer();
+			SearchIndexer indexer = searchSession.indexer( Object.class );
 
 			// add operations on indexes can follow any random order,
 			// since they are executed by different threads
@@ -100,29 +98,23 @@ public class BasicMassIndexingIT {
 					.flush()
 					.executed();
 
-			try {
-				indexer.startAndWait();
-			}
-			catch (InterruptedException e) {
-				fail( "Unexpected InterruptedException: " + e.getMessage() );
-			}
-
+			indexer.reindex().join();
 		} );
 
 		backendMock.verifyExpectationsMet();
 	}
 
 	@Test
-	public void reuseSearchSessionAfterOrmSessionIsClosed_createMassIndexer() {
+	public void reuseSearchSessionAfterOrmSessionIsClosed_indexer() {
 		Session session = sessionFactory.openSession();
 		SearchSession searchSession = Search.getSearchSession( session );
 		// a SearchSession instance is created lazily,
 		// so we need to use it to have an instance of it
-		searchSession.createIndexer();
+		searchSession.indexer( Object.class );
 		session.close();
 
 		SubTest.expectException( () -> {
-			searchSession.createIndexer();
+			searchSession.indexer( Object.class );
 		} )
 				.assertThrown()
 				.isInstanceOf( SearchException.class )
@@ -130,14 +122,14 @@ public class BasicMassIndexingIT {
 	}
 
 	@Test
-	public void lazyCrateSearchSessionAfterOrmSessionIsClosed_createMassIndexer() {
+	public void lazyCrateSearchSessionAfterOrmSessionIsClosed_indexer() {
 		Session session = sessionFactory.openSession();
 		// Search session is not created, since we don't use it
 		SearchSession searchSession = Search.getSearchSession( session );
 		session.close();
 
 		SubTest.expectException( () -> {
-			searchSession.createIndexer();
+			searchSession.indexer( Object.class );
 		} )
 				.assertThrown()
 				.isInstanceOf( SearchException.class )

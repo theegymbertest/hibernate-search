@@ -258,18 +258,20 @@ See <<mapper-orm-indexing-automatic-synchronization>> for more information about
 
 However, keep in mind that data already present in your database when you add the Hibernate Search integration
 is unknown to Hibernate Search, and thus has to be indexed through a batch process.
-To that end, you can use the mass indexer API, as shown in the following code:
+To that end, you can use the `SearchIndexer` API, as shown in the following code:
 
-.Using Hibernate Search MassIndexer API to manually (re)index the already persisted data
+.Using the `SearchIndexer` API to manually (re)index the already persisted data
 ====
 [source, JAVA, indent=0]
 ----
 include::{sourcedir}/org/hibernate/search/documentation/gettingstarted/withhsearch/withoutanalysis/GettingStartedWithoutAnalysisIT.java[tags=manual-index]
 ----
 <1> Get a Hibernate Search session, called `SearchSession`, from the `EntityManager`.
-<2> Create an "indexer", passing the entity types you want to index. Pass no type to index all of them.
-<3> It is possible to set the number of threads to be used. For the complete option list see <<manual-index-changes>>.
-<4> Invoke the batch indexing process.
+<2> Create an "indexer", passing the entity types you want to index. Pass `Object.class` to index all of them.
+<3> Call `reindex` to start reindexing.
+<4> You may pass a lambda expression to fine-tuned the indexing process.
+For example you can set the number of threads to be used. For the complete option list see <<manual-index-changes>>.
+<5> By default, indexer methods are asynchronous. Call `.join()` on the returned object to wait for the operation to finish.
 ====
 
 [[getting-started-searching]]
