@@ -51,15 +51,6 @@ public interface SearchSession {
 	}
 
 	/**
-	 * Create a {@link SearchIndexer} for all indexes.
-	 *
-	 * @return A {@link SearchIndexer}.
-	 */
-	default SearchIndexer indexer() {
-		return scope( Object.class ).indexer();
-	}
-
-	/**
 	 * Create a {@link SearchIndexer} for the indexes mapped to the given type, or to any of its sub-types.
 	 *
 	 * @param type An indexed type, or a supertype of all indexed types that will be targeted by the search query.
