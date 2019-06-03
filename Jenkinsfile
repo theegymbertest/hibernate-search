@@ -419,6 +419,7 @@ stage('Default build') {
 	}
 	runBuildOnNode( NODE_PATTERN_BASE, [time: 2, unit: 'HOURS'] ) {
 		withMavenWorkspace(mavenSettingsConfig: deploySnapshot ? helper.configuration.file.deployment.maven.settingsId : null) {
+			upgradeToLatestOrmSnapshot()
 			String mavenArgs = """ \
 					--fail-at-end \
 					-Pdist -Pcoverage -Pjqassistant \
@@ -893,6 +894,8 @@ void mavenNonDefaultBuild(BuildEnvironment buildEnv, String args, String project
 
 	pullContainerImages( args )
 
+	upgradeToLatestOrmSnapshot()
+
 	// Add a suffix to tests to distinguish between different executions
 	// of the same test in different environments in reports
 	def testSuffix = buildEnv.tag.replaceAll('[^a-zA-Z0-9_\\-+]+', '_')
@@ -954,4 +957,19 @@ String toTestJdkArg(BuildEnvironment buildEnv) {
 	}
 
 	return args
+}
+
+void upgradeToLatestOrmSnapshot() {
+	// Upgrade to the latest snapshot version in the same major + minor
+	sh """
+			mvn -U org.codehaus.mojo:versions-maven-plugin:2.11.0:update-properties \
+			-DgenerateBackupPoms=false \
+			-DallowMajorUpdates=false \
+			-DallowMinorUpdates=false \
+			-DallowSnapshots=true \
+			-DincludeProperties='version.org.hibernate.orm' \
+			-Dmaven.version.rules="file://\$(pwd)/maven-version-plugin-rules.xml" \
+	"""
+	sh "echo 'Updated versions:' && git diff HEAD"
+	sh "git diff | grep -q '.' || { echo \"ERROR: The automatic version upgrade didn't change the POMs.\" && false; }"
 }
