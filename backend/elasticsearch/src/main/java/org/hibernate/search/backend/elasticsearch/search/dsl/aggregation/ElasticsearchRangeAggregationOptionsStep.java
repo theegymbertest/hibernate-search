@@ -6,40 +6,11 @@
  */
 package org.hibernate.search.backend.elasticsearch.search.dsl.aggregation;
 
-import java.util.Map;
-
-import org.hibernate.search.engine.search.aggregation.SearchAggregation;
-import org.hibernate.search.engine.search.dsl.aggregation.AggregationFinalStep;
 import org.hibernate.search.engine.search.dsl.aggregation.RangeAggregationOptionsStep;
 import org.hibernate.search.util.common.data.Range;
 
 public interface ElasticsearchRangeAggregationOptionsStep<F, A>
-		extends RangeAggregationOptionsStep<ElasticsearchRangeAggregationOptionsStep<F, A>, F, A> {
-
-	/**
-	 * Collect the given aggregation within each bucket (i.e. for each range),
-	 * instead of just the document count.
-	 * <p>
-	 * Calling this method will end the aggregation definition and return a final DSL step,
-	 * so it must be called last.
-	 *
-	 * @param subAggregation The sub-aggregation to be collected within each bucket.
-	 * @param <B> The type of values produced by the sub-aggregation.
-	 * @return The next step.
-	 */
-	<B> AggregationFinalStep<Map<Range<F>, B>> subAggregation(SearchAggregation<B> subAggregation);
-
-	/**
-	 * Collect the given aggregation within each bucket (i.e. for each range),
-	 * instead of just the document count.
-	 * <p>
-	 * Calling this method will end the aggregation definition and return a final DSL step,
-	 * so it must be called last.
-	 *
-	 * @param subAggregation The (almost-built) sub-aggregation to be collected within each bucket.
-	 * @param <B> The type of values produced by the sub-aggregation.
-	 * @return The next step.
-	 */
-	<B> AggregationFinalStep<Map<Range<F>, B>> subAggregation(AggregationFinalStep<B> subAggregation);
+		extends RangeAggregationOptionsStep<ElasticsearchRangeAggregationOptionsStep<F, A>, F, A>,
+				ElasticsearchBucketAggregationValuesStep<Range<F>> {
 
 }
