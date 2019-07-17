@@ -8,5 +8,13 @@ package org.hibernate.search.backend.elasticsearch.search.dsl.aggregation;
 
 import org.hibernate.search.engine.search.dsl.aggregation.SearchAggregationFactory;
 
-public interface ElasticsearchSearchAggregationFactory extends SearchAggregationFactory {
+public interface ElasticsearchSearchAggregationFactory
+		extends SearchAggregationFactory {
+
+	@Override
+	ElasticsearchRangeAggregationFieldStep range();
+
+	@Override
+	ElasticsearchTermsAggregationFieldStep terms();
+
 }
