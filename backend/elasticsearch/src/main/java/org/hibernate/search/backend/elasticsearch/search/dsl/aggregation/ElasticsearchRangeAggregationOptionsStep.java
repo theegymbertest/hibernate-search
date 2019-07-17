@@ -11,6 +11,7 @@ import org.hibernate.search.util.common.data.Range;
 
 public interface ElasticsearchRangeAggregationOptionsStep<F, A>
 		extends RangeAggregationOptionsStep<ElasticsearchRangeAggregationOptionsStep<F, A>, F, A>,
-				ElasticsearchBucketAggregationValuesStep<Range<F>> {
+				// TODO HSEARCH-3271 define a metadata type for range aggregation buckets
+				ElasticsearchBucketAggregationValuesStep<Range<F>, Object> {
 
 }

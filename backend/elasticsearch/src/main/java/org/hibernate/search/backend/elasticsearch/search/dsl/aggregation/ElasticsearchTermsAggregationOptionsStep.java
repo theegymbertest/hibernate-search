@@ -10,6 +10,7 @@ import org.hibernate.search.engine.search.dsl.aggregation.TermsAggregationOption
 
 public interface ElasticsearchTermsAggregationOptionsStep<F, A>
 		extends TermsAggregationOptionsStep<ElasticsearchTermsAggregationOptionsStep<F, A>, F, A>,
-				ElasticsearchBucketAggregationValuesStep<F> {
+				// TODO HSEARCH-3271 define a metadata type for terms aggregation buckets
+				ElasticsearchBucketAggregationValuesStep<F, Object> {
 
 }
