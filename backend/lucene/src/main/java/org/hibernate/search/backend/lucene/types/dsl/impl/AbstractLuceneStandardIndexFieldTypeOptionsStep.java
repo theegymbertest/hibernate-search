@@ -8,6 +8,7 @@ package org.hibernate.search.backend.lucene.types.dsl.impl;
 
 import org.hibernate.search.backend.lucene.types.dsl.LuceneStandardIndexFieldTypeOptionsStep;
 import org.hibernate.search.backend.lucene.types.impl.LuceneIndexFieldType;
+import org.hibernate.search.engine.backend.types.Aggregable;
 import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.converter.FromDocumentFieldValueConverter;
 import org.hibernate.search.engine.backend.types.converter.ToDocumentFieldValueConverter;
@@ -69,6 +70,11 @@ abstract class AbstractLuceneStandardIndexFieldTypeOptionsStep<S extends Abstrac
 	public S searchable(Searchable searchable) {
 		this.searchable = searchable;
 		return thisAsS();
+	}
+
+	@Override
+	public S aggregable(Aggregable aggregable) {
+		throw new UnsupportedOperationException( "Not supported yet" );
 	}
 
 	@Override
