@@ -8,6 +8,7 @@ package org.hibernate.search.backend.elasticsearch.search.query.impl;
 
 import java.util.Map;
 
+import org.hibernate.search.backend.elasticsearch.search.aggregation.impl.AggregationExtractContext;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.SearchProjectionExtractContext;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.SearchProjectionExtractContext.DistanceSortKey;
 import org.hibernate.search.backend.elasticsearch.search.projection.impl.SearchProjectionTransformContext;
@@ -18,7 +19,7 @@ import org.hibernate.search.engine.search.loading.spi.ProjectionHitMapper;
 
 import com.google.gson.JsonObject;
 
-class ElasticsearchSearchQueryExtractContext {
+class ElasticsearchSearchQueryExtractContext implements AggregationExtractContext {
 
 	private final Map<DistanceSortKey, Integer> distanceSorts;
 	private final ProjectionHitMapper<?, ?> projectionHitMapper;
@@ -34,6 +35,11 @@ class ElasticsearchSearchQueryExtractContext {
 		this.distanceSorts = distanceSorts;
 		this.convertContext = new FromDocumentFieldValueConvertContextImpl( sessionContext );
 		this.responseBody = responseBody;
+	}
+
+	@Override
+	public FromDocumentFieldValueConvertContext getConvertContext() {
+		return convertContext;
 	}
 
 	JsonObject getResponseBody() {
