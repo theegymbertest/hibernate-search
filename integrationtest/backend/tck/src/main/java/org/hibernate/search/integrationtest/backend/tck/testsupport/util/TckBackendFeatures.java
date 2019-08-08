@@ -27,4 +27,8 @@ public class TckBackendFeatures {
 	public boolean supportsManyRoutingKeys() {
 		return true;
 	}
+
+	public boolean nonCanonicalRangeInAggregations() {
+		return true;
+	}
 }

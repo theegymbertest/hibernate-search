@@ -40,4 +40,10 @@ class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 		// TODO HSEARCH-3655 AWS signing fails when using multiple routing keys
 		return ! ElasticsearchTestHostConnectionConfiguration.get().isAwsSigningEnabled();
 	}
+
+	@Override
+	public boolean nonCanonicalRangeInAggregations() {
+		// Elasticsearch only supports [a, b), (-Infinity, b), [a, +Infinity), but not [a, b] for example.
+		return false;
+	}
 }
