@@ -10,10 +10,11 @@ package org.hibernate.search.engine.search.dsl.aggregation;
 /**
  * The final step in a "terms" aggregation definition, where optional parameters can be set.
  *
+ * @param <S> The "self" type (the actual exposed type of this step).
  * @param <F> The type of the targeted field.
  * @param <A> The type of result for this aggregation.
  */
-public interface TermsAggregationOptionsStep<F, A>
+public interface TermsAggregationOptionsStep<S extends TermsAggregationOptionsStep<? extends S, F, A>, F, A>
 		extends AggregationFinalStep<A> {
 
 	/**
@@ -23,28 +24,28 @@ public interface TermsAggregationOptionsStep<F, A>
 	 *
 	 * @return {@code this}, for method chaining.
 	 */
-	TermsAggregationOptionsStep<F, A> orderByDescendingCount();
+	S orderByDescendingCount();
 
 	/**
 	 * Order buckets by ascending count in the aggregation result.
 	 *
 	 * @return {@code this}, for method chaining.
 	 */
-	TermsAggregationOptionsStep<F, A> orderByAscendingCount();
+	S orderByAscendingCount();
 
 	/**
 	 * Order buckets by ascending term in the aggregation result.
 	 *
 	 * @return {@code this}, for method chaining.
 	 */
-	TermsAggregationOptionsStep<F, A> orderByAscendingTerm();
+	S orderByAscendingTerm();
 
 	/**
 	 * Order buckets by descending term in the aggregation result.
 	 *
 	 * @return {@code this}, for method chaining.
 	 */
-	TermsAggregationOptionsStep<F, A> orderByDescendingTerm();
+	S orderByDescendingTerm();
 
 	/**
 	 * Eliminates buckets with less than {@code minDocumentCount} matching documents
@@ -59,7 +60,7 @@ public interface TermsAggregationOptionsStep<F, A>
 	 * @param minDocumentCount The minimum document count for each aggregation value.
 	 * @return {@code this}, for method chaining.
 	 */
-	TermsAggregationOptionsStep<F, A> minDocumentCount(int minDocumentCount);
+	S minDocumentCount(int minDocumentCount);
 
 	/**
 	 * Requires to only create buckets for the top {@code maxTermCount} most frequent terms.
@@ -69,6 +70,6 @@ public interface TermsAggregationOptionsStep<F, A>
 	 * @param maxTermCount The maximum number of reported terms.
 	 * @return {@code this}, for method chaining.
 	 */
-	TermsAggregationOptionsStep<F, A> maxTermCount(int maxTermCount);
+	S maxTermCount(int maxTermCount);
 
 }
