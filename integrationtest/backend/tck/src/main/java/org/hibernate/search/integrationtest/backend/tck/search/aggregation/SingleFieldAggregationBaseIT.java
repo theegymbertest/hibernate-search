@@ -357,6 +357,7 @@ public class SingleFieldAggregationBaseIT<F> {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "HSEARCH-1748")
 	@PortedFromSearch5(original = "org.hibernate.search.test.query.facet.FacetUnknownFieldFailureTest.testKnownFieldNameNotConfiguredForFacetingThrowsException")
 	public void aggregationsDisabled() {
 		String fieldPath = indexMapping.fieldWithAggregationDisabledModel.relativeFieldName;
