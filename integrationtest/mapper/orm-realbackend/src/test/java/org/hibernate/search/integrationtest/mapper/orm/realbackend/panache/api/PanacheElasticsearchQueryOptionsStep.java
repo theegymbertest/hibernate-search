@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.hibernate.search.backend.elasticsearch.search.aggregation.dsl.ElasticsearchSearchAggregationFactory;
+import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchRequestTransformer;
 import org.hibernate.search.backend.elasticsearch.search.sort.dsl.ElasticsearchSearchSortFactory;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
@@ -133,5 +134,7 @@ public interface PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> {
 	 */
 	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> totalHitCountThreshold(long totalHitCountThreshold);
 
-	<T extends HitSuperType> PanacheQuery<T> toQuery();
+	<H extends HitSuperType> PanacheQuery<H> toQuery();
+
+	<H extends HitSuperType> ElasticsearchSearchQuery<H> toSearchQuery();
 }

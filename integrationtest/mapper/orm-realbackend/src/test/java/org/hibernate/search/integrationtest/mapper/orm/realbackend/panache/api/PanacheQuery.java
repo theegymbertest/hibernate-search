@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.hibernate.search.engine.search.query.SearchQuery;
+import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
 
 public interface PanacheQuery<HitSuperType> {
 
@@ -190,5 +190,5 @@ public interface PanacheQuery<HitSuperType> {
 	 */
 	public <T extends HitSuperType> Optional<T> singleResultOptional();
 
-	<T extends HitSuperType> SearchQuery<T> toSearchQuery();
+	<T extends HitSuperType> ElasticsearchSearchQuery<T> toSearchQuery();
 }

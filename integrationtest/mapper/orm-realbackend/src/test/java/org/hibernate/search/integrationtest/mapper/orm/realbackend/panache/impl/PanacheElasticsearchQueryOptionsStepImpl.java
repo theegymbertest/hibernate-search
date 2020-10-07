@@ -12,12 +12,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.hibernate.search.backend.elasticsearch.search.aggregation.dsl.ElasticsearchSearchAggregationFactory;
+import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchRequestTransformer;
 import org.hibernate.search.backend.elasticsearch.search.query.dsl.ElasticsearchSearchQueryOptionsStep;
 import org.hibernate.search.backend.elasticsearch.search.sort.dsl.ElasticsearchSearchSortFactory;
 import org.hibernate.search.engine.search.aggregation.AggregationKey;
 import org.hibernate.search.engine.search.aggregation.dsl.AggregationFinalStep;
-import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.sort.dsl.SortFinalStep;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheElasticsearchQueryOptionsStep;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
@@ -90,12 +90,13 @@ class PanacheElasticsearchQueryOptionsStepImpl<HitSuperType, LOS>
 	}
 
 	@Override
-	public <T extends HitSuperType> PanacheQuery<T> toQuery() {
+	public <H extends HitSuperType> PanacheQuery<H> toQuery() {
 		return new PanacheQueryImpl<>( toSearchQuery() );
 	}
 
+	@Override
 	@SuppressWarnings("unchecked") // This has to be that way
-	public <H extends HitSuperType> SearchQuery<H> toSearchQuery() {
-		return (SearchQuery<H>) delegate.toQuery();
+	public <H extends HitSuperType> ElasticsearchSearchQuery<H> toSearchQuery() {
+		return (ElasticsearchSearchQuery<H>) delegate.toQuery();
 	}
 }

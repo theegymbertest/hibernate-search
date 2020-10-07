@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.Page;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
@@ -143,10 +144,11 @@ public class PanacheQueryImpl<HitSuperType> implements PanacheQuery<HitSuperType
 	}
 
 	@Override
-	public <T extends HitSuperType> SearchQuery<T> toSearchQuery() {
-		return (SearchQuery<T>) delegate;
+	public <T extends HitSuperType> ElasticsearchSearchQuery<T> toSearchQuery() {
+		return (ElasticsearchSearchQuery<T>) delegate;
 	}
 
+	@SuppressWarnings("unchecked") // This has to be that way
 	private <T extends HitSuperType> PanacheQuery<T> castThis() {
 		return (PanacheQuery<T>) this;
 	}
