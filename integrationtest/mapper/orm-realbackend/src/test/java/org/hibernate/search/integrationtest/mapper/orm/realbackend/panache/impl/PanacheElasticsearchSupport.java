@@ -16,7 +16,7 @@ import org.hibernate.search.mapper.orm.search.loading.dsl.SearchLoadingOptionsSt
 public class PanacheElasticsearchSupport {
 	public static EntityManager currentEntityManager;
 
-	public static PanacheElasticsearchQuerySelectStep<SearchLoadingOptionsStep> search(Class<?> entityType) {
+	public static <Entity> PanacheElasticsearchQuerySelectStep<Entity, SearchLoadingOptionsStep> search(Class<? extends Entity> entityType) {
 		return new PanacheElasticsearchQuerySelectStepImpl<>( Search.session( currentEntityManager )
 				.search( entityType ).extension( ElasticsearchExtension.get() ) );
 	}

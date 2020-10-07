@@ -11,9 +11,9 @@ import java.util.function.Function;
 import org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 
-public interface PanacheElasticsearchQueryWhereStep<LOS> {
+public interface PanacheElasticsearchQueryWhereStep<HitSuperType, LOS> {
 
-	PanacheElasticsearchQueryOptionsStep<LOS> where(
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> where(
 			Function<? super ElasticsearchSearchPredicateFactory, ? extends PredicateFinalStep> contributor);
 
 }

@@ -13,6 +13,8 @@ import java.util.List;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.search.engine.cfg.BackendSettings;
+import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.Page;
+import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.impl.PanacheElasticsearchSupport;
 import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategyNames;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
@@ -57,18 +59,20 @@ public class PanacheIT {
 
 		withinJPATransaction( entityManagerFactory, entityManager -> {
 			PanacheElasticsearchSupport.currentEntityManager = entityManager;
-			List<Book> hits = Book.search()
+			PanacheQuery<Book> query = Book.search()
 					.where( f -> f.match().field( "title" ).matching( "robot" ) )
-					.fetchHits( 20 );
+					.toQuery();
+			List<Book> hits = query.page( Page.of( 0, 20 ) ).list();
 			assertThat( hits ).extracting( Book::getId ).containsExactly( 1 );
 		} );
 
 		withinJPATransaction( entityManagerFactory, entityManager -> {
 			PanacheElasticsearchSupport.currentEntityManager = entityManager;
-			List<EntityReference> hits = Book.search()
+			PanacheQuery<EntityReference> query = Book.search()
 					.select( f -> f.entityReference() )
 					.where( f -> f.match().field( "title" ).matching( "robot" ) )
-					.fetchHits( 20 );
+					.toQuery();
+			List<EntityReference> hits = query.page( Page.of( 0, 20 ) ).list();
 			assertThat( hits ).extracting( EntityReference::id ).containsExactly( 1 );
 		} );
 	}

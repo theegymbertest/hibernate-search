@@ -21,7 +21,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
 @Indexed
 public class Book {
 
-	public static PanacheElasticsearchQuerySelectStep<SearchLoadingOptionsStep> search() {
+	public static PanacheElasticsearchQuerySelectStep<Object, SearchLoadingOptionsStep> search() {
 		return PanacheElasticsearchSupport.search( Book.class );
 	}
 

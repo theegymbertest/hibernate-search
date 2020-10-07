@@ -20,7 +20,7 @@ import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.engine.search.query.SearchResultTotal;
 import org.hibernate.search.engine.search.sort.dsl.SortFinalStep;
 
-public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasticsearchQueryFetchStep {
+public interface PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> {
 
 	/**
 	 * Configure routing of the search query.
@@ -35,7 +35,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @param routingKey A string key. All shards matching this key will be queried.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> routing(String routingKey);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> routing(String routingKey);
 
 	/**
 	 * Configure routing of the search query.
@@ -45,7 +45,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @param routingKeys A collection containing zero, one or multiple string keys.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> routing(Collection<String> routingKeys);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> routing(Collection<String> routingKeys);
 
 	/**
 	 * Stop the query and return truncated results after a given timeout.
@@ -57,7 +57,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @param timeUnit Timeout unit.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> truncateAfter(long timeout, TimeUnit timeUnit);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> truncateAfter(long timeout, TimeUnit timeUnit);
 
 	/**
 	 * Stop the query and throw a {@link org.hibernate.search.util.common.SearchTimeoutException} after a given timeout.
@@ -70,7 +70,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @param timeUnit Timeout unit.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> failAfter(long timeout, TimeUnit timeUnit);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> failAfter(long timeout, TimeUnit timeUnit);
 
 	/**
 	 * Configure entity loading for this query.
@@ -78,7 +78,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * Should generally be a lambda expression.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> loading(Consumer<? super LOS> loadingOptionsContributor);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> loading(Consumer<? super LOS> loadingOptionsContributor);
 
 	/**
 	 * Add a sort to this query.
@@ -87,7 +87,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * Should generally be a lambda expression.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> sort(
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> sort(
 			Function<? super ElasticsearchSearchSortFactory, ? extends SortFinalStep> contributor);
 
 	/**
@@ -102,7 +102,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @param transformer The search request transformer.
 	 * @return {@code this}, for method chaining.
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> requestTransformer(ElasticsearchSearchRequestTransformer transformer);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> requestTransformer(ElasticsearchSearchRequestTransformer transformer);
 
 	/**
 	 * Add an aggregation to this query.
@@ -114,7 +114,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @param <T> The type of aggregation values.
 	 * @return {@code this}, for method chaining.
 	 */
-	<T> PanacheElasticsearchQueryOptionsStep<LOS> aggregation(AggregationKey<T> key,
+	<T> PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> aggregation(AggregationKey<T> key,
 			Function<? super ElasticsearchSearchAggregationFactory, ? extends AggregationFinalStep<T>> contributor);
 
 	/**
@@ -131,5 +131,7 @@ public interface PanacheElasticsearchQueryOptionsStep<LOS> extends PanacheElasti
 	 * @return {@code this}, for method chaining.
 	 * @see SearchResultTotal
 	 */
-	PanacheElasticsearchQueryOptionsStep<LOS> totalHitCountThreshold(long totalHitCountThreshold);
+	PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> totalHitCountThreshold(long totalHitCountThreshold);
+
+	<T extends HitSuperType> PanacheQuery<T> toQuery();
 }

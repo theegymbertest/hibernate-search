@@ -20,9 +20,10 @@ import org.hibernate.search.engine.search.aggregation.dsl.AggregationFinalStep;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.engine.search.sort.dsl.SortFinalStep;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheElasticsearchQueryOptionsStep;
+import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
 
-class PanacheElasticsearchQueryOptionsStepImpl<LOS>
-		implements PanacheElasticsearchQueryOptionsStep<LOS> {
+class PanacheElasticsearchQueryOptionsStepImpl<HitSuperType, LOS>
+		implements PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> {
 
 	private ElasticsearchSearchQueryOptionsStep<?, LOS> delegate;
 
@@ -32,65 +33,69 @@ class PanacheElasticsearchQueryOptionsStepImpl<LOS>
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> routing(String routingKey) {
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> routing(String routingKey) {
 		delegate = delegate.routing( routingKey );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> routing(Collection<String> routingKeys) {
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> routing(Collection<String> routingKeys) {
 		delegate = delegate.routing( routingKeys );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> truncateAfter(long timeout, TimeUnit timeUnit) {
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> truncateAfter(long timeout, TimeUnit timeUnit) {
 		delegate = delegate.truncateAfter( timeout, timeUnit );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> failAfter(long timeout, TimeUnit timeUnit) {
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> failAfter(long timeout, TimeUnit timeUnit) {
 		delegate = delegate.failAfter( timeout, timeUnit );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> loading(Consumer<? super LOS> loadingOptionsContributor) {
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> loading(Consumer<? super LOS> loadingOptionsContributor) {
 		delegate = delegate.loading( loadingOptionsContributor );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> sort(
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> sort(
 			Function<? super ElasticsearchSearchSortFactory, ? extends SortFinalStep> contributor) {
 		delegate = delegate.sort( contributor );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> requestTransformer(
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> requestTransformer(
 			ElasticsearchSearchRequestTransformer transformer) {
 		delegate = delegate.requestTransformer( transformer );
 		return this;
 	}
 
 	@Override
-	public <T> PanacheElasticsearchQueryOptionsStep<LOS> aggregation(AggregationKey<T> key,
+	public <T> PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> aggregation(AggregationKey<T> key,
 			Function<? super ElasticsearchSearchAggregationFactory, ? extends AggregationFinalStep<T>> contributor) {
 		delegate = delegate.aggregation( key, contributor );
 		return this;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> totalHitCountThreshold(long totalHitCountThreshold) {
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> totalHitCountThreshold(long totalHitCountThreshold) {
 		delegate = delegate.totalHitCountThreshold( totalHitCountThreshold );
 		return this;
 	}
 
 	@Override
+	public <T extends HitSuperType> PanacheQuery<T> toQuery() {
+		return new PanacheQueryImpl<>( toSearchQuery() );
+	}
+
 	@SuppressWarnings("unchecked") // This has to be that way
-	public <H> SearchQuery<H> toQuery() {
+	public <H extends HitSuperType> SearchQuery<H> toSearchQuery() {
 		return (SearchQuery<H>) delegate.toQuery();
 	}
 }

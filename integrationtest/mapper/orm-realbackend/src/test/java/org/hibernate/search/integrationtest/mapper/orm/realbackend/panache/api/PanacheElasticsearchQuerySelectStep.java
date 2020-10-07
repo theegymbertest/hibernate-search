@@ -14,14 +14,14 @@ import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.projection.dsl.ProjectionFinalStep;
 import org.hibernate.search.mapper.orm.common.EntityReference;
 
-public interface PanacheElasticsearchQuerySelectStep<LOS> extends PanacheElasticsearchQueryWhereStep<LOS> {
+public interface PanacheElasticsearchQuerySelectStep<Entity, LOS> extends PanacheElasticsearchQueryWhereStep<Entity, LOS> {
 
-	PanacheElasticsearchQueryWhereStep<LOS> select(
-			Function<? super ElasticsearchSearchProjectionFactory<EntityReference, ?>, ? extends ProjectionFinalStep<?>> contributor);
+	<P> PanacheElasticsearchQueryWhereStep<P, LOS> select(
+			Function<? super ElasticsearchSearchProjectionFactory<EntityReference, ? extends Entity>, ? extends ProjectionFinalStep<? extends P>> contributor);
 
 	@Override
-	default PanacheElasticsearchQueryOptionsStep<LOS> where(
+	default PanacheElasticsearchQueryOptionsStep<Entity, LOS> where(
 			Function<? super ElasticsearchSearchPredicateFactory, ? extends PredicateFinalStep> contributor) {
-		return select( f -> f.entity() ).where( contributor );
+		return this.<Entity>select( f -> f.entity() ).where( contributor );
 	}
 }

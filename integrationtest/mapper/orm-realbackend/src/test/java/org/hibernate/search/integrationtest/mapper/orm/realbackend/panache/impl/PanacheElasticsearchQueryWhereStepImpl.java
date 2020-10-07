@@ -14,17 +14,17 @@ import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheElasticsearchQueryOptionsStep;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheElasticsearchQueryWhereStep;
 
-class PanacheElasticsearchQueryWhereStepImpl<LOS>
-		implements PanacheElasticsearchQueryWhereStep<LOS> {
+class PanacheElasticsearchQueryWhereStepImpl<HitSuperType, LOS>
+		implements PanacheElasticsearchQueryWhereStep<HitSuperType, LOS> {
 
-	private final ElasticsearchSearchQueryWhereStep<?, LOS> delegate;
+	private final ElasticsearchSearchQueryWhereStep<HitSuperType, LOS> delegate;
 
-	PanacheElasticsearchQueryWhereStepImpl(ElasticsearchSearchQueryWhereStep<?, LOS> delegate) {
+	PanacheElasticsearchQueryWhereStepImpl(ElasticsearchSearchQueryWhereStep<HitSuperType, LOS> delegate) {
 		this.delegate = delegate;
 	}
 
 	@Override
-	public PanacheElasticsearchQueryOptionsStep<LOS> where(
+	public PanacheElasticsearchQueryOptionsStep<HitSuperType, LOS> where(
 			Function<? super ElasticsearchSearchPredicateFactory, ? extends PredicateFinalStep> contributor) {
 		return new PanacheElasticsearchQueryOptionsStepImpl<>( delegate.where( contributor ) );
 	}

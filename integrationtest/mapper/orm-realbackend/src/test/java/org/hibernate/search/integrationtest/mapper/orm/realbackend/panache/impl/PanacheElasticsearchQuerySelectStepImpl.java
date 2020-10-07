@@ -15,20 +15,18 @@ import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.P
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheElasticsearchQueryWhereStep;
 import org.hibernate.search.mapper.orm.common.EntityReference;
 
-class PanacheElasticsearchQuerySelectStepImpl<LOS> implements PanacheElasticsearchQuerySelectStep<LOS> {
+class PanacheElasticsearchQuerySelectStepImpl<Entity, LOS> implements PanacheElasticsearchQuerySelectStep<Entity, LOS> {
 
-	private final ElasticsearchSearchQuerySelectStep<EntityReference, ?, LOS> delegate;
+	private final ElasticsearchSearchQuerySelectStep<EntityReference, ? extends Entity, LOS> delegate;
 
-	PanacheElasticsearchQuerySelectStepImpl(
-			ElasticsearchSearchQuerySelectStep<EntityReference, ?, LOS> delegate) {
+	PanacheElasticsearchQuerySelectStepImpl(ElasticsearchSearchQuerySelectStep<EntityReference, ? extends Entity, LOS> delegate) {
 		this.delegate = delegate;
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public PanacheElasticsearchQueryWhereStep<LOS> select(
-			Function<? super ElasticsearchSearchProjectionFactory<EntityReference, ?>, ? extends ProjectionFinalStep<?>> contributor) {
-		return new PanacheElasticsearchQueryWhereStepImpl<LOS>( delegate.select( f -> (ProjectionFinalStep) contributor.apply( f ) ) );
-	}
+	@SuppressWarnings("unchecked")
+	public <P> PanacheElasticsearchQueryWhereStep<P, LOS> select(
+			Function<? super ElasticsearchSearchProjectionFactory<EntityReference, ? extends Entity>, ? extends ProjectionFinalStep<? extends P>> contributor) {
+		return new PanacheElasticsearchQueryWhereStepImpl<>( delegate.select( f -> (ProjectionFinalStep<P>) contributor.apply( f ) ) );	}
 
 }
