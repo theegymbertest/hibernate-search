@@ -16,6 +16,17 @@ public interface PanacheQuery<HitSuperType> {
 
 	// Builder
 
+	// FIXME this will only be possible with the "SimpleMethod" approach,
+	//  and even then we'll need to introduce support for such projections in HSearch
+	//  before we can expose this.
+	/**
+	 * Defines a projection class: the getters, and the public fields, will be used to restrict which fields should be
+	 * retrieved from the database.
+	 *
+	 * @return a new query with the same state as the previous one (params, page, range, lockMode, hints, ...).
+	 */
+	public <T> PanacheQuery<T> project(Class<T> type);
+
 	/**
 	 * Sets the current page.
 	 *

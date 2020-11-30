@@ -91,7 +91,7 @@ class PanacheElasticsearchQueryOptionsStepImpl<HitSuperType, LOS>
 
 	@Override
 	public <H extends HitSuperType> PanacheQuery<H> toQuery() {
-		return new PanacheQueryImpl<>( toSearchQuery() );
+		return new PanacheQueryDslImpl<>( toSearchQuery() );
 	}
 
 	@Override

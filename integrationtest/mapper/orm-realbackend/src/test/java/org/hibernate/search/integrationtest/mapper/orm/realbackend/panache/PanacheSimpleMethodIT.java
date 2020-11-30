@@ -14,11 +14,10 @@ import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.search.engine.cfg.BackendSettings;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.Page;
-import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
+import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.Sort;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.impl.PanacheElasticsearchSupport;
 import org.hibernate.search.mapper.orm.automaticindexing.session.AutomaticIndexingSynchronizationStrategyNames;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
-import org.hibernate.search.mapper.orm.common.EntityReference;
 import org.hibernate.search.util.impl.integrationtest.backend.elasticsearch.ElasticsearchBackendConfiguration;
 import org.hibernate.search.util.impl.integrationtest.mapper.orm.OrmSetupHelper;
 
@@ -26,7 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class PanacheIT {
+public class PanacheSimpleMethodIT {
 
 	@Rule
 	public OrmSetupHelper setupHelper = OrmSetupHelper.withSingleBackend( new ElasticsearchBackendConfiguration() );
@@ -40,10 +39,11 @@ public class PanacheIT {
 				.withProperty( HibernateOrmMapperSettings.AUTOMATIC_INDEXING_SYNCHRONIZATION_STRATEGY,
 						AutomaticIndexingSynchronizationStrategyNames.SYNC )
 				.setup( Book.class );
+		PanacheElasticsearchSupport.currentEntityManagerFactory = entityManagerFactory;
 	}
 
 	@Test
-	public void dsl() {
+	public void simpleMethods() {
 		withinJPATransaction( entityManagerFactory, entityManager -> {
 			Book book1 = new Book();
 			book1.setId( 1 );
@@ -59,21 +59,18 @@ public class PanacheIT {
 
 		withinJPATransaction( entityManagerFactory, entityManager -> {
 			PanacheElasticsearchSupport.currentEntityManager = entityManager;
-			PanacheQuery<Book> query = Book.search()
-					.where( f -> f.match().field( "title" ).matching( "robot" ) )
-					.toQuery();
-			List<Book> hits = query.page( Page.of( 0, 20 ) ).list();
+			List<Book> hits = Book.search( f -> f.match().field( "title" ).matching( "robot" ) )
+					.page( Page.of( 0, 20 ) )
+					.list();
 			assertThat( hits ).extracting( Book::getId ).containsExactly( 1 );
 		} );
 
 		withinJPATransaction( entityManagerFactory, entityManager -> {
 			PanacheElasticsearchSupport.currentEntityManager = entityManager;
-			PanacheQuery<EntityReference> query = Book.search()
-					.select( f -> f.entityReference() )
-					.where( f -> f.match().field( "title" ).matching( "robot" ) )
-					.toQuery();
-			List<EntityReference> hits = query.page( Page.of( 0, 20 ) ).list();
-			assertThat( hits ).extracting( EntityReference::id ).containsExactly( 1 );
+			List<Book> hits = Book.search( f -> f.matchAll(), Sort.by( "title_sort" ) )
+					.page( Page.of( 0, 20 ) )
+					.list();
+			assertThat( hits ).extracting( Book::getId ).containsExactly( 1 );
 		} );
 	}
 

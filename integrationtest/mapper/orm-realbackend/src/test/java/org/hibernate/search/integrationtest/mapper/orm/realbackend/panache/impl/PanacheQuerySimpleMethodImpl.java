@@ -11,18 +11,39 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.hibernate.search.backend.elasticsearch.search.query.ElasticsearchSearchQuery;
-import org.hibernate.search.engine.search.query.SearchQuery;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.projection.SearchProjection;
+import org.hibernate.search.engine.search.query.dsl.SearchQueryOptionsStep;
+import org.hibernate.search.engine.search.sort.SearchSort;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.Page;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.scope.SearchScope;
+import org.hibernate.search.mapper.orm.search.loading.dsl.SearchLoadingOptionsStep;
 
-public class PanacheQueryImpl<HitSuperType> implements PanacheQuery<HitSuperType> {
+public class PanacheQuerySimpleMethodImpl<HitSuperType> implements PanacheQuery<HitSuperType> {
 
-	private final SearchQuery<HitSuperType> delegate;
-
+	private final SearchScope<?> scope;
+	private final SearchProjection<? extends HitSuperType> projection;
+	private final SearchPredicate predicate;
+	private final SearchSort sort;
 	private Page page = Page.ofSize( 20 );
 
-	public PanacheQueryImpl(SearchQuery<HitSuperType> delegate) {
-		this.delegate = delegate;
+	public PanacheQuerySimpleMethodImpl(SearchScope<?> scope, SearchProjection<? extends HitSuperType> projection,
+			SearchPredicate predicate, SearchSort sort) {
+		this.scope = scope;
+		this.projection = projection;
+		this.predicate = predicate;
+		this.sort = sort;
+	}
+
+	@Override
+	public <T> PanacheQuery<T> project(Class<T> type) {
+		// Theoretically we could implement this in Panache, but I'd rather do it in Hibernate Search directly.
+		// The approach with an @ProjectionFor annotation from the MongoDB with Panache extention
+		// seems particularly promising, as it would allow for static generation of these projections.
+		// See https://quarkus.io/guides/mongodb-panache#query-projection
+		throw new UnsupportedOperationException("Not yet implemented - need support in HSearch first");
 	}
 
 	@Override
@@ -144,12 +165,21 @@ public class PanacheQueryImpl<HitSuperType> implements PanacheQuery<HitSuperType
 	}
 
 	@Override
+	@SuppressWarnings("unchecked") // No pretty, but it's safe and it's the best we can do
 	public <T extends HitSuperType> ElasticsearchSearchQuery<T> toSearchQuery() {
-		return (ElasticsearchSearchQuery<T>) delegate;
+		SearchQueryOptionsStep<?, ? extends HitSuperType, SearchLoadingOptionsStep, ?, ?> optionsStep = Search
+				.session( PanacheElasticsearchSupport.currentEntityManager )
+				.search( scope )
+				.select( projection )
+				.where( predicate );
+		if ( sort != null ) {
+			optionsStep = optionsStep.sort( sort );
+		}
+		return (ElasticsearchSearchQuery<T>) optionsStep.toQuery();
 	}
 
 	@SuppressWarnings("unchecked") // This has to be that way
-	private <T extends HitSuperType> PanacheQuery<T> castThis() {
+	<T extends HitSuperType> PanacheQuery<T> castThis() {
 		return (PanacheQuery<T>) this;
 	}
 }

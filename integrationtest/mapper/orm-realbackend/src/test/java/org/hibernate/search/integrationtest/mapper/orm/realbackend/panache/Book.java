@@ -6,11 +6,18 @@
  */
 package org.hibernate.search.integrationtest.mapper.orm.realbackend.panache;
 
+import java.util.function.Function;
 import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.search.backend.elasticsearch.search.predicate.dsl.ElasticsearchSearchPredicateFactory;
+import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheElasticsearchQuerySelectStep;
+import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.PanacheQuery;
+import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.api.Sort;
 import org.hibernate.search.integrationtest.mapper.orm.realbackend.panache.impl.PanacheElasticsearchSupport;
 import org.hibernate.search.mapper.orm.search.loading.dsl.SearchLoadingOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -25,10 +32,22 @@ public class Book {
 		return PanacheElasticsearchSupport.search( Book.class );
 	}
 
+	public static <T> PanacheQuery<T> search(
+			Function<? super ElasticsearchSearchPredicateFactory, ? extends PredicateFinalStep> predicateContributor) {
+		return PanacheElasticsearchSupport.search( Book.class, predicateContributor );
+	}
+
+	public static <T> PanacheQuery<T> search(
+			Function<? super ElasticsearchSearchPredicateFactory, ? extends PredicateFinalStep> predicateContributor,
+			Sort sort) {
+		return PanacheElasticsearchSupport.search( Book.class, predicateContributor, sort );
+	}
+
 	@Id
 	private Integer id;
 
 	@FullTextField
+	@KeywordField(name = "title_sort", searchable = Searchable.NO, sortable = Sortable.YES)
 	private String title;
 
 	@KeywordField
