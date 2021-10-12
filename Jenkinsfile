@@ -423,7 +423,7 @@ stage('Default build') {
 			upgradeToLatestOrmSnapshot()
 			String mavenArgs = """ \
 					--fail-at-end \
-					-Pdist -Pcoverage -Pjqassistant \
+					-Pdist -Pcoverage \
 					${enableDefaultBuildIT ? '' : '-DskipITs'} \
 					${toTestJdkArg(environments.content.jdk.default)} \
 			"""
