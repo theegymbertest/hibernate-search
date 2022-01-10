@@ -1,0 +1,25 @@
+name: Simple test workflow
+
+on:
+  push:
+    branches-ignore:
+      - '5.*'
+      - '4.*'
+      - '3.*'
+    tags: '*'
+  pull_request:
+    branches-ignore:
+      - '5.*'
+      - '4.*'
+      - '3.*'
+
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print actor
+        id: get-date
+        run: |
+          echo "${{ github.actor }}"
+        shell: bash
