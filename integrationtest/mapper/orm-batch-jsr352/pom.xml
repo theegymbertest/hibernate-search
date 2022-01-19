@@ -68,11 +68,6 @@
 
         <dependency>
             <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-util-internal-integrationtest-jbatch-runtime</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-util-internal-integrationtest-jberet-se</artifactId>
             <scope>test</scope>
         </dependency>
@@ -95,25 +90,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>it-lucene-jbatch</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
-                        <configuration>
-                            <reportNameSuffix>${surefire.reportNameSuffix}-lucene-jbatch</reportNameSuffix>
-                            <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.hibernate.search:hibernate-search-backend-elasticsearch</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.hibernate.search:hibernate-search-util-internal-integrationtest-jberet-se</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.jberet:jberet-core</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.jberet:jberet-se</classpathDependencyExclude>
-                            </classpathDependencyExcludes>
-                            <systemPropertyVariables>
-                                <org.hibernate.search.integrationtest.backend.type>lucene</org.hibernate.search.integrationtest.backend.type>
-                                <org.hibernate.search.integrationtest.jsr352.type>jbatch</org.hibernate.search.integrationtest.jsr352.type>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>it-lucene-jberet</id>
                         <goals>
                             <goal>integration-test</goal>
@@ -128,25 +104,6 @@
                             <systemPropertyVariables>
                                 <org.hibernate.search.integrationtest.backend.type>lucene</org.hibernate.search.integrationtest.backend.type>
                                 <org.hibernate.search.integrationtest.jsr352.type>jberet</org.hibernate.search.integrationtest.jsr352.type>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>it-elasticsearch-jbatch</id>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
-                        <configuration>
-                            <reportNameSuffix>${surefire.reportNameSuffix}-elasticsearch-jbatch</reportNameSuffix>
-                            <classpathDependencyExcludes>
-                                <classpathDependencyExclude>org.hibernate.search:hibernate-search-backend-lucene</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.hibernate.search:hibernate-search-util-internal-integrationtest-jberet-se</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.jberet:jberet-core</classpathDependencyExclude>
-                                <classpathDependencyExclude>org.jberet:jberet-se</classpathDependencyExclude>
-                            </classpathDependencyExcludes>
-                            <systemPropertyVariables>
-                                <org.hibernate.search.integrationtest.backend.type>elasticsearch</org.hibernate.search.integrationtest.backend.type>
-                                <org.hibernate.search.integrationtest.jsr352.type>jbatch</org.hibernate.search.integrationtest.jsr352.type>
                             </systemPropertyVariables>
                         </configuration>
                     </execution>
