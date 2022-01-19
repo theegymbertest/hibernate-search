@@ -64,8 +64,10 @@ jobs:
         run: ./mvnw -v
       - name: Docker cleanup
         run: ./ci/docker-cleanup.sh
-      - name: Build and test
-        run: ./mvnw $MAVEN_ARGS install -Pdist -Pcoverage -Pjqassistant
+      - name: Build
+        run: ./mvnw $MAVEN_ARGS install -DskipTests
+      - name: Build
+        run: ./mvnw $MAVEN_ARGS -Dit.test=RestartChunkIT -pl integrationtest/mapper/orm-batch-jsr352
       - name: Upload test reports (if Maven failed)
         uses: actions/upload-artifact@v2
         if: failure()
