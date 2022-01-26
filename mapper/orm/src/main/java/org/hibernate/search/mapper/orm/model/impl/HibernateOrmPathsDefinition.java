@@ -167,11 +167,9 @@ public class HibernateOrmPathsDefinition implements PojoPathsDefinition {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public List<String> preDefinedOrdinals() {
 		List<String> preDefinedOrdinals = new ArrayList<>();
-		for ( Iterator<Property> iterator = persistentClass.getPropertyClosureIterator(); iterator.hasNext(); ) {
-			Property property = iterator.next();
+		for ( Property property : persistentClass.getPropertyClosure() ) {
 			preDefinedOrdinals.add( property.getName() );
 		}
 		return preDefinedOrdinals;
