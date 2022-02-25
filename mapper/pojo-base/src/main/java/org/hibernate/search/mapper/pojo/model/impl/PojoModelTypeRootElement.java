@@ -6,6 +6,9 @@
  */
 package org.hibernate.search.mapper.pojo.model.impl;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.PojoIndexingDependencyCollectorTypeNode;
 import org.hibernate.search.mapper.pojo.model.PojoElementAccessor;
 import org.hibernate.search.mapper.pojo.model.PojoModelType;
@@ -30,6 +33,11 @@ public class PojoModelTypeRootElement<T> extends AbstractPojoModelCompositeEleme
 	@Override
 	public String toString() {
 		return modelPath.getTypeModel().toString();
+	}
+
+	@Override
+	public <M> Collection<M> markers(Class<M> markerType) {
+		return Collections.emptyList();
 	}
 
 	public void contributeDependencies(PojoIndexingDependencyCollectorTypeNode<T> dependencyCollector) {
