@@ -7,8 +7,6 @@
 package org.hibernate.search.mapper.pojo.model.path;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
@@ -130,9 +128,7 @@ public abstract class PojoModelPath {
 	public static class Builder {
 
 		private PojoModelPathPropertyNode currentPropertyNode;
-		private final List<String> currentExplicitExtractors = new ArrayList<>();
-		private boolean noExtractors;
-		private boolean defaultExtractors;
+		private final ContainerExtractorPath.Builder containerExtractorPathBuilder = ContainerExtractorPath.builder();
 
 		private Builder() {
 		}
@@ -160,18 +156,8 @@ public abstract class PojoModelPath {
 		 * @throws org.hibernate.search.util.common.SearchException If no property name was previously given.
 		 */
 		public Builder value(ContainerExtractorPath extractorPath) {
-			if ( extractorPath.isDefault() ) {
-				return valueWithDefaultExtractors();
-			}
-			else if ( extractorPath.isEmpty() ) {
-				return valueWithoutExtractors();
-			}
-			else {
-				for ( String extractorName : extractorPath.explicitExtractorNames() ) {
-					value( extractorName );
-				}
-				return this;
-			}
+			containerExtractorPathBuilder.extractors( extractorPath );
+			return this;
 		}
 
 		/**
@@ -186,11 +172,7 @@ public abstract class PojoModelPath {
 		 */
 		public Builder value(String extractorName) {
 			checkHasPropertyName();
-			if ( defaultExtractors ) {
-				throw log.cannotUseDefaultExtractorsInMultiExtractorChain();
-			}
-			noExtractors = false;
-			currentExplicitExtractors.add( extractorName );
+			containerExtractorPathBuilder.extractor( extractorName );
 			return this;
 		}
 
@@ -201,7 +183,7 @@ public abstract class PojoModelPath {
 		 */
 		public Builder valueWithoutExtractors() {
 			checkHasPropertyName();
-			noExtractors = true;
+			containerExtractorPathBuilder.noExtractors();
 			return this;
 		}
 
@@ -212,11 +194,7 @@ public abstract class PojoModelPath {
 		 */
 		public Builder valueWithDefaultExtractors() {
 			checkHasPropertyName();
-			if ( !currentExplicitExtractors.isEmpty() ) {
-				throw log.cannotUseDefaultExtractorsInMultiExtractorChain();
-			}
-			noExtractors = false;
-			defaultExtractors = true;
+			containerExtractorPathBuilder.defaultExtractors();
 			return this;
 		}
 
@@ -261,24 +239,12 @@ public abstract class PojoModelPath {
 
 		private boolean isEmpty() {
 			// Empty if nothing was called
-			return currentPropertyNode == null
-					&& !noExtractors && !defaultExtractors && currentExplicitExtractors.isEmpty();
+			return currentPropertyNode == null && containerExtractorPathBuilder.isUndefined();
 		}
 
 		private ContainerExtractorPath flushContainerExtractorPath() {
-			ContainerExtractorPath result;
-			if ( !currentExplicitExtractors.isEmpty() ) {
-				result = ContainerExtractorPath.explicitExtractors( currentExplicitExtractors );
-			}
-			else if ( noExtractors ) {
-				result = ContainerExtractorPath.noExtractors();
-			}
-			else { // Default
-				result = ContainerExtractorPath.defaultExtractors();
-			}
-			currentExplicitExtractors.clear();
-			noExtractors = false;
-			defaultExtractors = false;
+			ContainerExtractorPath result = containerExtractorPathBuilder.build();
+			containerExtractorPathBuilder.reset();
 			return result;
 		}
 

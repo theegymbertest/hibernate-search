@@ -6,6 +6,7 @@
  */
 package org.hibernate.search.mapper.pojo.extractor.mapping.programmatic;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.StringJoiner;
 import org.hibernate.search.mapper.pojo.extractor.ContainerExtractor;
 import org.hibernate.search.mapper.pojo.extractor.ContainerExtractorConfigurationContext;
 import org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtractors;
+import org.hibernate.search.mapper.pojo.logging.impl.Log;
+import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
 /**
  * A chain of {@link ContainerExtractor container extractors} to be applied one after the other to a property value,
@@ -36,12 +39,22 @@ import org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtrac
  */
 public class ContainerExtractorPath {
 
+	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
+
 	private static final ContainerExtractorPath DEFAULT = new ContainerExtractorPath(
 			true, Collections.emptyList()
 	);
 	private static final ContainerExtractorPath NONE = new ContainerExtractorPath(
 			false, Collections.emptyList()
 	);
+
+	/**
+	 * @return A builder allowing to create a {@link ContainerExtractorPath}
+	 * by specifying its components one by one.
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
 
 	/**
 	 * @return A path that will apply the default extractor(s) based on the property type.
@@ -149,5 +162,112 @@ public class ContainerExtractorPath {
 	 */
 	public List<String> explicitExtractorNames() {
 		return explicitExtractorNames;
+	}
+
+	public static class Builder {
+
+		private final List<String> currentExplicitExtractors = new ArrayList<>();
+		private boolean noExtractors;
+		private boolean defaultExtractors;
+
+		private Builder() {
+		}
+
+		/**
+		 * Append to the path a value extraction using the given container extractor path.
+		 *
+		 * @param extractorPath The container extractors to apply, as a {@link ContainerExtractorPath}.
+		 * @return {@code this}, for method chaining.
+		 * @throws org.hibernate.search.util.common.SearchException If no property name was previously given.
+		 */
+		public Builder extractors(ContainerExtractorPath extractorPath) {
+			if ( extractorPath.isDefault() ) {
+				return defaultExtractors();
+			}
+			else if ( extractorPath.isEmpty() ) {
+				return noExtractors();
+			}
+			else {
+				for ( String extractorName : extractorPath.explicitExtractorNames() ) {
+					extractor( extractorName );
+				}
+				return this;
+			}
+		}
+
+		/**
+		 * Appends to the path a value extraction using the given container extractor.
+		 * <p>
+		 * Multiple {@link #extractor(String)} calls can be chained to apply multiple extractors.
+		 *
+		 * @param extractorName The name of the container extractor to apply.
+		 * @return {@code this}, for method chaining.
+		 * @throws org.hibernate.search.util.common.SearchException If no property name was previously given.
+		 * @see org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtractors
+		 */
+		public Builder extractor(String extractorName) {
+			if ( defaultExtractors ) {
+				throw log.cannotUseDefaultExtractorsInMultiExtractorChain();
+			}
+			noExtractors = false;
+			currentExplicitExtractors.add( extractorName );
+			return this;
+		}
+
+		/**
+		 * Appends to the path a direct value extraction, not using any container extractors.
+		 * @return {@code this}, for method chaining.
+		 */
+		public Builder noExtractors() {
+			if ( !defaultExtractors ) {
+				noExtractors = true;
+			}
+			return this;
+		}
+
+		/**
+		 * Appends to the path a value extraction using the default container extractors.
+		 * @return {@code this}, for method chaining.
+		 */
+		public Builder defaultExtractors() {
+			if ( !currentExplicitExtractors.isEmpty() ) {
+				throw log.cannotUseDefaultExtractorsInMultiExtractorChain();
+			}
+			noExtractors = false;
+			defaultExtractors = true;
+			return this;
+		}
+
+		/**
+		 * @return A {@link ContainerExtractorPath} built from the given components.
+		 */
+		public ContainerExtractorPath build() {
+			ContainerExtractorPath result;
+			if ( !currentExplicitExtractors.isEmpty() ) {
+				result = ContainerExtractorPath.explicitExtractors( currentExplicitExtractors );
+			}
+			else if ( noExtractors ) {
+				result = ContainerExtractorPath.noExtractors();
+			}
+			else { // Default
+				result = ContainerExtractorPath.defaultExtractors();
+			}
+			currentExplicitExtractors.clear();
+			noExtractors = false;
+			defaultExtractors = false;
+			return result;
+		}
+
+		public boolean isUndefined() {
+			// Empty if nothing was called
+			return !noExtractors && !defaultExtractors && currentExplicitExtractors.isEmpty();
+		}
+
+		public void reset() {
+			noExtractors = false;
+			defaultExtractors = false;
+			currentExplicitExtractors.clear();
+		}
+
 	}
 }
