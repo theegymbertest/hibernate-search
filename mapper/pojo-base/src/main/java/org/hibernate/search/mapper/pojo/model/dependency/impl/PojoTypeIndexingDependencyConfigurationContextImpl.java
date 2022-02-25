@@ -27,7 +27,7 @@ public class PojoTypeIndexingDependencyConfigurationContextImpl<T> extends Abstr
 		implements PojoTypeIndexingDependencyConfigurationContext {
 
 	private final BoundPojoModelPathTypeNode<T> modelPath;
-	private final List<BoundPojoModelPathValueNode<?, ?, ?>> usedPaths = new ArrayList<>();
+	private final List<BoundPojoModelPathValueNode<?, ?>> usedPaths = new ArrayList<>();
 	private final List<PojoOtherEntityIndexingDependencyConfigurationContextImpl<?>> otherEntityDependencyContexts = new ArrayList<>();
 
 	public PojoTypeIndexingDependencyConfigurationContextImpl(
@@ -46,7 +46,7 @@ public class PojoTypeIndexingDependencyConfigurationContextImpl<T> extends Abstr
 
 	@Override
 	public PojoTypeIndexingDependencyConfigurationContext use(PojoModelPathValueNode pathFromBridgedTypeToUsedValue) {
-		BoundPojoModelPathValueNode<?, ?, ?> boundPath = PojoModelPathBinder.bind(
+		BoundPojoModelPathValueNode<?, ?> boundPath = PojoModelPathBinder.bind(
 				modelPath, pathFromBridgedTypeToUsedValue, bindingPathWalker
 		);
 		usedPaths.add( boundPath );
@@ -69,7 +69,7 @@ public class PojoTypeIndexingDependencyConfigurationContextImpl<T> extends Abstr
 	}
 
 	public void contributeDependencies(PojoIndexingDependencyCollectorTypeNode<T> dependencyCollector) {
-		for ( BoundPojoModelPathValueNode<?, ?, ?> usedPath : usedPaths ) {
+		for ( BoundPojoModelPathValueNode<?, ?> usedPath : usedPaths ) {
 			PojoModelPathBinder.bind(
 					dependencyCollector,
 					usedPath.toUnboundPath(),

@@ -79,7 +79,7 @@ public abstract class BoundPojoModelPath {
 	public static class Walker implements PojoModelPathWalker<
 			BoundPojoModelPathTypeNode<?>,
 			BoundPojoModelPathPropertyNode<?, ?>,
-			BoundPojoModelPathValueNode<?, ?, ?>
+			BoundPojoModelPathValueNode<?, ?>
 			> {
 
 		private final ContainerExtractorBinder containerExtractorBinder;
@@ -95,17 +95,17 @@ public abstract class BoundPojoModelPath {
 		}
 
 		@Override
-		public BoundPojoModelPathValueNode<?, ?, ?> value(BoundPojoModelPathPropertyNode<?, ?> propertyNode,
+		public BoundPojoModelPathValueNode<?, ?> value(BoundPojoModelPathPropertyNode<?, ?> propertyNode,
 				ContainerExtractorPath extractorPath) {
 			return doValue( propertyNode, extractorPath );
 		}
 
 		@Override
-		public BoundPojoModelPathTypeNode<?> type(BoundPojoModelPathValueNode<?, ?, ?> valueNode) {
+		public BoundPojoModelPathTypeNode<?> type(BoundPojoModelPathValueNode<?, ?> valueNode) {
 			return valueNode.type();
 		}
 
-		private <P> BoundPojoModelPathValueNode<?, P, ?> doValue(BoundPojoModelPathPropertyNode<?, P> propertyNode,
+		private <P> BoundPojoModelPathValueNode<P, ?> doValue(BoundPojoModelPathPropertyNode<?, P> propertyNode,
 				ContainerExtractorPath extractorPath) {
 			BoundContainerExtractorPath<P, ?> boundExtractorPath = containerExtractorBinder
 					.bindPath( propertyNode.getPropertyModel().typeModel(), extractorPath );

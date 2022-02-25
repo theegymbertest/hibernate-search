@@ -23,12 +23,12 @@ class PojoOtherEntityIndexingDependencyConfigurationContextImpl<T> implements
 		PojoOtherEntityIndexingDependencyConfigurationContext {
 	private final BoundPojoModelPath.Walker bindingPathWalker;
 	private final BoundPojoModelPathTypeNode<T> modelPath;
-	private final BoundPojoModelPathValueNode<?, ?, ?> boundPathFromOtherEntityTypeToBridgedType;
-	private final List<BoundPojoModelPathValueNode<?, ?, ?>> usedPaths = new ArrayList<>();
+	private final BoundPojoModelPathValueNode<?, ?> boundPathFromOtherEntityTypeToBridgedType;
+	private final List<BoundPojoModelPathValueNode<?, ?>> usedPaths = new ArrayList<>();
 
 	PojoOtherEntityIndexingDependencyConfigurationContextImpl(BoundPojoModelPath.Walker bindingPathWalker,
 			BoundPojoModelPathTypeNode<T> modelPath,
-			BoundPojoModelPathValueNode<?, ?, ?> boundPathFromOtherEntityTypeToBridgedType) {
+			BoundPojoModelPathValueNode<?, ?> boundPathFromOtherEntityTypeToBridgedType) {
 		this.bindingPathWalker = bindingPathWalker;
 		this.modelPath = modelPath;
 		this.boundPathFromOtherEntityTypeToBridgedType = boundPathFromOtherEntityTypeToBridgedType;
@@ -36,7 +36,7 @@ class PojoOtherEntityIndexingDependencyConfigurationContextImpl<T> implements
 
 	@Override
 	public PojoOtherEntityIndexingDependencyConfigurationContext use(PojoModelPathValueNode pathFromBridgedTypeToUsedValue) {
-		BoundPojoModelPathValueNode<?, ?, ?> boundPath = PojoModelPathBinder.bind(
+		BoundPojoModelPathValueNode<?, ?> boundPath = PojoModelPathBinder.bind(
 				modelPath, pathFromBridgedTypeToUsedValue, bindingPathWalker
 		);
 		usedPaths.add( boundPath );
@@ -50,7 +50,7 @@ class PojoOtherEntityIndexingDependencyConfigurationContextImpl<T> implements
 		PojoIndexingDependencyCollectorTypeNode<?> dependencyCollectorTypeNode =
 				dependencyCollectorDisjointValueNode.type();
 
-		for ( BoundPojoModelPathValueNode<?, ?, ?> usedPath : usedPaths ) {
+		for ( BoundPojoModelPathValueNode<?, ?> usedPath : usedPaths ) {
 			PojoModelPathBinder.bind(
 					dependencyCollectorTypeNode,
 					usedPath.toUnboundPath(),

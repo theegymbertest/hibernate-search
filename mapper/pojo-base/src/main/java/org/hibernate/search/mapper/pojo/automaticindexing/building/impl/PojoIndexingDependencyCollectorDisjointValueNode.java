@@ -36,11 +36,11 @@ public class PojoIndexingDependencyCollectorDisjointValueNode<V>
 
 	private final PojoIndexingDependencyCollectorTypeNode<?> parentNode;
 	private final PojoRawTypeModel<V> inverseSideEntityTypeModel;
-	private final BoundPojoModelPathValueNode<?, ?, ?> inverseAssociationPath;
+	private final BoundPojoModelPathValueNode<?, ?> inverseAssociationPath;
 
 	PojoIndexingDependencyCollectorDisjointValueNode(PojoIndexingDependencyCollectorTypeNode<?> parentNode,
 			PojoRawTypeModel<V> inverseSideEntityTypeModel,
-			BoundPojoModelPathValueNode<?, ?, ?> inverseAssociationPath,
+			BoundPojoModelPathValueNode<?, ?> inverseAssociationPath,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		super( buildingHelper );
 		this.parentNode = parentNode;
@@ -75,13 +75,13 @@ public class PojoIndexingDependencyCollectorDisjointValueNode<V>
 	}
 
 	@Override
-	void collectDependency(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void collectDependency(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		parentNode.collectDependency( dirtyPathFromEntityType );
 	}
 
 	@Override
 	void markForReindexing(AbstractPojoImplicitReindexingResolverTypeNodeBuilder<?, ?> inverseSideEntityTypeNodeBuilder,
-			BoundPojoModelPathValueNode<?, ?, ?> dependencyPathFromInverseSideEntityTypeNode) {
+			BoundPojoModelPathValueNode<?, ?> dependencyPathFromInverseSideEntityTypeNode) {
 		PojoTypeModel<?> inverseSideEntityType = inverseSideEntityTypeNodeBuilder.getTypeModel();
 		PojoRawTypeModel<?> inverseSideRawEntityType = inverseSideEntityType.rawType();
 		PojoRawTypeModel<?> originalSideRawConcreteEntityType = parentNode.typeModel().rawType();

@@ -144,7 +144,7 @@ class PojoImplicitReindexingResolverPropertyNodeBuilder<T, P>
 			createContainerBuilder(BoundContainerExtractorPath<P, V> boundExtractorPath) {
 		ContainerExtractorHolder<P, V> extractorHolder =
 				buildingHelper.createExtractors( boundExtractorPath );
-		BoundPojoModelPathValueNode<T, P, V> containerElementPath = modelPath.value( boundExtractorPath );
+		BoundPojoModelPathValueNode<P, V> containerElementPath = modelPath.value( boundExtractorPath );
 		return new PojoImplicitReindexingResolverContainerElementNodeBuilder<>(
 				containerElementPath, extractorHolder, buildingHelper
 		);

@@ -28,12 +28,12 @@ import org.hibernate.search.util.common.impl.Closer;
  */
 class PojoIndexingProcessorContainerElementNodeBuilder<P extends C, C, V> extends AbstractPojoProcessorNodeBuilder {
 
-	private final BoundPojoModelPathValueNode<?, P, V> modelPath;
+	private final BoundPojoModelPathValueNode<P, V> modelPath;
 	private final ContainerExtractorHolder<C, V> extractorHolder;
 
 	private final PojoIndexingProcessorValueNodeBuilderDelegate<P, V> valueNodeProcessorCollectionBuilder;
 
-	PojoIndexingProcessorContainerElementNodeBuilder(BoundPojoModelPathValueNode<?, P, V> modelPath,
+	PojoIndexingProcessorContainerElementNodeBuilder(BoundPojoModelPathValueNode<P, V> modelPath,
 			ContainerExtractorHolder<C, V> extractorHolder,
 			PojoMappingHelper mappingHelper, IndexBindingContext bindingContext) {
 		super( mappingHelper, bindingContext );
@@ -52,7 +52,7 @@ class PojoIndexingProcessorContainerElementNodeBuilder<P extends C, C, V> extend
 	}
 
 	@Override
-	BoundPojoModelPathValueNode<?, ? extends C, V> getModelPath() {
+	BoundPojoModelPathValueNode<? extends C, V> getModelPath() {
 		return modelPath;
 	}
 

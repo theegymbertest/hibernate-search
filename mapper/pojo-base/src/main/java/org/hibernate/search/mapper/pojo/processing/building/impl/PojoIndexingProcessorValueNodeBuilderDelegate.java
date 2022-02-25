@@ -52,7 +52,7 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final BoundPojoModelPathValueNode<?, P, V> modelPath;
+	private final BoundPojoModelPathValueNode<P, V> modelPath;
 
 	private final Collection<BoundValueBridge<V, ?>> boundBridges = new ArrayList<>();
 
@@ -61,7 +61,7 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 	private final boolean multiValuedFromContainerExtractor;
 
 	PojoIndexingProcessorValueNodeBuilderDelegate(
-			BoundPojoModelPathValueNode<?, P, V> modelPath,
+			BoundPojoModelPathValueNode<P, V> modelPath,
 			PojoMappingHelper mappingHelper, IndexBindingContext bindingContext,
 			boolean multiValuedFromContainerExtractor) {
 		super( mappingHelper, bindingContext );
@@ -147,7 +147,7 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 	}
 
 	@Override
-	BoundPojoModelPathValueNode<?, P, V> getModelPath() {
+	BoundPojoModelPathValueNode<P, V> getModelPath() {
 		return modelPath;
 	}
 

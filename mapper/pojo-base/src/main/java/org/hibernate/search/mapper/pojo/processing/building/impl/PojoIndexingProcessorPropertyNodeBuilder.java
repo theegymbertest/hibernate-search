@@ -119,7 +119,7 @@ class PojoIndexingProcessorPropertyNodeBuilder<T, P> extends AbstractPojoProcess
 	 */
 	private <V> PojoIndexingProcessorContainerElementNodeBuilder<P, ? super P, V> createContainerElementNodeBuilder(
 			BoundContainerExtractorPath<P, V> boundExtractorPath) {
-		BoundPojoModelPathValueNode<T, P, V> containerElementPath = modelPath.value( boundExtractorPath );
+		BoundPojoModelPathValueNode<P, V> containerElementPath = modelPath.value( boundExtractorPath );
 		ContainerExtractorHolder<P, V> extractorHolder =
 				mappingHelper.indexModelBinder().createExtractors( boundExtractorPath );
 		return new PojoIndexingProcessorContainerElementNodeBuilder<>(

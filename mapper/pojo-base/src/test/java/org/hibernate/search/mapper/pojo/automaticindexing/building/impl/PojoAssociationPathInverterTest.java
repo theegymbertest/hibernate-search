@@ -159,7 +159,7 @@ public class PojoAssociationPathInverterTest {
 					return BoundContainerExtractorPath.noExtractors( sourceType );
 				} );
 
-		BoundPojoModelPathValueNode<?, ?, ?> boundPathToInvert =
+		BoundPojoModelPathValueNode<?, ?> boundPathToInvert =
 				BoundPojoModelPathValueNode.root( originalSideEntityTypeMock )
 						.property( originalSidePropertyName )
 						.value( (BoundContainerExtractorPath) BoundContainerExtractorPath.noExtractors(

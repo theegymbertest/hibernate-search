@@ -14,17 +14,16 @@ import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
 
 /**
- * @param <T> The property holder type of this node, i.e. the type from which the property is retrieved.
  * @param <P> The property type of this node, i.e. the type of the property from which the values are extracted.
  * @param <V> The value type of this node, i.e. the type of values extracted from the property.
  */
-public class BoundPojoModelPathValueNode<T, P, V> extends BoundPojoModelPath {
+public class BoundPojoModelPathValueNode<P, V> extends BoundPojoModelPath {
 
-	private final BoundPojoModelPathPropertyNode<T, P> parent;
+	private final BoundPojoModelPathPropertyNode<?, P> parent;
 	private final BoundContainerExtractorPath<? super P, V> boundExtractorPath;
 	private BoundPojoModelPathOriginalTypeNode<V> elementTypePathNode;
 
-	BoundPojoModelPathValueNode(BoundPojoModelPathPropertyNode<T, P> parent,
+	BoundPojoModelPathValueNode(BoundPojoModelPathPropertyNode<?, P> parent,
 			BoundContainerExtractorPath<? super P, V> boundExtractorPath) {
 		this.parent = parent;
 		this.boundExtractorPath = boundExtractorPath;
@@ -34,7 +33,7 @@ public class BoundPojoModelPathValueNode<T, P, V> extends BoundPojoModelPath {
 	 * @return The model path to the property from which the value represented by this node is extracted.
 	 */
 	@Override
-	public BoundPojoModelPathPropertyNode<T, P> getParent() {
+	public BoundPojoModelPathPropertyNode<?, P> getParent() {
 		return parent;
 	}
 

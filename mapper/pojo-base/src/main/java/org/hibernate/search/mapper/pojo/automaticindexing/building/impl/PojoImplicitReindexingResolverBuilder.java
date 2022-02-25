@@ -56,7 +56,7 @@ class PojoImplicitReindexingResolverBuilder<T> {
 		containingEntitiesResolverRootBuilder.closeOnFailure();
 	}
 
-	void addDirtyPathTriggeringSelfReindexing(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void addDirtyPathTriggeringSelfReindexing(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		checkNotFrozen();
 		dirtyPathsTriggeringSelfReindexing.add( dirtyPathFromEntityType.toUnboundPath() );
 	}

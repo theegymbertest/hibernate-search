@@ -26,7 +26,7 @@ import org.hibernate.search.util.common.reflect.spi.ValueReadHandle;
 class PojoModelNestedCompositeElement<T, P> extends AbstractPojoModelCompositeElement<P> implements PojoModelProperty {
 
 	private final AbstractPojoModelCompositeElement<T> parent;
-	private final BoundPojoModelPathValueNode<T, P, P> modelPath;
+	private final BoundPojoModelPathValueNode<P, P> modelPath;
 	private final PojoPropertyAdditionalMetadata propertyAdditionalMetadata;
 
 	PojoModelNestedCompositeElement(AbstractPojoModelCompositeElement<T> parent,

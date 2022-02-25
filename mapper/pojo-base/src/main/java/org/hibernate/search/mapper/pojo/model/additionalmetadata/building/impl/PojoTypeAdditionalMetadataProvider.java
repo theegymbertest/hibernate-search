@@ -36,7 +36,7 @@ public class PojoTypeAdditionalMetadataProvider {
 		return cache.computeIfAbsent( typeModel, this::createTypeAdditionalMetadata );
 	}
 
-	public PojoValueAdditionalMetadata get(BoundPojoModelPathValueNode<?, ?, ?> valueNode) {
+	public PojoValueAdditionalMetadata get(BoundPojoModelPathValueNode<?, ?> valueNode) {
 		BoundPojoModelPathPropertyNode<?, ?> propertyNode = valueNode.getParent();
 		BoundPojoModelPathTypeNode<?> typeNode = propertyNode.getParent();
 		PojoTypeModel<?> typeModel = typeNode.getTypeModel();

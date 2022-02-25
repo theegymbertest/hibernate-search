@@ -62,7 +62,7 @@ public abstract class AbstractPojoBridgedElementDependencyContext {
 
 		BoundPojoModelPathOriginalTypeNode<?> otherEntityRootPath = BoundPojoModelPath.root( otherEntityType );
 
-		BoundPojoModelPathValueNode<?, ?, ?> boundPathFromOtherEntityTypeToBridgedType =
+		BoundPojoModelPathValueNode<?, ?> boundPathFromOtherEntityTypeToBridgedType =
 				PojoModelPathBinder.bind(
 						otherEntityRootPath,
 						pathFromOtherEntityTypeToBridgedType,

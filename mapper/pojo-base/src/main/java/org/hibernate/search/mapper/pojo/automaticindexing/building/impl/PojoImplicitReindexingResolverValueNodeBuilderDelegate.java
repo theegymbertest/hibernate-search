@@ -24,7 +24,7 @@ import org.hibernate.search.util.common.impl.Closer;
 
 class PojoImplicitReindexingResolverValueNodeBuilderDelegate<V> {
 
-	private final BoundPojoModelPathValueNode<?, ?, V> modelPath;
+	private final BoundPojoModelPathValueNode<?, V> modelPath;
 	private final PojoImplicitReindexingResolverBuildingHelper buildingHelper;
 
 	private PojoImplicitReindexingResolverOriginalTypeNodeBuilder<V> typeNodeBuilder;
@@ -34,7 +34,7 @@ class PojoImplicitReindexingResolverValueNodeBuilderDelegate<V> {
 
 	private boolean frozen = false;
 
-	PojoImplicitReindexingResolverValueNodeBuilderDelegate(BoundPojoModelPathValueNode<?, ?, V> modelPath,
+	PojoImplicitReindexingResolverValueNodeBuilderDelegate(BoundPojoModelPathValueNode<?, V> modelPath,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		this.modelPath = modelPath;
 		this.buildingHelper = buildingHelper;

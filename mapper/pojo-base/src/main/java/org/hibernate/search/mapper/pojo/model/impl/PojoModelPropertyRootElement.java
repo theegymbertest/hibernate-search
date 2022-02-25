@@ -24,7 +24,7 @@ import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
  */
 public class PojoModelPropertyRootElement<P> extends AbstractPojoModelCompositeElement<P> implements PojoModelProperty {
 
-	private final BoundPojoModelPathValueNode<?, P, P> modelPath;
+	private final BoundPojoModelPathValueNode<P, P> modelPath;
 
 	public PojoModelPropertyRootElement(BoundPojoModelPathPropertyNode<?, P> modelPath,
 			PojoBootstrapIntrospector introspector,

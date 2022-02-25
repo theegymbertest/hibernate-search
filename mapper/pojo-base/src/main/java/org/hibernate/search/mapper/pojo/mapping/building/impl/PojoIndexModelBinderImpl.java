@@ -171,7 +171,7 @@ public class PojoIndexModelBinderImpl implements PojoIndexModelBinder {
 
 	@Override
 	public <V> Optional<BoundValueBridge<V, ?>> bindValue(IndexBindingContext indexBindingContext,
-			BoundPojoModelPathValueNode<?, ?, V> modelPath, boolean multiValued,
+			BoundPojoModelPathValueNode<?, V> modelPath, boolean multiValued,
 			ValueBinder binder, Map<String, Object> params,
 			String relativeFieldName, FieldModelContributor contributor) {
 		Integer decimalScale = typeAdditionalMetadataProvider.get( modelPath ).getDecimalScale();

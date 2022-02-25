@@ -20,15 +20,15 @@ import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 class IdentityMappingCollectorValueNode extends AbstractIdentityMappingCollectorNode
 		implements PojoMappingCollectorValueNode {
 
-	private final BoundPojoModelPathValueNode<?, ?, ?> modelPath;
+	private final BoundPojoModelPathValueNode<?, ?> modelPath;
 
-	IdentityMappingCollectorValueNode(BoundPojoModelPathValueNode<?, ?, ?> modelPath, PojoMappingHelper mappingHelper) {
+	IdentityMappingCollectorValueNode(BoundPojoModelPathValueNode<?, ?> modelPath, PojoMappingHelper mappingHelper) {
 		super( mappingHelper );
 		this.modelPath = modelPath;
 	}
 
 	@Override
-	BoundPojoModelPathValueNode<?, ?, ?> getModelPath() {
+	BoundPojoModelPathValueNode<?, ?> getModelPath() {
 		return modelPath;
 	}
 

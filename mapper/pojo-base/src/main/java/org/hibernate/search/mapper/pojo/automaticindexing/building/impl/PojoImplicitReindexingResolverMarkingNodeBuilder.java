@@ -42,7 +42,7 @@ class PojoImplicitReindexingResolverMarkingNodeBuilder<T>
 		// Nothing to do
 	}
 
-	void addDirtyPathTriggeringReindexing(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void addDirtyPathTriggeringReindexing(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		checkNotFrozen();
 		dirtyPathsTriggeringReindexing.add( dirtyPathFromEntityType.toUnboundPath() );
 	}

@@ -89,7 +89,7 @@ public class PojoIndexingDependencyCollectorTypeNode<T> extends PojoIndexingDepe
 	}
 
 	public PojoIndexingDependencyCollectorDisjointValueNode<?> disjointValue(
-			BoundPojoModelPathValueNode<?, ?, ?> inverseAssociationPath) {
+			BoundPojoModelPathValueNode<?, ?> inverseAssociationPath) {
 		if ( lastEntityNode != this ) {
 			throw new AssertionFailure( "disjointValue() called on a non-entity node" );
 		}
@@ -119,7 +119,7 @@ public class PojoIndexingDependencyCollectorTypeNode<T> extends PojoIndexingDepe
 		return reindexOnUpdate;
 	}
 
-	void collectDependency(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void collectDependency(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		if ( lastEntityNode != this ) {
 			if ( parentNode == null ) {
 				throw new AssertionFailure( "collectDependency() called on a non-entity root node?" );
@@ -173,7 +173,7 @@ public class PojoIndexingDependencyCollectorTypeNode<T> extends PojoIndexingDepe
 
 	void markForReindexing(PojoImplicitReindexingResolverValueNodeBuilderDelegate<?> valueNodeBuilderDelegate,
 			Set<? extends PojoRawTypeModel<?>> valueNodeTypeConcreteEntitySubTypes,
-			BoundPojoModelPathValueNode<?, ?, ?> dependencyPathFromInverseSideEntityTypeNode) {
+			BoundPojoModelPathValueNode<?, ?> dependencyPathFromInverseSideEntityTypeNode) {
 		if ( lastEntityNode != this ) {
 			throw new AssertionFailure( "markForReindexing() called on a non-entity node" );
 		}

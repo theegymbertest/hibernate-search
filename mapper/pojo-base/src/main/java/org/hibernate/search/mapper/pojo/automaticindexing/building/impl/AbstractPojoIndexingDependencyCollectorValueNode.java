@@ -18,7 +18,7 @@ abstract class AbstractPojoIndexingDependencyCollectorValueNode extends PojoInde
 
 	public abstract PojoIndexingDependencyCollectorTypeNode<?> type();
 
-	abstract void collectDependency(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType);
+	abstract void collectDependency(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType);
 
 	/**
 	 * Make sure that whenever the value represented by {@code dependencyPathFromInverseSideEntityTypeNode} changes
@@ -32,6 +32,6 @@ abstract class AbstractPojoIndexingDependencyCollectorValueNode extends PojoInde
 	 * to the property being used when reindexing.
 	 */
 	abstract void markForReindexing(AbstractPojoImplicitReindexingResolverTypeNodeBuilder<?, ?> inverseSideEntityTypeNodeBuilder,
-			BoundPojoModelPathValueNode<?, ?, ?> dependencyPathFromInverseSideEntityTypeNode);
+			BoundPojoModelPathValueNode<?, ?> dependencyPathFromInverseSideEntityTypeNode);
 
 }

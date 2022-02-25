@@ -28,8 +28,8 @@ public class PojoIndexingDependencyCollectorPolymorphicDirectValueNode<P, V>
 
 	static <P, V> AbstractPojoIndexingDependencyCollectorDirectValueNode<P, V> create(
 			PojoIndexingDependencyCollectorPropertyNode<?, P> parentNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastTypeNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastEntityNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastTypeNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastEntityNode,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		List<? extends PojoIndexingDependencyCollectorTypeNode<?>> holderSubTypeNodes =
 				parentNode.parentNode().polymorphic();
@@ -69,7 +69,7 @@ public class PojoIndexingDependencyCollectorPolymorphicDirectValueNode<P, V>
 
 	PojoIndexingDependencyCollectorPolymorphicDirectValueNode(
 			PojoIndexingDependencyCollectorPropertyNode<?, P> parentNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastEntityNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastEntityNode,
 			Metadata metadata,
 			List<PojoIndexingDependencyCollectorMonomorphicDirectValueNode<? extends P, V>> monomorphicValueNodes,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
@@ -85,7 +85,7 @@ public class PojoIndexingDependencyCollectorPolymorphicDirectValueNode<P, V>
 	}
 
 	@Override
-	void collectDependency(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void collectDependency(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		for ( PojoIndexingDependencyCollectorMonomorphicDirectValueNode<?, ?> node : monomorphicValueNodes ) {
 			node.collectDependency( dirtyPathFromEntityType );
 		}
@@ -101,7 +101,7 @@ public class PojoIndexingDependencyCollectorPolymorphicDirectValueNode<P, V>
 
 	@Override
 	void markForReindexing(AbstractPojoImplicitReindexingResolverTypeNodeBuilder<?, ?> inverseSideEntityTypeNodeBuilder,
-			BoundPojoModelPathValueNode<?, ?, ?> dependencyPathFromInverseSideEntityTypeNode) {
+			BoundPojoModelPathValueNode<?, ?> dependencyPathFromInverseSideEntityTypeNode) {
 		for ( PojoIndexingDependencyCollectorMonomorphicDirectValueNode<?, ?> node : monomorphicValueNodes ) {
 			node.markForReindexing(
 					inverseSideEntityTypeNodeBuilder,

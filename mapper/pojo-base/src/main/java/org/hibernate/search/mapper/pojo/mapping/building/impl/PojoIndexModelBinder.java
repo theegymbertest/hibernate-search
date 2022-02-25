@@ -69,7 +69,7 @@ public interface PojoIndexModelBinder {
 			BoundPojoModelPathPropertyNode<?, P> modelPath, PropertyBinder binder, Map<String, Object> params);
 
 	<V> Optional<BoundValueBridge<V, ?>> bindValue(IndexBindingContext bindingContext,
-			BoundPojoModelPathValueNode<?, ?, V> modelPath, boolean multiValued,
+			BoundPojoModelPathValueNode<?, V> modelPath, boolean multiValued,
 			ValueBinder binder, Map<String, Object> params,
 			String relativeFieldName, FieldModelContributor contributor);
 

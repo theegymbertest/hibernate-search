@@ -21,11 +21,11 @@ import org.hibernate.search.util.common.impl.Closer;
 class PojoImplicitReindexingResolverContainerElementNodeBuilder<C, V>
 		extends AbstractPojoImplicitReindexingResolverNodeBuilder<C> {
 
-	private final BoundPojoModelPathValueNode<?, ? extends C, V> modelPath;
+	private final BoundPojoModelPathValueNode<? extends C, V> modelPath;
 	private final ContainerExtractorHolder<C, V> extractorHolder;
 	private final PojoImplicitReindexingResolverValueNodeBuilderDelegate<V> valueBuilderDelegate;
 
-	PojoImplicitReindexingResolverContainerElementNodeBuilder(BoundPojoModelPathValueNode<?, ? extends C, V> modelPath,
+	PojoImplicitReindexingResolverContainerElementNodeBuilder(BoundPojoModelPathValueNode<? extends C, V> modelPath,
 			ContainerExtractorHolder<C, V> extractorHolder,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		super( buildingHelper );
@@ -36,7 +36,7 @@ class PojoImplicitReindexingResolverContainerElementNodeBuilder<C, V>
 	}
 
 	@Override
-	BoundPojoModelPathValueNode<?, ? extends C, V> getModelPath() {
+	BoundPojoModelPathValueNode<? extends C, V> getModelPath() {
 		return modelPath;
 	}
 

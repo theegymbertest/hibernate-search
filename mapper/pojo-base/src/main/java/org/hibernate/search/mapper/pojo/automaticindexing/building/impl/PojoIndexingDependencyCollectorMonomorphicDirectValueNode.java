@@ -34,8 +34,8 @@ public class PojoIndexingDependencyCollectorMonomorphicDirectValueNode<P, V>
 
 	static <P, V> PojoIndexingDependencyCollectorMonomorphicDirectValueNode<P, V> create(
 			PojoIndexingDependencyCollectorPropertyNode<?, P> parentNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastTypeNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastEntityNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastTypeNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastEntityNode,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		return new PojoIndexingDependencyCollectorMonomorphicDirectValueNode<>( parentNode,
 				modelPathFromLastTypeNode, modelPathFromLastEntityNode,
@@ -48,13 +48,13 @@ public class PojoIndexingDependencyCollectorMonomorphicDirectValueNode<P, V>
 	 * The path to this node from the last type node, i.e. from the node
 	 * representing the type holding the property from which this value is extracted.
 	 */
-	private final BoundPojoModelPathValueNode<?, P, V> modelPathFromLastTypeNode;
+	private final BoundPojoModelPathValueNode<P, V> modelPathFromLastTypeNode;
 	private final PojoModelPathValueNode unboundModelPathFromLastTypeNode;
 
 	PojoIndexingDependencyCollectorMonomorphicDirectValueNode(
 			PojoIndexingDependencyCollectorPropertyNode<?, P> parentNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastTypeNode,
-			BoundPojoModelPathValueNode<?, P, V> modelPathFromLastEntityNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastTypeNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastEntityNode,
 			Metadata metadata,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		super( parentNode, modelPathFromLastEntityNode, metadata, buildingHelper );
@@ -78,7 +78,7 @@ public class PojoIndexingDependencyCollectorMonomorphicDirectValueNode<P, V>
 	}
 
 	@Override
-	void collectDependency(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void collectDependency(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		if ( metadata.derivedFrom.isEmpty() ) {
 			parentNode.parentNode().collectDependency( dirtyPathFromEntityType );
 		}

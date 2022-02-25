@@ -52,7 +52,7 @@ final class PojoAssociationPathInverter {
 	}
 
 	public Optional<PojoModelPathValueNode> invertPath(PojoTypeModel<?> inverseSideEntityType,
-			BoundPojoModelPathValueNode<?, ?, ?> pathToInvert) {
+			BoundPojoModelPathValueNode<?, ?> pathToInvert) {
 		PojoRawTypeModel<?> originalSideEntityType = pathToInvert.getRootType().rawType();
 
 		// Try to find inverse side information hosted on the side to inverse
@@ -79,7 +79,7 @@ final class PojoAssociationPathInverter {
 	 * uses the default extractor path, and if so, add it to the list of paths to match.
 	 */
 	private List<PojoModelPathValueNode> computeAssociationPathsToMatch(
-			BoundPojoModelPathValueNode<?, ?, ?> boundPathToInvert) {
+			BoundPojoModelPathValueNode<?, ?> boundPathToInvert) {
 		// We're potentially performing lots of insertions, so let's use a LinkedList
 		List<PojoModelPathValueNode> associationPathsToMatch = new LinkedList<>();
 		collectAssociationPathsToMatch( associationPathsToMatch, boundPathToInvert );
@@ -88,9 +88,9 @@ final class PojoAssociationPathInverter {
 
 	private void collectAssociationPathsToMatch(
 			List<PojoModelPathValueNode> associationPathsToMatch,
-			BoundPojoModelPathValueNode<?, ?, ?> boundPathToInvert) {
+			BoundPojoModelPathValueNode<?, ?> boundPathToInvert) {
 		BoundPojoModelPathPropertyNode<?, ?> parentPath = boundPathToInvert.getParent();
-		BoundPojoModelPathValueNode<?, ?, ?> parentValuePath = parentPath.getParent().getParent();
+		BoundPojoModelPathValueNode<?, ?> parentValuePath = parentPath.getParent().getParent();
 		String propertyName = parentPath.getPropertyModel().name();
 		ContainerExtractorPath extractorPath = boundPathToInvert.getExtractorPath();
 		boolean isDefaultExtractorPath = isDefaultExtractorPath(
@@ -133,7 +133,7 @@ final class PojoAssociationPathInverter {
 	}
 
 	private Optional<PojoModelPathValueNode> findInverseSidePathFromOriginalSide(
-			BoundPojoModelPathValueNode<?, ?, ?> pathToInvert) {
+			BoundPojoModelPathValueNode<?, ?> pathToInvert) {
 		BoundPojoModelPathPropertyNode<?, ?> lastPropertyNode = pathToInvert.getParent();
 		BoundPojoModelPathTypeNode<?> lastTypeNode = lastPropertyNode.getParent();
 		PojoPropertyModel<?> lastPropertyModel = lastPropertyNode.getPropertyModel();
@@ -193,7 +193,7 @@ final class PojoAssociationPathInverter {
 			for ( Map.Entry<ContainerExtractorPath, PojoValueAdditionalMetadata> valueEntry :
 					inverseSidePropertyAdditionalMetadata.getValuesAdditionalMetadata().entrySet() ) {
 				ContainerExtractorPath inverseSideExtractorPath = valueEntry.getKey();
-				BoundPojoModelPathValueNode<?, ?, ?> inverseSidePathValueNode =
+				BoundPojoModelPathValueNode<?, ?> inverseSidePathValueNode =
 						bindExtractors( inverseSidePathPropertyNode, inverseSideExtractorPath );
 				PojoValueAdditionalMetadata inverseSideValueAdditionalMetadata = valueEntry.getValue();
 
@@ -217,7 +217,7 @@ final class PojoAssociationPathInverter {
 	private Optional<PojoModelPathValueNode> findInverseSidePathFromInverseSideValueRecursive(
 			PojoRawTypeModel<?> originalSideEntityType,
 			List<PojoModelPathValueNode> associationPathsToMatch,
-			BoundPojoModelPathValueNode<?, ?, ?> inverseSidePathValueNode,
+			BoundPojoModelPathValueNode<?, ?> inverseSidePathValueNode,
 			PojoValueAdditionalMetadata inverseSideValueAdditionalMetadata,
 			Set<PojoRawTypeModel<?>> encounteredAssociationHoldingTypes) {
 		Optional<PojoModelPathValueNode> candidatePathOptional =
@@ -263,7 +263,7 @@ final class PojoAssociationPathInverter {
 		return Optional.empty();
 	}
 
-	private <P> BoundPojoModelPathValueNode<?, P, ?> bindExtractors(
+	private <P> BoundPojoModelPathValueNode<P, ?> bindExtractors(
 			BoundPojoModelPathPropertyNode<?, P> inverseSidePathPropertyNode,
 			ContainerExtractorPath extractorPath) {
 		BoundContainerExtractorPath<P, ?> resolvedExtractorPath =

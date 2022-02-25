@@ -58,7 +58,7 @@ abstract class AbstractPojoImplicitReindexingResolverTypeNodeBuilder<T, U>
 		return getOrCreatePropertyBuilder( propertyName );
 	}
 
-	void addDirtyPathTriggeringReindexing(BoundPojoModelPathValueNode<?, ?, ?> dirtyPathFromEntityType) {
+	void addDirtyPathTriggeringReindexing(BoundPojoModelPathValueNode<?, ?> dirtyPathFromEntityType) {
 		checkNotFrozen();
 		markingNodeBuilder.addDirtyPathTriggeringReindexing( dirtyPathFromEntityType );
 	}

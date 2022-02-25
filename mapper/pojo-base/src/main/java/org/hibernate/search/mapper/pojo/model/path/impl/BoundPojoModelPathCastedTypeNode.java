@@ -15,16 +15,16 @@ import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
  */
 public class BoundPojoModelPathCastedTypeNode<T, U> extends BoundPojoModelPathTypeNode<U> {
 
-	private final BoundPojoModelPathValueNode<?, ?, T> parent;
+	private final BoundPojoModelPathValueNode<?, T> parent;
 	private final PojoTypeModel<U> typeModel;
 
-	BoundPojoModelPathCastedTypeNode(BoundPojoModelPathValueNode<?, ?, T> parent, PojoTypeModel<U> typeModel) {
+	BoundPojoModelPathCastedTypeNode(BoundPojoModelPathValueNode<?, T> parent, PojoTypeModel<U> typeModel) {
 		this.parent = parent;
 		this.typeModel = typeModel;
 	}
 
 	@Override
-	public BoundPojoModelPathValueNode<?, ?, T> getParent() {
+	public BoundPojoModelPathValueNode<?, T> getParent() {
 		return parent;
 	}
 

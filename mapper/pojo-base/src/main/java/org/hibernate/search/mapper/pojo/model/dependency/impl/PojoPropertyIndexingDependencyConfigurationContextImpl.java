@@ -99,7 +99,7 @@ public class PojoPropertyIndexingDependencyConfigurationContextImpl<P> extends A
 		private final List<PojoOtherEntityIndexingDependencyConfigurationContextImpl<?>> otherEntityDependencyContexts = new ArrayList<>();
 
 		private ValueDependencyContext(ContainerExtractorPath extractorPathFromBridgedProperty) {
-			BoundPojoModelPathValueNode<?, ?, ?> valuePath =
+			BoundPojoModelPathValueNode<?, ?> valuePath =
 					bindingPathWalker.value( modelPath, extractorPathFromBridgedProperty );
 			valueTypePath = valuePath.type();
 		}
