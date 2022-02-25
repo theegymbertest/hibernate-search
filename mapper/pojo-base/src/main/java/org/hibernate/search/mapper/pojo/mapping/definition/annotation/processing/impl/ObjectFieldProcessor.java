@@ -12,22 +12,16 @@ import java.util.Set;
 
 import org.hibernate.search.engine.backend.types.ObjectStructure;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing.PropertyMappingAnnotationProcessor;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing.PropertyMappingAnnotationProcessorContext;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
 
-public class IndexedEmbeddedProcessor implements PropertyMappingAnnotationProcessor<IndexedEmbedded> {
+public class ObjectFieldProcessor implements PropertyMappingAnnotationProcessor<ObjectField> {
 
 	@Override
-	@SuppressWarnings("deprecation") // For IndexedEmbedded.maxDepth, IndexedEmbedded.storage, ObjectFieldStorage
-	public void process(PropertyMappingStep mappingContext, IndexedEmbedded annotation,
+	public void process(PropertyMappingStep mappingContext, ObjectField annotation,
 			PropertyMappingAnnotationProcessorContext context) {
-		String cleanedUpPrefix = annotation.prefix();
-		if ( cleanedUpPrefix.isEmpty() ) {
-			cleanedUpPrefix = null;
-		}
-
 		String cleanedUpName = annotation.name();
 		if ( cleanedUpName.isEmpty() ) {
 			cleanedUpName = null;
@@ -59,7 +53,6 @@ public class IndexedEmbeddedProcessor implements PropertyMappingAnnotationProces
 
 		mappingContext.indexedEmbedded( cleanedUpName )
 				.extractors( extractorPath )
-				.prefix( cleanedUpPrefix )
 				.structure( structure )
 				.includeDepth( cleanedUpIncludeDepth )
 				.includePaths( cleanedUpIncludePaths )

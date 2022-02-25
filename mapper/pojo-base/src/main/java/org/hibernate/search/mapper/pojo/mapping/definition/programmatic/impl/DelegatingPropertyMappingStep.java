@@ -18,6 +18,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.Property
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingGenericFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingIndexedEmbeddedStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingKeywordFieldOptionsStep;
+import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingObjectFieldStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingScaledNumberFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
@@ -112,6 +113,17 @@ class DelegatingPropertyMappingStep implements PropertyMappingStep {
 	public PropertyMappingIndexedEmbeddedStep indexedEmbedded(String relativeFieldName) {
 		return delegate.indexedEmbedded( relativeFieldName );
 	}
+
+	@Override
+	public PropertyMappingObjectFieldStep objectField() {
+		return delegate.objectField();
+	}
+
+	@Override
+	public PropertyMappingObjectFieldStep objectField(String relativeFieldName) {
+		return delegate.objectField( relativeFieldName );
+	}
+
 
 	@Override
 	public AssociationInverseSideOptionsStep associationInverseSide(PojoModelPathValueNode inversePath) {

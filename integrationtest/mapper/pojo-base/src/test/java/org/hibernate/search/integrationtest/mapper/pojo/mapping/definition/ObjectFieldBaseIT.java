@@ -35,15 +35,15 @@ import org.hibernate.search.mapper.pojo.bridge.builtin.spatial.impl.LatitudeMark
 import org.hibernate.search.mapper.pojo.bridge.builtin.spatial.impl.LongitudeMarker;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBinderRef;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.IdentifierBridgeRef;
-import org.hibernate.search.mapper.pojo.common.annotation.Param;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.IdentifierBinder;
 import org.hibernate.search.mapper.pojo.bridge.runtime.IdentifierBridgeFromDocumentIdentifierContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.IdentifierBridgeToDocumentIdentifierContext;
+import org.hibernate.search.mapper.pojo.common.annotation.Param;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.AssociationInverseSide;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.DocumentId;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectPath;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.PropertyValue;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
@@ -60,17 +60,17 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * Test common use cases of the {@code @IndexedEmbedded} annotation.
+ * Test common use cases of the {@code @ObjectField} annotation.
  * <p>
- * Does not test all the corner cases of filtering when using {@link IndexedEmbedded#includePaths()} and
- * {@link IndexedEmbedded#includeDepth()}, which are tested in a unit test in the engine module
+ * Does not test all the corner cases of filtering when using {@link ObjectField#includePaths()} and
+ * {@link ObjectField#includeDepth()}, which are tested in a unit test in the engine module
  * (the test is named {@code ConfiguredIndexSchemaNestingContextTest} at the time of this writing).
  * <p>
  * Does not test uses of container value extractors (for now). Some of them are tested in
  * {@link AnnotationMappingSmokeIT} and {@link ProgrammaticMappingSmokeIT}.
  */
 @SuppressWarnings("unused")
-public class IndexedEmbeddedBaseIT {
+public class ObjectFieldBaseIT {
 
 	private static final String INDEX_NAME = "IndexName";
 
@@ -85,27 +85,27 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	public void defaultAttributes() {
-		class IndexedEmbeddedLevel2 {
+		class ObjectFieldLevel2 {
 			@GenericField
 			String level2Property;
 		}
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@GenericField
 			String level1Property;
-			@IndexedEmbedded
-			IndexedEmbeddedLevel2 level2;
+			@ObjectField
+			ObjectFieldLevel2 level2;
 		}
 		@Indexed(index = INDEX_NAME)
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Value, String level2Value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.level1Property = level1Value;
-				this.level1.level2 = new IndexedEmbeddedLevel2();
+				this.level1.level2 = new ObjectFieldLevel2();
 				this.level1.level2.level2Property = level2Value;
 			}
 		}
@@ -120,7 +120,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class, IndexedEmbeddedLevel2.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class, ObjectFieldLevel2.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -138,7 +138,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	public void name() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@GenericField
 			String level1Property;
 		}
@@ -146,11 +146,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(name = "explicitName")
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(name = "explicitName")
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.level1Property = value;
 			}
 		}
@@ -162,7 +162,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -178,7 +178,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	public void name_invalid_dot() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@GenericField
 			String level1Property;
 		}
@@ -186,11 +186,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(name = "invalid.withdot")
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(name = "invalid.withdot")
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.level1Property = value;
 			}
 		}
@@ -202,48 +202,14 @@ public class IndexedEmbeddedBaseIT {
 				.hasMessageMatching( FailureReportUtils.buildFailureReportPattern()
 						.typeContext( IndexedEntity.class.getName() )
 						.pathContext( ".level1" )
-						.annotationContextAnyParameters( IndexedEmbedded.class )
+						.annotationContextAnyParameters( ObjectField.class )
 						.failure( "Invalid index field name 'invalid.withdot': field names cannot contain a dot ('.')" )
 						.build()
 				);
 	}
 
 	@Test
-	public void name_andPrefix() {
-		class IndexedEmbeddedLevel1 {
-			@GenericField
-			String level1Property;
-		}
-		@Indexed(index = INDEX_NAME)
-		class IndexedEntity {
-			@DocumentId
-			Integer id;
-			@IndexedEmbedded(name = "somename", prefix = "someprefix.")
-			IndexedEmbeddedLevel1 level1;
-			public IndexedEntity(int id, String value) {
-				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
-				this.level1.level1Property = value;
-			}
-		}
-
-		assertThatThrownBy(
-				() -> setupHelper.start().setup( IndexedEntity.class )
-		)
-				.isInstanceOf( SearchException.class )
-				.hasMessageMatching( FailureReportUtils.buildFailureReportPattern()
-						.typeContext( IndexedEntity.class.getName() )
-						.pathContext( ".level1" )
-						.annotationContextAnyParameters( IndexedEmbedded.class )
-						.failure( "Ambiguous @IndexedEmbedded name: both 'name' and 'prefix' are set.",
-								"Only one can be set.",
-								"Name is 'somename', prefix is 'someprefix.'" )
-						.build()
-				);
-	}
-
-	@Test
-	public void repeatedIndexedEmbedded() {
+	public void repeatedObjectField() {
 		class Embedded {
 			String forDefault;
 			String flat;
@@ -271,10 +237,10 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(name = "default", includePaths = {"default", "common"})
-			@IndexedEmbedded(name = "flat", includePaths = {"flat", "common"},
+			@ObjectField(name = "default", includePaths = {"default", "common"})
+			@ObjectField(name = "flat", includePaths = {"flat", "common"},
 					structure = ObjectStructure.FLATTENED)
-			@IndexedEmbedded(name = "nest", includePaths = {"nest", "common"},
+			@ObjectField(name = "nest", includePaths = {"nest", "common"},
 					structure = ObjectStructure.NESTED)
 			Embedded embedded;
 			public IndexedEntity(int id, String value) {
@@ -312,14 +278,14 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	/**
-	 * Check @IndexedEmbedded on a multi-valued property
+	 * Check @ObjectField on a multi-valued property
 	 * results in the corresponding object field being automatically marked as multi-valued
 	 * (and not its own fields).
 	 */
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3324")
 	public void multiValued() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@GenericField
 			String level1SingleValuedProperty;
 			@GenericField
@@ -329,8 +295,8 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded
-			List<IndexedEmbeddedLevel1> level1 = new ArrayList<>();
+			@ObjectField
+			List<ObjectFieldLevel1> level1 = new ArrayList<>();
 		}
 
 		backendMock.expectSchema( INDEX_NAME, b -> b
@@ -342,7 +308,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -351,11 +317,11 @@ public class IndexedEmbeddedBaseIT {
 				id -> {
 					IndexedEntity entity = new IndexedEntity();
 					entity.id = id;
-					IndexedEmbeddedLevel1 level1_1 = new IndexedEmbeddedLevel1();
+					ObjectFieldLevel1 level1_1 = new ObjectFieldLevel1();
 					level1_1.level1SingleValuedProperty = "1";
 					level1_1.level1MultiValuedProperty = Arrays.asList( "1_1", "1_2" );
 					entity.level1.add( level1_1 );
-					IndexedEmbeddedLevel1 level1_2 = new IndexedEmbeddedLevel1();
+					ObjectFieldLevel1 level1_2 = new ObjectFieldLevel1();
 					level1_2.level1SingleValuedProperty = "2";
 					level1_2.level1MultiValuedProperty = Arrays.asList( "2_1", "2_2" );
 					entity.level1.add( level1_2 );
@@ -374,162 +340,13 @@ public class IndexedEmbeddedBaseIT {
 	}
 
 	/**
-	 * Check that setting a dotless prefix in @IndexedEmbedded on a multi-valued property
-	 * results in *direct* children being automatically marked as multi-valued.
-	 */
-	@Test
-	@TestForIssue(jiraKey = "HSEARCH-3324")
-	public void prefix_multiValued() {
-		class IndexedEmbeddedLevel2 {
-			String level2Property;
-			@GenericField
-			public String getLevel2Property() {
-				return level2Property;
-			}
-		}
-		class IndexedEmbeddedLevel1 {
-			IndexedEmbeddedLevel2 level2NoDotInPrefix = new IndexedEmbeddedLevel2();
-			IndexedEmbeddedLevel2 level2OneDotInPrefix = new IndexedEmbeddedLevel2();
-			IndexedEmbeddedLevel2 level2TwoDotsInPrefix = new IndexedEmbeddedLevel2();
-			String level1Property;
-			@GenericField
-			public String getLevel1Property() {
-				return level1Property;
-			}
-			@IndexedEmbedded(prefix = "level2NoDotInPrefix_")
-			public IndexedEmbeddedLevel2 getLevel2NoDotInPrefix() {
-				return level2NoDotInPrefix;
-			}
-			@IndexedEmbedded(prefix = "level2OneDotInPrefix.")
-			public IndexedEmbeddedLevel2 getLevel2OneDotInPrefix() {
-				return level2OneDotInPrefix;
-			}
-			@IndexedEmbedded(prefix = "level2TwoDotsInPrefix.level3.")
-			public IndexedEmbeddedLevel2 getLevel2TwoDotsInPrefix() {
-				return level2TwoDotsInPrefix;
-			}
-		}
-		@Indexed(index = INDEX_NAME)
-		class IndexedEntity {
-			@DocumentId
-			Integer id;
-			@IndexedEmbedded(prefix = "level1_")
-			List<IndexedEmbeddedLevel1> level1 = new ArrayList<>();
-		}
-
-		backendMock.expectSchema( INDEX_NAME, b -> b
-				.field( "level1_level1Property", String.class, b2 -> b2.multiValued( true ) )
-				.field( "level1_level2NoDotInPrefix_level2Property", String.class, b2 -> b2.multiValued( true ) )
-				.objectField( "level1_level2OneDotInPrefix", b2 -> b2
-						.multiValued( true )
-						// Not a direct child of level1: should be single-valued
-						.field( "level2Property", String.class )
-				)
-				.objectField( "level1_level2TwoDotsInPrefix", b2 -> b2
-						.multiValued( true )
-						// Not a direct child of level1: should be single-valued
-						.objectField( "level3", b3 -> b3
-								// Not a direct child of level1: should be single-valued
-								.field( "level2Property", String.class )
-						)
-				)
-		);
-		SearchMapping mapping = setupHelper.start()
-				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
-				.setup();
-		backendMock.verifyExpectationsMet();
-
-		doTestEmbeddedRuntime(
-				mapping,
-				id -> {
-					IndexedEntity entity = new IndexedEntity();
-					entity.id = id;
-					IndexedEmbeddedLevel1 level1_1 = new IndexedEmbeddedLevel1();
-					level1_1.level1Property = "1";
-					level1_1.level2NoDotInPrefix.level2Property = "1";
-					level1_1.level2OneDotInPrefix.level2Property = "1";
-					level1_1.level2TwoDotsInPrefix.level2Property = "1";
-					entity.level1.add( level1_1 );
-					IndexedEmbeddedLevel1 level1_2 = new IndexedEmbeddedLevel1();
-					level1_2.level1Property = "2";
-					level1_2.level2NoDotInPrefix.level2Property = "2";
-					level1_2.level2OneDotInPrefix.level2Property = "2";
-					level1_2.level2TwoDotsInPrefix.level2Property = "2";
-					entity.level1.add( level1_2 );
-					return entity;
-				},
-				document -> document
-						.field( "level1_level1Property", "1", "2" )
-						.field( "level1_level2NoDotInPrefix_level2Property", "1", "2" )
-						.objectField( "level1_level2OneDotInPrefix", b2 -> b2
-								.field( "level2Property", "1" )
-						)
-						.objectField( "level1_level2OneDotInPrefix", b2 -> b2
-								.field( "level2Property", "2" )
-						)
-						.objectField( "level1_level2TwoDotsInPrefix", b2 -> b2
-								.objectField( "level3", b3 -> b3
-										.field( "level2Property", "1" )
-								)
-						)
-						.objectField( "level1_level2TwoDotsInPrefix", b2 -> b2
-								.objectField( "level3", b3 -> b3
-										.field( "level2Property", "2" )
-								)
-						)
-		);
-	}
-
-	/**
-	 * Check that the "prefix" parameter is at least taken into account.
-	 * <p>
-	 * Details of how filtering handles all corner cases is tested in the engine (see this class' javadoc).
-	 */
-	@Test
-	public void prefix() {
-		class IndexedEmbeddedLevel1 {
-			@GenericField
-			String level1Property;
-		}
-		@Indexed(index = INDEX_NAME)
-		class IndexedEntity {
-			@DocumentId
-			Integer id;
-			@IndexedEmbedded(prefix = "customPrefix_")
-			IndexedEmbeddedLevel1 level1;
-			public IndexedEntity(int id, String level1Property) {
-				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
-				this.level1.level1Property = level1Property;
-			}
-		}
-
-		backendMock.expectSchema( INDEX_NAME, b -> b
-				.field( "customPrefix_level1Property", String.class )
-		);
-		SearchMapping mapping = setupHelper.start()
-				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
-				.setup();
-		backendMock.verifyExpectationsMet();
-
-		doTestEmbeddedRuntime(
-				mapping,
-				id -> new IndexedEntity( id, "level1Value" ),
-				document -> document
-						.field( "customPrefix_level1Property", "level1Value" )
-		);
-	}
-
-	/**
 	 * Check that the "includePaths" parameter is at least taken into account.
 	 * <p>
 	 * Details of how filtering handles all corner cases is tested in the engine (see this class' javadoc).
 	 */
 	@Test
 	public void includePaths() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			String ignoredProperty;
 			String includedProperty;
 			@GenericField
@@ -545,11 +362,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includePaths = "includedProperty")
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includePaths = "includedProperty")
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String ignoredProperty, String includedProperty) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.ignoredProperty = ignoredProperty;
 				this.level1.includedProperty = includedProperty;
 			}
@@ -562,7 +379,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -581,7 +398,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3136")
 	public void error_includePaths_nonMatched() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@GenericField
 			String ignoredProperty;
 			@GenericField
@@ -591,11 +408,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includePaths = {"includedProperty", "nonMatchingPath"})
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includePaths = {"includedProperty", "nonMatchingPath"})
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String ignoredProperty, String includedProperty) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.ignoredProperty = ignoredProperty;
 				this.level1.includedProperty = includedProperty;
 			}
@@ -604,7 +421,7 @@ public class IndexedEmbeddedBaseIT {
 		assertThatThrownBy(
 				() -> setupHelper.start()
 						.withAnnotatedEntityTypes( IndexedEntity.class )
-						.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+						.withAnnotatedTypes( ObjectFieldLevel1.class )
 						.setup()
 		)
 				.isInstanceOf( SearchException.class )
@@ -629,22 +446,22 @@ public class IndexedEmbeddedBaseIT {
 	 */
 	@Test
 	public void includeDepth() {
-		class IndexedEmbeddedLevel2 {
+		class ObjectFieldLevel2 {
 			String level2Property;
 			@GenericField
 			public String getLevel2Property() {
 				return level2Property;
 			}
 		}
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			String level1Property;
-			IndexedEmbeddedLevel2 level2;
+			ObjectFieldLevel2 level2;
 			@GenericField
 			public String getLevel1Property() {
 				return level1Property;
 			}
-			@IndexedEmbedded
-			public IndexedEmbeddedLevel2 getLevel2() {
+			@ObjectField
+			public ObjectFieldLevel2 getLevel2() {
 				return level2;
 			}
 		}
@@ -652,13 +469,13 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeDepth = 1)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeDepth = 1)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Value, String level2Value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.level1Property = level1Value;
-				this.level1.level2 = new IndexedEmbeddedLevel2();
+				this.level1.level2 = new ObjectFieldLevel2();
 				this.level1.level2.level2Property = level2Value;
 			}
 		}
@@ -670,7 +487,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class, IndexedEmbeddedLevel2.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class, ObjectFieldLevel2.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -690,7 +507,7 @@ public class IndexedEmbeddedBaseIT {
 	 */
 	@Test
 	public void structure() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@GenericField
 			String level1Property;
 			public String getLevel1Property() {
@@ -701,11 +518,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(structure = ObjectStructure.NESTED)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(structure = ObjectStructure.NESTED)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.level1Property = level1Value;
 			}
 		}
@@ -718,7 +535,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -740,7 +557,7 @@ public class IndexedEmbeddedBaseIT {
 		StaticCounters.Key getLongitudeKey = StaticCounters.createKey();
 		StaticCounters.Key getLatitudeKey = StaticCounters.createKey();
 
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			String level1Property;
 			public Double getLongitude() {
 				StaticCounters.get().increment( getLongitudeKey );
@@ -753,10 +570,10 @@ public class IndexedEmbeddedBaseIT {
 		}
 		class IndexedEntity {
 			Integer id;
-			IndexedEmbeddedLevel1 level1;
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Property) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.level1Property = level1Property;
 			}
 		}
@@ -775,14 +592,14 @@ public class IndexedEmbeddedBaseIT {
 					indexedEntityMapping.indexed().index( INDEX_NAME );
 					indexedEntityMapping.property( "id" ).documentId();
 					indexedEntityMapping.property( "level1" )
-							.indexedEmbedded()
+							.objectField()
 									.includePaths( "level1IncludedField" );
-					TypeMappingStep indexedEmbeddedLevel1Mapping = b.programmaticMapping().type( IndexedEmbeddedLevel1.class );
-					indexedEmbeddedLevel1Mapping.binder( StartupStubBridge.binder( filteredOutBridgeCounterKeys ) );
-					indexedEmbeddedLevel1Mapping.binder( new GeoPointBridge.Binder().fieldName( "location" ) );
-					indexedEmbeddedLevel1Mapping.property( "latitude" ).marker( new LatitudeMarker.Binder() );
-					indexedEmbeddedLevel1Mapping.property( "longitude" ).marker( new LongitudeMarker.Binder() );
-					indexedEmbeddedLevel1Mapping.property( "level1Property" )
+					TypeMappingStep ObjectFieldLevel1Mapping = b.programmaticMapping().type( ObjectFieldLevel1.class );
+					ObjectFieldLevel1Mapping.binder( StartupStubBridge.binder( filteredOutBridgeCounterKeys ) );
+					ObjectFieldLevel1Mapping.binder( new GeoPointBridge.Binder().fieldName( "location" ) );
+					ObjectFieldLevel1Mapping.property( "latitude" ).marker( new LatitudeMarker.Binder() );
+					ObjectFieldLevel1Mapping.property( "longitude" ).marker( new LongitudeMarker.Binder() );
+					ObjectFieldLevel1Mapping.property( "level1Property" )
 							.binder( StartupStubBridge.binder( filteredOutBridgeCounterKeys ) )
 							.genericField( "level1IncludedField" )
 							.genericField( "filteredOut" )
@@ -820,11 +637,11 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3072")
 	public void targetType() {
-		abstract class IndexedEmbeddedLevel1 {
+		abstract class ObjectFieldLevel1 {
 			public abstract String getLevel1Property();
 			public abstract void setLevel1Property(String level1Property);
 		}
-		class IndexedEmbeddedLevel1Impl extends IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1Impl extends ObjectFieldLevel1 {
 			String level1Property;
 			@Override
 			@GenericField
@@ -840,11 +657,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeDepth = 1, targetType = IndexedEmbeddedLevel1Impl.class)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeDepth = 1, targetType = ObjectFieldLevel1Impl.class)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1Impl();
+				this.level1 = new ObjectFieldLevel1Impl();
 				this.level1.setLevel1Property( level1Value );
 			}
 		}
@@ -856,7 +673,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -872,11 +689,11 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3072")
 	public void targetType_castException() {
-		abstract class IndexedEmbeddedLevel1 {
+		abstract class ObjectFieldLevel1 {
 			public abstract String getLevel1Property();
 			public abstract void setLevel1Property(String level1Property);
 		}
-		class IndexedEmbeddedLevel1Impl extends IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1Impl extends ObjectFieldLevel1 {
 			String level1Property;
 			@Override
 			@GenericField
@@ -888,7 +705,7 @@ public class IndexedEmbeddedBaseIT {
 				this.level1Property = level1Property;
 			}
 		}
-		class InvalidTypeImpl extends IndexedEmbeddedLevel1 {
+		class InvalidTypeImpl extends ObjectFieldLevel1 {
 			String level1Property;
 			@Override
 			@GenericField
@@ -904,11 +721,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeDepth = 1, targetType = IndexedEmbeddedLevel1Impl.class)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeDepth = 1, targetType = ObjectFieldLevel1Impl.class)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Value) {
 				this.id = id;
-				// The actual instance has a type that cannot be cast to IndexedEmbeddedLevel1Impl
+				// The actual instance has a type that cannot be cast to ObjectFieldLevel1Impl
 				this.level1 = new InvalidTypeImpl();
 				this.level1.setLevel1Property( level1Value );
 			}
@@ -921,7 +738,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -940,11 +757,11 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-4148")
 	public void targetType_preserveGenericTypeContext() {
-		abstract class IndexedEmbeddedLevel1<T> {
+		abstract class ObjectFieldLevel1<T> {
 			public abstract T getLevel1Property();
 			public abstract void setLevel1Property(T level1Property);
 		}
-		class IndexedEmbeddedLevel1Impl<T> extends IndexedEmbeddedLevel1<T> {
+		class ObjectFieldLevel1Impl<T> extends ObjectFieldLevel1<T> {
 			T level1Property;
 			@Override
 			@GenericField
@@ -960,11 +777,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeDepth = 1, targetType = IndexedEmbeddedLevel1Impl.class)
-			IndexedEmbeddedLevel1<String> level1;
+			@ObjectField(includeDepth = 1, targetType = ObjectFieldLevel1Impl.class)
+			ObjectFieldLevel1<String> level1;
 			public IndexedEntity(int id, String level1Value) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1Impl<>();
+				this.level1 = new ObjectFieldLevel1Impl<>();
 				this.level1.setLevel1Property( level1Value );
 			}
 		}
@@ -976,7 +793,7 @@ public class IndexedEmbeddedBaseIT {
 		);
 		SearchMapping mapping = setupHelper.start()
 				.withAnnotatedEntityTypes( IndexedEntity.class )
-				.withAnnotatedTypes( IndexedEmbeddedLevel1.class )
+				.withAnnotatedTypes( ObjectFieldLevel1.class )
 				.setup();
 		backendMock.verifyExpectationsMet();
 
@@ -992,7 +809,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId
 			String theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1002,11 +819,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1018,7 +835,7 @@ public class IndexedEmbeddedBaseIT {
 								.searchable( Searchable.YES ).projectable( Projectable.YES ) )
 				)
 		);
-		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1033,7 +850,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_nonEntity() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId
 			String theId;
 		}
@@ -1041,11 +858,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 			}
 		}
@@ -1071,7 +888,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_fieldNameConflict() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId
 			String theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1083,11 +900,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, String level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1110,7 +927,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_multiValued() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId
 			String theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1120,11 +937,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			List<IndexedEmbeddedLevel1> level1;
+			@ObjectField(includeRootObjectId = true)
+			List<ObjectFieldLevel1> level1;
 			public IndexedEntity(int id, String level1Id1, String level1Id2) {
 				this.id = id;
-				this.level1 = Arrays.asList( new IndexedEmbeddedLevel1(), new IndexedEmbeddedLevel1() );
+				this.level1 = Arrays.asList( new ObjectFieldLevel1(), new ObjectFieldLevel1() );
 				this.level1.get( 0 ).theId = level1Id1;
 				this.level1.get( 0 ).containing = this;
 				this.level1.get( 1 ).theId = level1Id2;
@@ -1139,7 +956,7 @@ public class IndexedEmbeddedBaseIT {
 								.searchable( Searchable.YES ).projectable( Projectable.YES ) )
 				)
 		);
-		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1156,7 +973,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_noIdentifierBridge() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId
 			Long theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1166,11 +983,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, Long level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1184,7 +1001,7 @@ public class IndexedEmbeddedBaseIT {
 								.searchable( Searchable.YES ).projectable( Projectable.YES ) )
 				)
 		);
-		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1199,7 +1016,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_identifierBinder() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId(identifierBinder = @IdentifierBinderRef(type = MyCustomIdentifierBinder.class))
 			Long theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1209,11 +1026,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, Long level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1228,7 +1045,7 @@ public class IndexedEmbeddedBaseIT {
 				)
 		);
 		SearchMapping mapping = setupHelper.start().expectCustomBeans()
-				.setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+				.setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1243,7 +1060,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_identifierBridge() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId(identifierBridge = @IdentifierBridgeRef(type = MyCustomIdentifierBinder.Bridge.class))
 			Long theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1253,11 +1070,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, Long level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1272,7 +1089,7 @@ public class IndexedEmbeddedBaseIT {
 				)
 		);
 		SearchMapping mapping = setupHelper.start().expectCustomBeans()
-				.setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+				.setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1311,7 +1128,7 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	public void includeRootObjectId_identifierBridge_withParams_annotationMapping() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId(identifierBinder = @IdentifierBinderRef(type = ParametricBinder.class,
 					params = @Param(name = "stringBase", value = "3")))
 			Long theId;
@@ -1322,11 +1139,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true)
-			IndexedEmbeddedLevel1 level1;
+			@ObjectField(includeRootObjectId = true)
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, Long level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1341,7 +1158,7 @@ public class IndexedEmbeddedBaseIT {
 				)
 		);
 		SearchMapping mapping = setupHelper.start().expectCustomBeans()
-				.setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+				.setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1355,16 +1172,16 @@ public class IndexedEmbeddedBaseIT {
 
 	@Test
 	public void includeRootObjectId_identifierBridge_withParams_programmaticMapping() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			Long theId;
 			Object containing;
 		}
 		class IndexedEntity {
 			Integer id;
-			IndexedEmbeddedLevel1 level1;
+			ObjectFieldLevel1 level1;
 			public IndexedEntity(int id, Long level1Id) {
 				this.id = id;
-				this.level1 = new IndexedEmbeddedLevel1();
+				this.level1 = new ObjectFieldLevel1();
 				this.level1.theId = level1Id;
 				this.level1.containing = this;
 			}
@@ -1381,23 +1198,23 @@ public class IndexedEmbeddedBaseIT {
 		SearchMapping mapping = setupHelper.start().expectCustomBeans()
 				.withConfiguration( builder -> {
 					builder.addEntityType( IndexedEntity.class );
-					builder.addEntityType( IndexedEmbeddedLevel1.class );
+					builder.addEntityType( ObjectFieldLevel1.class );
 
-					TypeMappingStep indexedEmbeddedLevel1 = builder.programmaticMapping()
-							.type( IndexedEmbeddedLevel1.class );
-					indexedEmbeddedLevel1.property( "theId" ).documentId().identifierBinder( new ParametricBinder(),
+					TypeMappingStep ObjectFieldLevel1 = builder.programmaticMapping()
+							.type( ObjectFieldLevel1.class );
+					ObjectFieldLevel1.property( "theId" ).documentId().identifierBinder( new ParametricBinder(),
 							Collections.singletonMap( "base", 3 )
 					);
-					indexedEmbeddedLevel1.property( "containing" )
+					ObjectFieldLevel1.property( "containing" )
 							.associationInverseSide( PojoModelPath.ofValue( "level1" ) );
 
 					TypeMappingStep indexedEntity = builder.programmaticMapping()
 							.type( IndexedEntity.class );
 					indexedEntity.indexed().index( INDEX_NAME );
 					indexedEntity.property( "id" ).documentId();
-					indexedEntity.property( "level1" ).indexedEmbedded().includeRootObjectId( true );
+					indexedEntity.property( "level1" ).objectField().includeRootObjectId( true );
 				} )
-				.setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+				.setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1454,7 +1271,7 @@ public class IndexedEmbeddedBaseIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3071")
 	public void includeRootObjectId_targetType() {
-		class IndexedEmbeddedLevel1 {
+		class ObjectFieldLevel1 {
 			@DocumentId
 			String theId;
 			@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "level1")))
@@ -1464,11 +1281,11 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded(includeRootObjectId = true, targetType = IndexedEmbeddedLevel1.class)
+			@ObjectField(includeRootObjectId = true, targetType = ObjectFieldLevel1.class)
 			Object level1;
 			public IndexedEntity(int id, String level1Id) {
 				this.id = id;
-				IndexedEmbeddedLevel1 level1 = new IndexedEmbeddedLevel1();
+				ObjectFieldLevel1 level1 = new ObjectFieldLevel1();
 				this.level1 = level1;
 				level1.theId = level1Id;
 				level1.containing = this;
@@ -1481,7 +1298,7 @@ public class IndexedEmbeddedBaseIT {
 								.searchable( Searchable.YES ).projectable( Projectable.YES ) )
 				)
 		);
-		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, IndexedEmbeddedLevel1.class );
+		SearchMapping mapping = setupHelper.start().setup( IndexedEntity.class, ObjectFieldLevel1.class );
 		backendMock.verifyExpectationsMet();
 
 		doTestEmbeddedRuntime(
@@ -1502,7 +1319,7 @@ public class IndexedEmbeddedBaseIT {
 			Integer id;
 			@GenericField
 			String text;
-			@IndexedEmbedded
+			@ObjectField
 			String invalid;
 		}
 
@@ -1538,9 +1355,9 @@ public class IndexedEmbeddedBaseIT {
 		class IndexedEntity {
 			@DocumentId
 			Integer id;
-			@IndexedEmbedded
+			@ObjectField
 			ValidNested valid;
-			@IndexedEmbedded
+			@ObjectField
 			EmptyNested invalid;
 		}
 

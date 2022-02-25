@@ -48,7 +48,7 @@ public class IndexedEmbeddedAnnotationProcessor implements PropertyMappingAnnota
 		mappingContext.indexedEmbedded()
 				.prefix( cleanedUpPrefix )
 				.structure( ObjectStructure.FLATTENED )
-				.includeEmbeddedObjectId( annotation.includeEmbeddedObjectId() )
+				.includeRootObjectId( annotation.includeRootObjectId() )
 				.includeDepth( cleanedUpMaxDepth )
 				.includePaths( cleanedUpIncludePaths )
 				.targetType( targetType );

@@ -119,7 +119,7 @@ public interface Log extends BasicLogger {
 	SearchException missingIdentifierMapping(@FormatWith(PojoTypeModelFormatter.class) PojoRawTypeModel<?> typeModel);
 
 	@Message(id = ID_OFFSET_LEGACY_ENGINE + 216,
-			value = "An @IndexedEmbedded defines includePaths filters that do not match anything."
+			value = "An @ObjectField or @IndexedEmbedded defines includePaths filters that do not match anything."
 					+ " Non-matching includePaths filters: %1$s."
 					+ " Encountered field paths: %2$s."
 					+ " Check the filters for typos, or remove them if they are not useful."

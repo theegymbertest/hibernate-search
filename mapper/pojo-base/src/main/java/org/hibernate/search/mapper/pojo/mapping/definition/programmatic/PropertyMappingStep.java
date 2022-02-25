@@ -21,6 +21,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.NonStandardField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ScaledNumberField;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPath;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
@@ -191,6 +192,26 @@ public interface PropertyMappingStep {
 	 * @see NonStandardField#name()
 	 */
 	PropertyMappingFieldOptionsStep<?> nonStandardField(String relativeFieldName);
+
+	/**
+	 * Maps the property to an object field whose fields are the same as those defined in the property type,
+	 * using the name of this property as the name of the object field.
+	 * @return A DSL step where the indexed-embedded mapping can be defined in more details,
+	 * or where other elements can be mapped to the property.
+	 * @see ObjectField
+	 */
+	PropertyMappingObjectFieldStep objectField();
+
+	/**
+	 * Maps the property to an object field whose fields are the same as those defined in the property type,
+	 * using the given custom name as the name of the object field.
+	 * @param relativeFieldName The name of the object field created for this indexed-embedded mapping.
+	 * @return A DSL step where the indexed-embedded mapping can be defined in more details,
+	 * or where other elements can be mapped to the property.
+	 * @see ObjectField
+	 * @see ObjectField#name()
+	 */
+	PropertyMappingObjectFieldStep objectField(String relativeFieldName);
 
 	/**
 	 * Maps the property to an object field whose fields are the same as those defined in the property type,
