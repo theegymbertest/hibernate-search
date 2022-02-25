@@ -9,6 +9,8 @@ package org.hibernate.search.mapper.pojo.bridge.runtime.impl;
 import org.hibernate.search.engine.common.dsl.spi.DslExtensionState;
 import org.hibernate.search.mapper.pojo.bridge.runtime.IdentifierBridgeFromDocumentIdentifierContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.IdentifierBridgeFromDocumentIdentifierContextExtension;
+import org.hibernate.search.mapper.pojo.bridge.runtime.ObjectBridgeWriteContext;
+import org.hibernate.search.mapper.pojo.bridge.runtime.ObjectBridgeWriteContextExtension;
 import org.hibernate.search.mapper.pojo.bridge.runtime.PropertyBridgeWriteContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.PropertyBridgeWriteContextExtension;
 import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
@@ -29,6 +31,7 @@ import org.hibernate.search.mapper.pojo.bridge.runtime.RoutingBridgeRouteContext
 public final class SessionBasedBridgeOperationContext
 		implements IdentifierBridgeFromDocumentIdentifierContext,
 				RoutingBridgeRouteContext,
+				ObjectBridgeWriteContext,
 				TypeBridgeWriteContext,
 				PropertyBridgeWriteContext,
 				ValueBridgeFromIndexedValueContext {
@@ -51,6 +54,11 @@ public final class SessionBasedBridgeOperationContext
 
 	@Override
 	public <T> T extension(RoutingBridgeRouteContextExtension<T> extension) {
+		return DslExtensionState.returnIfSupported( extension, extension.extendOptional( this, sessionContext ) );
+	}
+
+	@Override
+	public <T> T extension(ObjectBridgeWriteContextExtension<T> extension) {
 		return DslExtensionState.returnIfSupported( extension, extension.extendOptional( this, sessionContext ) );
 	}
 

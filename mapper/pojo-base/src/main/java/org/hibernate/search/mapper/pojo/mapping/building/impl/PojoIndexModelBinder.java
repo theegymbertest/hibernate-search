@@ -15,11 +15,13 @@ import org.hibernate.search.mapper.pojo.bridge.binding.PropertyBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.ValueBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundIdentifierBridge;
+import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundObjectBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundPropertyBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundTypeBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundValueBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.spi.FieldModelContributor;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.IdentifierBinder;
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ObjectBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.PropertyBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ValueBinder;
@@ -58,6 +60,10 @@ public interface PojoIndexModelBinder {
 	<I> BoundIdentifierBridge<I> bindIdentifier(
 			Optional<IndexedEntityBindingContext> bindingContext,
 			BoundPojoModelPathPropertyNode<?, I> modelPath, IdentifierBinder binder,
+			Map<String, Object> params);
+
+	<T> Optional<BoundObjectBridge<T>> bindObject(IndexBindingContext bindingContext,
+			BoundPojoModelPathTypeNode<T> modelPath, ObjectBinder binder,
 			Map<String, Object> params);
 
 	<T> Optional<BoundTypeBridge<T>> bindType(IndexBindingContext bindingContext,

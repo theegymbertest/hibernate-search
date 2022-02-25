@@ -8,6 +8,7 @@ package org.hibernate.search.mapper.pojo.identity.impl;
 
 import java.util.Map;
 
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ObjectBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorPropertyNode;
@@ -31,6 +32,11 @@ class IdentityMappingCollectorTypeNode<T> extends AbstractIdentityMappingCollect
 	@Override
 	BoundPojoModelPathTypeNode<T> getModelPath() {
 		return modelPath;
+	}
+
+	@Override
+	public void objectBinder(ObjectBinder binder, Map<String, Object> params) {
+		// No-op, we're just collecting the identity mapping.
 	}
 
 	@Override

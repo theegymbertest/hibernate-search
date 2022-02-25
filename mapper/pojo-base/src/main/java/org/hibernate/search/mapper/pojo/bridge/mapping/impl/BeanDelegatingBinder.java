@@ -11,12 +11,14 @@ import org.hibernate.search.engine.environment.bean.BeanReference;
 import org.hibernate.search.engine.environment.bean.BeanResolver;
 import org.hibernate.search.mapper.pojo.bridge.binding.IdentifierBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.MarkerBindingContext;
+import org.hibernate.search.mapper.pojo.bridge.binding.ObjectBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.PropertyBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.RoutingBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.ValueBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.IdentifierBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.MarkerBinder;
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ObjectBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.PropertyBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.RoutingBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
@@ -27,7 +29,7 @@ import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ValueBinder;
  * then delegates to that binder.
  */
 public final class BeanDelegatingBinder
-		implements TypeBinder, PropertyBinder, RoutingBinder,
+		implements ObjectBinder, TypeBinder, PropertyBinder, RoutingBinder,
 				MarkerBinder, IdentifierBinder, ValueBinder {
 
 	private final BeanReference<?> delegateReference;
@@ -39,6 +41,14 @@ public final class BeanDelegatingBinder
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "[delegateReference=" + delegateReference + "]";
+	}
+
+	@Override
+	public void bind(ObjectBindingContext context) {
+		try ( BeanHolder<? extends ObjectBinder> delegateHolder =
+				createDelegate( context.beanResolver(), ObjectBinder.class ) ) {
+			delegateHolder.get().bind( context );
+		}
 	}
 
 	@Override
