@@ -30,7 +30,7 @@ public class JavaBeanPojoPathsDefinition implements PojoPathsDefinition {
 	@Override
 	public void interpretPaths(Set<String> target, Set<PojoModelPathValueNode> source) {
 		for ( PojoModelPathValueNode path : source ) {
-			target.add( path.parent().toPropertyString() );
+			target.add( path.toPropertyString() );
 		}
 	}
 }

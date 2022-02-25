@@ -27,7 +27,6 @@ public final class PojoModelPathValueNode extends PojoModelPath {
 	private final ContainerExtractorPath extractorPath;
 
 	PojoModelPathValueNode(PojoModelPathPropertyNode parent, ContainerExtractorPath extractorPath) {
-		Contracts.assertNotNull( parent, "parent" );
 		Contracts.assertNotNull( extractorPath, "extractorPath" );
 		this.parent = parent;
 		this.extractorPath = extractorPath;
@@ -78,5 +77,10 @@ public final class PojoModelPathValueNode extends PojoModelPath {
 	@Override
 	void appendSelfPath(StringBuilder builder) {
 		builder.append( extractorPath() );
+	}
+
+	@Override
+	void appendSelfPropertyPath(StringBuilder builder) {
+		// No-op
 	}
 }

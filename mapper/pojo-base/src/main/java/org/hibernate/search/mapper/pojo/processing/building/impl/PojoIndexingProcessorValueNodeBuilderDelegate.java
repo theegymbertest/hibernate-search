@@ -29,8 +29,8 @@ import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
 import org.hibernate.search.mapper.pojo.bridge.binding.spi.FieldModelContributor;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorValueNode;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeValueNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
@@ -52,7 +52,7 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
-	private final BoundPojoModelPathValueNode<P, V> modelPath;
+	private final BoundPojoModelPathOriginalTypeValueNode<P, V> modelPath;
 
 	private final Collection<BoundValueBridge<V, ?>> boundBridges = new ArrayList<>();
 
@@ -60,8 +60,7 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 
 	private final boolean multiValuedFromContainerExtractor;
 
-	PojoIndexingProcessorValueNodeBuilderDelegate(
-			BoundPojoModelPathValueNode<P, V> modelPath,
+	PojoIndexingProcessorValueNodeBuilderDelegate(BoundPojoModelPathOriginalTypeValueNode<P, V> modelPath,
 			PojoMappingHelper mappingHelper, IndexBindingContext bindingContext,
 			boolean multiValuedFromContainerExtractor) {
 		super( mappingHelper, bindingContext );
@@ -111,18 +110,17 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 		// Do NOT propagate the identity mapping collector to IndexedEmbeddeds
 		PojoIndexedEmbeddedIdentityMappingCollector<?> identityMappingCollector;
 		if ( targetType == null ) {
-			BoundPojoModelPathOriginalTypeNode<V> typeModelPath = modelPath.type();
 			identityMappingCollector = new PojoIndexedEmbeddedIdentityMappingCollector<>(
-					typeModelPath.getTypeModel().rawType(), mappingHelper );
+					modelPath.getTypeModel().rawType(), mappingHelper );
 			nestedProcessorBuilder = new PojoIndexingProcessorOriginalTypeNodeBuilder<>(
-					typeModelPath, mappingHelper, nestedBindingContext,
+					modelPath, mappingHelper, nestedBindingContext,
 					identityMappingCollector,
 					nestedBindingContext.parentIndexObjectReferences()
 			);
 		}
 		else {
 			PojoRawTypeModel<?> targetTypeModel = mappingHelper.introspector().typeModel( targetType );
-			BoundPojoModelPathCastedTypeNode<V, ?> typeModelPath = modelPath.type().castTo( targetTypeModel );
+			BoundPojoModelPathCastedTypeValueNode<P, ?> typeModelPath = modelPath.castTo( targetTypeModel );
 			identityMappingCollector = new PojoIndexedEmbeddedIdentityMappingCollector<>(
 					typeModelPath.getTypeModel().rawType(), mappingHelper );
 			nestedProcessorBuilder = new PojoIndexingProcessorCastedTypeNodeBuilder<>(

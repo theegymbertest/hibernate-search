@@ -16,18 +16,18 @@ import org.hibernate.search.mapper.pojo.model.dependency.PojoOtherEntityIndexing
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.path.binding.impl.PojoModelPathBinder;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 
 class PojoOtherEntityIndexingDependencyConfigurationContextImpl<T> implements
 		PojoOtherEntityIndexingDependencyConfigurationContext {
 	private final BoundPojoModelPath.Walker bindingPathWalker;
-	private final BoundPojoModelPathTypeNode<T> modelPath;
+	private final BoundPojoModelPathOriginalTypeValueNode<?, T> modelPath;
 	private final BoundPojoModelPathValueNode<?, ?> boundPathFromOtherEntityTypeToBridgedType;
 	private final List<BoundPojoModelPathValueNode<?, ?>> usedPaths = new ArrayList<>();
 
 	PojoOtherEntityIndexingDependencyConfigurationContextImpl(BoundPojoModelPath.Walker bindingPathWalker,
-			BoundPojoModelPathTypeNode<T> modelPath,
+			BoundPojoModelPathOriginalTypeValueNode<?, T> modelPath,
 			BoundPojoModelPathValueNode<?, ?> boundPathFromOtherEntityTypeToBridgedType) {
 		this.bindingPathWalker = bindingPathWalker;
 		this.modelPath = modelPath;

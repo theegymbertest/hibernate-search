@@ -67,7 +67,7 @@ public class PojoIndexingDependencyCollectorMonomorphicDirectValueNode<P, V>
 	public PojoIndexingDependencyCollectorTypeNode<V> type() {
 		return new PojoIndexingDependencyCollectorTypeNode<>(
 				this,
-				modelPathFromLastEntityNode.type(),
+				modelPathFromLastEntityNode,
 				buildingHelper
 		);
 	}

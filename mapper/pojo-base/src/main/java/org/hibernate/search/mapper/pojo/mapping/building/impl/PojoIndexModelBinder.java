@@ -28,7 +28,6 @@ import org.hibernate.search.mapper.pojo.extractor.impl.BoundContainerExtractorPa
 import org.hibernate.search.mapper.pojo.extractor.impl.ContainerExtractorHolder;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
 
@@ -61,7 +60,7 @@ public interface PojoIndexModelBinder {
 			Map<String, Object> params);
 
 	<T> Optional<BoundTypeBridge<T>> bindType(IndexBindingContext bindingContext,
-			BoundPojoModelPathTypeNode<T> modelPath, TypeBinder binder,
+			BoundPojoModelPathValueNode<?, T> modelPath, TypeBinder binder,
 			Map<String, Object> params);
 
 	<P> Optional<BoundPropertyBridge<P>> bindProperty(IndexBindingContext bindingContext,

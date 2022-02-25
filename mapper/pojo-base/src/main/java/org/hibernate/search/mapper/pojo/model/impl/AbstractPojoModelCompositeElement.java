@@ -20,7 +20,7 @@ import org.hibernate.search.mapper.pojo.model.PojoModelProperty;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.impl.PojoTypeAdditionalMetadataProvider;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoPropertyAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoTypeAdditionalMetadata;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
 import org.hibernate.search.mapper.pojo.model.spi.PojoPropertyModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
@@ -57,7 +57,7 @@ public abstract class AbstractPojoModelCompositeElement<V> implements PojoModelC
 	@SuppressWarnings("unchecked") // The cast is checked using reflection
 	public final <T> PojoElementAccessor<T> createAccessor(Class<T> requestedType) {
 		if ( !isAssignableTo( requestedType ) ) {
-			throw log.incompatibleRequestedType( getModelPathTypeNode().toUnboundPath(), requestedType );
+			throw log.incompatibleRequestedType( getModelPathValueNode().toUnboundPath(), requestedType );
 		}
 		return (PojoElementAccessor<T>) createAccessor();
 	}
@@ -78,11 +78,11 @@ public abstract class AbstractPojoModelCompositeElement<V> implements PojoModelC
 	@Override
 	public PojoModelNestedCompositeElement<?, ?> property(String relativeFieldName) {
 		return properties.computeIfAbsent( relativeFieldName, name -> {
-			BoundPojoModelPathTypeNode<V> modelPathTypeNode = getModelPathTypeNode();
+			BoundPojoModelPathValueNode<?, V> modelPathValueNode = getModelPathValueNode();
 			PojoPropertyAdditionalMetadata additionalMetadata = getTypeAdditionalMetadata().getPropertyAdditionalMetadata( name );
 			return new PojoModelNestedCompositeElement<>(
 					this,
-					modelPathTypeNode.property( name ),
+					modelPathValueNode.property( name ),
 					additionalMetadata
 			);
 		} );
@@ -116,7 +116,7 @@ public abstract class AbstractPojoModelCompositeElement<V> implements PojoModelC
 
 	abstract PojoElementAccessor<V> doCreateAccessor();
 
-	abstract BoundPojoModelPathTypeNode<V> getModelPathTypeNode();
+	abstract BoundPojoModelPathValueNode<?, V> getModelPathValueNode();
 
 	final boolean hasAccessor() {
 		return accessor != null;
@@ -129,12 +129,12 @@ public abstract class AbstractPojoModelCompositeElement<V> implements PojoModelC
 	}
 
 	private PojoTypeModel<V> getTypeModel() {
-		return getModelPathTypeNode().getTypeModel();
+		return getModelPathValueNode().getTypeModel();
 	}
 
 	private PojoTypeAdditionalMetadata getTypeAdditionalMetadata() {
 		if ( typeAdditionalMetadata == null ) {
-			typeAdditionalMetadata = typeAdditionalMetadataProvider.get( getModelPathTypeNode().getTypeModel().rawType() );
+			typeAdditionalMetadata = typeAdditionalMetadataProvider.get( getModelPathValueNode().getTypeModel().rawType() );
 		}
 		return typeAdditionalMetadata;
 	}

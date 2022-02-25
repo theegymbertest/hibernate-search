@@ -14,7 +14,7 @@ import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.PojoInde
 import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.AbstractPojoIndexingDependencyCollectorDirectValueNode;
 import org.hibernate.search.mapper.pojo.identity.impl.PojoIdentityMappingCollector;
 import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessor;
 import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessorOriginalTypeNode;
 
@@ -25,10 +25,10 @@ import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessorOri
  */
 public class PojoIndexingProcessorOriginalTypeNodeBuilder<T> extends AbstractPojoIndexingProcessorTypeNodeBuilder<T, T> {
 
-	private final BoundPojoModelPathTypeNode<T> modelPath;
+	private final BoundPojoModelPathValueNode<?, T> modelPath;
 
 	public PojoIndexingProcessorOriginalTypeNodeBuilder(
-			BoundPojoModelPathTypeNode<T> modelPath,
+			BoundPojoModelPathValueNode<?, T> modelPath,
 			PojoMappingHelper mappingHelper, IndexBindingContext bindingContext,
 			PojoIdentityMappingCollector identityMappingCollector,
 			Collection<IndexObjectFieldReference> parentIndexObjectReferences) {
@@ -37,7 +37,7 @@ public class PojoIndexingProcessorOriginalTypeNodeBuilder<T> extends AbstractPoj
 	}
 
 	@Override
-	public BoundPojoModelPathTypeNode<T> getModelPath() {
+	public BoundPojoModelPathValueNode<?, T> getModelPath() {
 		return modelPath;
 	}
 

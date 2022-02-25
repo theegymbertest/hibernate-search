@@ -14,7 +14,7 @@ import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.impl.P
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.path.binding.impl.PojoModelPathBinder;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
@@ -60,7 +60,7 @@ public abstract class AbstractPojoBridgedElementDependencyContext {
 			throw log.cannotDefineOtherEntityDependencyFromNonEntityType( otherEntityType );
 		}
 
-		BoundPojoModelPathOriginalTypeNode<?> otherEntityRootPath = BoundPojoModelPath.root( otherEntityType );
+		BoundPojoModelPathOriginalTypeValueNode<?, ?> otherEntityRootPath = BoundPojoModelPath.root( otherEntityType );
 
 		BoundPojoModelPathValueNode<?, ?> boundPathFromOtherEntityTypeToBridgedType =
 				PojoModelPathBinder.bind(

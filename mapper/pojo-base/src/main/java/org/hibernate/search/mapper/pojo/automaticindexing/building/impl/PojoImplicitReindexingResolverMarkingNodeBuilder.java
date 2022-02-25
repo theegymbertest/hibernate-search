@@ -14,7 +14,6 @@ import org.hibernate.search.mapper.pojo.automaticindexing.impl.PojoImplicitReind
 import org.hibernate.search.mapper.pojo.automaticindexing.impl.PojoImplicitReindexingResolverMarkingNode;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.PojoPathFilterProvider;
 
@@ -26,7 +25,7 @@ class PojoImplicitReindexingResolverMarkingNodeBuilder<T>
 	// Use a LinkedHashSet for deterministic iteration
 	private final Set<PojoModelPathValueNode> dirtyPathsTriggeringReindexing = new LinkedHashSet<>();
 
-	PojoImplicitReindexingResolverMarkingNodeBuilder(BoundPojoModelPathTypeNode<T> modelPath,
+	PojoImplicitReindexingResolverMarkingNodeBuilder(BoundPojoModelPathValueNode<?, T> modelPath,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		super( buildingHelper );
 		this.modelPath = modelPath;

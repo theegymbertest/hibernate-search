@@ -106,6 +106,18 @@ public abstract class PojoModelPath {
 	}
 
 	/**
+	 * @return A simple string representation of this path taking into account property nodes only,
+	 * in the form {@code propertyA.propertyB.propertyC}.
+	 * <p>
+	 * Completely ignores container extractors.
+	 */
+	public String toPropertyString() {
+		StringBuilder builder = new StringBuilder();
+		appendPropertyPath( builder );
+		return builder.toString();
+	}
+
+	/**
 	 * @return The model path to the element from which the value represented by this node is extracted.
 	 * May be {@code null}.
 	 */
@@ -121,6 +133,19 @@ public abstract class PojoModelPath {
 		else {
 			parent.appendPath( builder );
 			appendSelfPath( builder );
+		}
+	}
+
+	abstract void appendSelfPropertyPath(StringBuilder builder);
+
+	private void appendPropertyPath(StringBuilder builder) {
+		PojoModelPath parent = parent();
+		if ( parent == null ) {
+			appendSelfPropertyPath( builder );
+		}
+		else {
+			parent.appendPropertyPath( builder );
+			appendSelfPropertyPath( builder );
 		}
 	}
 
@@ -167,11 +192,9 @@ public abstract class PojoModelPath {
 		 *
 		 * @param extractorName The name of the container extractor to apply.
 		 * @return {@code this}, for method chaining.
-		 * @throws org.hibernate.search.util.common.SearchException If no property name was previously given.
 		 * @see org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtractors
 		 */
 		public Builder value(String extractorName) {
-			checkHasPropertyName();
 			containerExtractorPathBuilder.extractor( extractorName );
 			return this;
 		}
@@ -179,10 +202,8 @@ public abstract class PojoModelPath {
 		/**
 		 * Append to the path a direct value extraction, not using any container extractors.
 		 * @return {@code this}, for method chaining.
-		 * @throws org.hibernate.search.util.common.SearchException If no property name was previously given.
 		 */
 		public Builder valueWithoutExtractors() {
-			checkHasPropertyName();
 			containerExtractorPathBuilder.noExtractors();
 			return this;
 		}
@@ -190,10 +211,8 @@ public abstract class PojoModelPath {
 		/**
 		 * Append to the path a value extraction using the default container extractors.
 		 * @return {@code this}, for method chaining.
-		 * @throws org.hibernate.search.util.common.SearchException If no property name was previously given.
 		 */
 		public Builder valueWithDefaultExtractors() {
-			checkHasPropertyName();
 			containerExtractorPathBuilder.defaultExtractors();
 			return this;
 		}
@@ -203,7 +222,9 @@ public abstract class PojoModelPath {
 		 * @throws org.hibernate.search.util.common.SearchException If no initial property name was given.
 		 */
 		public PojoModelPathPropertyNode toPropertyPath() {
-			checkHasPropertyName();
+			if ( isEmpty() ) {
+				throw log.cannotDefinePojoModelPathWithoutProperty();
+			}
 			return currentPropertyNode;
 		}
 
@@ -212,7 +233,7 @@ public abstract class PojoModelPath {
 		 * or {@code null} if no information was added to this builder.
 		 */
 		public PojoModelPathPropertyNode toPropertyPathOrNull() {
-			if ( isEmpty() ) {
+			if ( currentPropertyNode == null ) {
 				return null;
 			}
 			return toPropertyPath();
@@ -223,7 +244,7 @@ public abstract class PojoModelPath {
 		 * @throws org.hibernate.search.util.common.SearchException If no initial property name was given.
 		 */
 		public PojoModelPathValueNode toValuePath() {
-			return new PojoModelPathValueNode( toPropertyPath(), flushContainerExtractorPath() );
+			return new PojoModelPathValueNode( toPropertyPathOrNull(), flushContainerExtractorPath() );
 		}
 
 		/**
@@ -246,12 +267,6 @@ public abstract class PojoModelPath {
 			ContainerExtractorPath result = containerExtractorPathBuilder.build();
 			containerExtractorPathBuilder.reset();
 			return result;
-		}
-
-		private void checkHasPropertyName() {
-			if ( currentPropertyNode == null ) {
-				throw log.cannotDefinePojoModelPathWithoutProperty();
-			}
 		}
 
 	}

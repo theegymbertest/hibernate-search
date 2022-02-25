@@ -40,7 +40,6 @@ import org.hibernate.search.mapper.pojo.model.impl.PojoModelPropertyRootElement;
 import org.hibernate.search.mapper.pojo.model.impl.PojoModelTypeRootElement;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
@@ -114,7 +113,7 @@ public class PojoIndexModelBinderImpl implements PojoIndexModelBinder {
 
 	@Override
 	public <T> Optional<BoundTypeBridge<T>> bindType(IndexBindingContext indexBindingContext,
-			BoundPojoModelPathTypeNode<T> modelPath, TypeBinder binder,
+			BoundPojoModelPathValueNode<?, T> modelPath, TypeBinder binder,
 			Map<String, Object> params) {
 		PojoModelTypeRootElement<T> pojoModelRootElement =
 				new PojoModelTypeRootElement<>( modelPath, introspector, typeAdditionalMetadataProvider );

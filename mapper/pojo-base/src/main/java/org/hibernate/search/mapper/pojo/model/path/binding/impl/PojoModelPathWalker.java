@@ -16,4 +16,6 @@ public interface PojoModelPathWalker<T, P, V> {
 
 	T type(V valueNode);
 
+	V valueFromType(T typeNode, ContainerExtractorPath extractorPath);
+
 }

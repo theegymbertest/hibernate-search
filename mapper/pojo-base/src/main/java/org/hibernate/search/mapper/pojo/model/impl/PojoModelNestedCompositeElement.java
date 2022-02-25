@@ -14,8 +14,8 @@ import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.Abstract
 import org.hibernate.search.mapper.pojo.model.PojoElementAccessor;
 import org.hibernate.search.mapper.pojo.model.PojoModelProperty;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoPropertyAdditionalMetadata;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.util.common.reflect.spi.ValueReadHandle;
 
@@ -26,11 +26,11 @@ import org.hibernate.search.util.common.reflect.spi.ValueReadHandle;
 class PojoModelNestedCompositeElement<T, P> extends AbstractPojoModelCompositeElement<P> implements PojoModelProperty {
 
 	private final AbstractPojoModelCompositeElement<T> parent;
-	private final BoundPojoModelPathValueNode<P, P> modelPath;
+	private final BoundPojoModelPathOriginalTypeValueNode<P, P> modelPath;
 	private final PojoPropertyAdditionalMetadata propertyAdditionalMetadata;
 
 	PojoModelNestedCompositeElement(AbstractPojoModelCompositeElement<T> parent,
-			BoundPojoModelPathPropertyNode<T, P> modelPath,
+			BoundPojoModelPathPropertyNode<?, P> modelPath,
 			PojoPropertyAdditionalMetadata propertyAdditionalMetadata) {
 		super( parent );
 		this.parent = parent;
@@ -66,8 +66,8 @@ class PojoModelNestedCompositeElement<T, P> extends AbstractPojoModelCompositeEl
 	}
 
 	@Override
-	BoundPojoModelPathTypeNode<P> getModelPathTypeNode() {
-		return modelPath.type();
+	BoundPojoModelPathValueNode<?, P> getModelPathValueNode() {
+		return modelPath;
 	}
 
 	ValueReadHandle<P> getHandle() {

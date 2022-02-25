@@ -15,9 +15,8 @@ import java.util.Set;
 import org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate;
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
@@ -39,13 +38,13 @@ public class PojoIndexingDependencyCollectorTypeNode<T> extends PojoIndexingDepe
 	/**
 	 * The path to this node from this node, i.e. a root to be used to build model paths for child nodes.
 	 */
-	private final BoundPojoModelPathTypeNode<T> modelPathFromCurrentNode;
+	private final BoundPojoModelPathValueNode<?, T> modelPathFromCurrentNode;
 	/**
 	 * The last entity node among the ancestor nodes,
 	 * i.e. the closest type node representing an entity type.
 	 */
 	private final PojoIndexingDependencyCollectorTypeNode<?> lastEntityNode;
-	private final BoundPojoModelPathTypeNode<T> modelPathFromLastEntityNode;
+	private final BoundPojoModelPathValueNode<?, T> modelPathFromLastEntityNode;
 
 	private final ReindexOnUpdate reindexOnUpdate;
 
@@ -55,7 +54,7 @@ public class PojoIndexingDependencyCollectorTypeNode<T> extends PojoIndexingDepe
 	}
 
 	PojoIndexingDependencyCollectorTypeNode(AbstractPojoIndexingDependencyCollectorValueNode parentNode,
-			BoundPojoModelPathTypeNode<T> modelPathFromLastEntityNode,
+			BoundPojoModelPathValueNode<?, T> modelPathFromLastEntityNode,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		super( buildingHelper );
 		this.parentNode = parentNode;
@@ -257,7 +256,7 @@ public class PojoIndexingDependencyCollectorTypeNode<T> extends PojoIndexingDepe
 	@SuppressWarnings("unchecked") // Casting a raw or generic type to a raw subtype always results in a subtype (generic or not)
 	private PojoIndexingDependencyCollectorTypeNode<? extends T> castToRawSubType(PojoRawTypeModel<?> concreteSubType) {
 		return new PojoIndexingDependencyCollectorTypeNode<>( parentNode,
-				(BoundPojoModelPathCastedTypeNode<?, ? extends T>) modelPathFromLastEntityNode.castTo( concreteSubType ),
+				(BoundPojoModelPathCastedTypeValueNode<?, ? extends T>) modelPathFromLastEntityNode.castTo( concreteSubType ),
 				buildingHelper );
 	}
 }

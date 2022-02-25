@@ -9,6 +9,7 @@ package org.hibernate.search.mapper.pojo.automaticindexing.building.impl;
 import org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
 import org.hibernate.search.mapper.pojo.model.path.binding.impl.PojoModelPathWalker;
+import org.hibernate.search.util.common.AssertionFailure;
 
 public abstract class PojoIndexingDependencyCollectorNode {
 
@@ -88,6 +89,14 @@ public abstract class PojoIndexingDependencyCollectorNode {
 		public PojoIndexingDependencyCollectorTypeNode<?> type(
 				AbstractPojoIndexingDependencyCollectorDirectValueNode<?, ?> valueNode) {
 			return valueNode.type();
+		}
+
+		@Override
+		public AbstractPojoIndexingDependencyCollectorDirectValueNode<?, ?> valueFromType(
+				PojoIndexingDependencyCollectorTypeNode<?> typeNode, ContainerExtractorPath extractorPath) {
+			throw new AssertionFailure(
+					"Cannot handle container extractors at the root; got extractor path " + extractorPath
+							+ " on type " + typeNode.typeModel() );
 		}
 	}
 }

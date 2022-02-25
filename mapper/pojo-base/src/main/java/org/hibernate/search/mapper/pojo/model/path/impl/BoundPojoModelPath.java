@@ -29,8 +29,8 @@ public abstract class BoundPojoModelPath {
 		return new Walker( containerExtractorBinder );
 	}
 
-	public static <T> BoundPojoModelPathOriginalTypeNode<T> root(PojoTypeModel<T> typeModel) {
-		return new BoundPojoModelPathOriginalTypeNode<>( null, typeModel );
+	public static <T> BoundPojoModelPathOriginalTypeValueNode<?, T> root(PojoTypeModel<T> typeModel) {
+		return new BoundPojoModelPathOriginalTypeValueNode<>( null, BoundContainerExtractorPath.noExtractors( typeModel ) );
 	}
 
 	BoundPojoModelPath() {
@@ -77,9 +77,9 @@ public abstract class BoundPojoModelPath {
 	}
 
 	public static class Walker implements PojoModelPathWalker<
-			BoundPojoModelPathTypeNode<?>,
-			BoundPojoModelPathPropertyNode<?, ?>,
-			BoundPojoModelPathValueNode<?, ?>
+					BoundPojoModelPathOriginalTypeValueNode<?, ?>,
+					BoundPojoModelPathPropertyNode<?, ?>,
+					BoundPojoModelPathOriginalTypeValueNode<?, ?>
 			> {
 
 		private final ContainerExtractorBinder containerExtractorBinder;
@@ -89,23 +89,35 @@ public abstract class BoundPojoModelPath {
 		}
 
 		@Override
-		public BoundPojoModelPathPropertyNode<?, ?> property(BoundPojoModelPathTypeNode<?> typeNode,
+		public BoundPojoModelPathPropertyNode<?, ?> property(BoundPojoModelPathOriginalTypeValueNode<?, ?> valueNode,
 				String propertyName) {
-			return typeNode.property( propertyName );
+			return valueNode.property( propertyName );
 		}
 
 		@Override
-		public BoundPojoModelPathValueNode<?, ?> value(BoundPojoModelPathPropertyNode<?, ?> propertyNode,
+		public BoundPojoModelPathOriginalTypeValueNode<?, ?> value(BoundPojoModelPathPropertyNode<?, ?> propertyNode,
 				ContainerExtractorPath extractorPath) {
 			return doValue( propertyNode, extractorPath );
 		}
 
+		// There is no distinction between type nodes and value nodes in BoundPojoModelPath
 		@Override
-		public BoundPojoModelPathTypeNode<?> type(BoundPojoModelPathValueNode<?, ?> valueNode) {
-			return valueNode.type();
+		public BoundPojoModelPathOriginalTypeValueNode<?, ?> type(BoundPojoModelPathOriginalTypeValueNode<?, ?> valueNode) {
+			return valueNode;
 		}
 
-		private <P> BoundPojoModelPathValueNode<P, ?> doValue(BoundPojoModelPathPropertyNode<?, P> propertyNode,
+		// There is no distinction between type nodes and value nodes in BoundPojoModelPath
+		@Override
+		public BoundPojoModelPathOriginalTypeValueNode<?, ?> valueFromType(BoundPojoModelPathOriginalTypeValueNode<?, ?> typeNode,
+				ContainerExtractorPath extractorPath) {
+			ContainerExtractorPath concatenatedExtractors = ContainerExtractorPath.builder()
+					.extractors( typeNode.getExtractorPath() )
+					.extractors( extractorPath )
+					.build();
+			return doValue( typeNode.getParent(), concatenatedExtractors );
+		}
+
+		private <P> BoundPojoModelPathOriginalTypeValueNode<P, ?> doValue(BoundPojoModelPathPropertyNode<?, P> propertyNode,
 				ContainerExtractorPath extractorPath) {
 			BoundContainerExtractorPath<P, ?> boundExtractorPath = containerExtractorBinder
 					.bindPath( propertyNode.getPropertyModel().typeModel(), extractorPath );

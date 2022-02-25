@@ -14,6 +14,7 @@ import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.PojoInde
 import org.hibernate.search.mapper.pojo.extractor.impl.ContainerExtractorHolder;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorValueNode;
 import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessor;
 import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessorContainerElementNode;
@@ -28,12 +29,12 @@ import org.hibernate.search.util.common.impl.Closer;
  */
 class PojoIndexingProcessorContainerElementNodeBuilder<P extends C, C, V> extends AbstractPojoProcessorNodeBuilder {
 
-	private final BoundPojoModelPathValueNode<P, V> modelPath;
+	private final BoundPojoModelPathOriginalTypeValueNode<P, V> modelPath;
 	private final ContainerExtractorHolder<C, V> extractorHolder;
 
 	private final PojoIndexingProcessorValueNodeBuilderDelegate<P, V> valueNodeProcessorCollectionBuilder;
 
-	PojoIndexingProcessorContainerElementNodeBuilder(BoundPojoModelPathValueNode<P, V> modelPath,
+	PojoIndexingProcessorContainerElementNodeBuilder(BoundPojoModelPathOriginalTypeValueNode<P, V> modelPath,
 			ContainerExtractorHolder<C, V> extractorHolder,
 			PojoMappingHelper mappingHelper, IndexBindingContext bindingContext) {
 		super( mappingHelper, bindingContext );

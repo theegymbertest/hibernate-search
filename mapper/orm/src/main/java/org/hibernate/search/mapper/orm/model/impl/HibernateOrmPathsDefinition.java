@@ -198,6 +198,9 @@ public class HibernateOrmPathsDefinition implements PojoPathsDefinition {
 
 	private Optional<Value> resolvePath(Set<String> pathsAsStrings, PojoModelPathValueNode path, boolean isWholePath) {
 		PojoModelPathPropertyNode propertyNode = path.parent();
+		if ( propertyNode == null ) {
+			throw new AssertionFailure( "Cannot handle container extractors at the root; got path " + path );
+		}
 		PojoModelPathValueNode propertyNodeParent = propertyNode.parent();
 
 		Property property;
