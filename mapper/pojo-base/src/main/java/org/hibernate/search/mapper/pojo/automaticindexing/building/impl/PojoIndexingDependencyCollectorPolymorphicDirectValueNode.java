@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.search.mapper.pojo.extractor.impl.BoundContainerExtractorPath;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 
 /**
@@ -29,7 +28,7 @@ public class PojoIndexingDependencyCollectorPolymorphicDirectValueNode<P, V>
 
 	static <P, V> AbstractPojoIndexingDependencyCollectorDirectValueNode<P, V> create(
 			PojoIndexingDependencyCollectorPropertyNode<?, P> parentNode,
-			BoundPojoModelPathOriginalTypeValueNode<P, V> modelPathFromLastTypeNode,
+			BoundPojoModelPathValueNode<P, V> modelPathFromLastTypeNode,
 			BoundPojoModelPathValueNode<P, V> modelPathFromLastEntityNode,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		List<? extends PojoIndexingDependencyCollectorTypeNode<?>> holderSubTypeNodes =

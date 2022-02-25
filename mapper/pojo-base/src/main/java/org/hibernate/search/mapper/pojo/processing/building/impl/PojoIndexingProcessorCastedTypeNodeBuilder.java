@@ -14,7 +14,7 @@ import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.PojoInde
 import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.AbstractPojoIndexingDependencyCollectorDirectValueNode;
 import org.hibernate.search.mapper.pojo.identity.impl.PojoIdentityMappingCollector;
 import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeValueNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeNode;
 import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessor;
 import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessorCastedTypeNode;
 
@@ -26,10 +26,10 @@ import org.hibernate.search.mapper.pojo.processing.impl.PojoIndexingProcessorCas
  */
 public class PojoIndexingProcessorCastedTypeNodeBuilder<T, U> extends AbstractPojoIndexingProcessorTypeNodeBuilder<T, U> {
 
-	private final BoundPojoModelPathCastedTypeValueNode<?, U> modelPath;
+	private final BoundPojoModelPathCastedTypeNode<T, U> modelPath;
 
 	public PojoIndexingProcessorCastedTypeNodeBuilder(
-			BoundPojoModelPathCastedTypeValueNode<?, U> modelPath,
+			BoundPojoModelPathCastedTypeNode<T, U> modelPath,
 			PojoMappingHelper mappingHelper, IndexBindingContext bindingContext,
 			PojoIdentityMappingCollector identityMappingCollector,
 			Collection<IndexObjectFieldReference> parentIndexObjectReferences) {
@@ -38,7 +38,7 @@ public class PojoIndexingProcessorCastedTypeNodeBuilder<T, U> extends AbstractPo
 	}
 
 	@Override
-	public BoundPojoModelPathCastedTypeValueNode<?, U> getModelPath() {
+	public BoundPojoModelPathCastedTypeNode<T, U> getModelPath() {
 		return modelPath;
 	}
 

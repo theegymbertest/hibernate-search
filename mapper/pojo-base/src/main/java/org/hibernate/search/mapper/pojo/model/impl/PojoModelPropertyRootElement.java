@@ -14,8 +14,8 @@ import org.hibernate.search.mapper.pojo.automaticindexing.building.impl.Abstract
 import org.hibernate.search.mapper.pojo.model.PojoElementAccessor;
 import org.hibernate.search.mapper.pojo.model.PojoModelProperty;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.impl.PojoTypeAdditionalMetadataProvider;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
 
@@ -24,7 +24,7 @@ import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
  */
 public class PojoModelPropertyRootElement<P> extends AbstractPojoModelCompositeElement<P> implements PojoModelProperty {
 
-	private final BoundPojoModelPathOriginalTypeValueNode<P, P> modelPath;
+	private final BoundPojoModelPathValueNode<P, P> modelPath;
 
 	public PojoModelPropertyRootElement(BoundPojoModelPathPropertyNode<?, P> modelPath,
 			PojoBootstrapIntrospector introspector,
@@ -63,7 +63,7 @@ public class PojoModelPropertyRootElement<P> extends AbstractPojoModelCompositeE
 	}
 
 	@Override
-	BoundPojoModelPathValueNode<?, P> getModelPathValueNode() {
-		return modelPath;
+	BoundPojoModelPathTypeNode<P> getModelPathTypeNode() {
+		return modelPath.type();
 	}
 }

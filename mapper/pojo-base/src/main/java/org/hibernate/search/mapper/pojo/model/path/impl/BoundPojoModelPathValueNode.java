@@ -10,88 +10,82 @@ import org.hibernate.search.mapper.pojo.extractor.impl.BoundContainerExtractorPa
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPath;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
-import org.hibernate.search.mapper.pojo.model.spi.PojoPropertyModel;
-import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
 
 /**
  * @param <P> The property type of this node, i.e. the type of the property from which the values are extracted.
  * @param <V> The value type of this node, i.e. the type of values extracted from the property.
  */
-public abstract class BoundPojoModelPathValueNode<P, V> extends BoundPojoModelPath {
+public class BoundPojoModelPathValueNode<P, V> extends BoundPojoModelPath {
 
 	private final BoundPojoModelPathPropertyNode<?, P> parent;
+	private final BoundContainerExtractorPath<? super P, V> boundExtractorPath;
+	private BoundPojoModelPathOriginalTypeNode<V> elementTypePathNode;
 
-	BoundPojoModelPathValueNode(BoundPojoModelPathPropertyNode<?, P> parent) {
+	BoundPojoModelPathValueNode(BoundPojoModelPathPropertyNode<?, P> parent,
+			BoundContainerExtractorPath<? super P, V> boundExtractorPath) {
 		this.parent = parent;
+		this.boundExtractorPath = boundExtractorPath;
 	}
 
 	/**
 	 * @return The model path to the property from which the value represented by this node is extracted.
 	 */
 	@Override
-	public final BoundPojoModelPathPropertyNode<?, P> getParent() {
+	public BoundPojoModelPathPropertyNode<?, P> getParent() {
 		return parent;
 	}
 
 	@Override
-	public final PojoTypeModel<?> getRootType() {
-		if ( parent == null ) {
-			return getTypeModel();
-		}
-		else {
-			return parent.getRootType();
-		}
+	public PojoTypeModel<?> getRootType() {
+		return parent.getRootType();
 	}
 
 	@Override
-	public final PojoModelPathValueNode toUnboundPath() {
+	public PojoModelPathValueNode toUnboundPath() {
 		PojoModelPath.Builder builder = PojoModelPath.builder();
 		appendPath( builder );
 		return builder.toValuePathOrNull();
 	}
 
 	/**
-	 * @return A sibling path node representing this value, cast to the given type.
+	 * @return A child path node representing the type of values represented by this node.
 	 */
-	public final <U> BoundPojoModelPathCastedTypeValueNode<P, ? extends U> castTo(PojoRawTypeModel<U> typeModel) {
-		return new BoundPojoModelPathCastedTypeValueNode<>( parent, getBoundExtractorPath(), typeModel.cast( getTypeModel() ) );
+	public BoundPojoModelPathOriginalTypeNode<V> type() {
+		if ( elementTypePathNode == null ) {
+			elementTypePathNode = new BoundPojoModelPathOriginalTypeNode<>(
+					this, boundExtractorPath.getExtractedType()
+			);
+		}
+		return elementTypePathNode;
 	}
 
-	public final BoundPojoModelPathPropertyNode<V, ?> property(String propertyName) {
-		PojoPropertyModel<?> propertyModel = getTypeModel().property( propertyName );
-		return new BoundPojoModelPathPropertyNode<>(
-				this, propertyModel
-		);
+	public PojoTypeModel<V> getTypeModel() {
+		return boundExtractorPath.getExtractedType();
 	}
 
 	/**
 	 * @return The bound extractor path from the parent property to this value.
 	 */
-	public abstract BoundContainerExtractorPath<? super P, ?> getBoundExtractorPath();
-
-	public abstract PojoTypeModel<V> getTypeModel();
+	public BoundContainerExtractorPath<? super P, V> getBoundExtractorPath() {
+		return boundExtractorPath;
+	}
 
 	/**
 	 * @return The extractor path from the parent property to this value.
 	 * The path is guaranteed to be explicit (i.e. it won't be {@link ContainerExtractorPath#defaultExtractors()}).
 	 */
-	public final ContainerExtractorPath getExtractorPath() {
-		return getBoundExtractorPath().getExtractorPath();
+	public ContainerExtractorPath getExtractorPath() {
+		return boundExtractorPath.getExtractorPath();
 	}
 
 	@Override
-	final void appendSelfPath(StringBuilder builder) {
+	void appendSelfPath(StringBuilder builder) {
 		builder.append( getExtractorPath() );
-		builder.append( "(" );
-		appendSelfPathType( builder );
-		builder.append( ")" );
 	}
 
-	abstract void appendSelfPathType(StringBuilder builder);
-
 	@Override
-	final void appendSelfPath(PojoModelPath.Builder builder) {
+	void appendSelfPath(PojoModelPath.Builder builder) {
 		builder.value( getExtractorPath() );
 	}
 }

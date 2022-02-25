@@ -22,15 +22,9 @@ public final class PojoModelPathBinder {
 
 	private static <T, P, V> V applyPath(T rootNode, PojoModelPathValueNode unboundPathValueNode,
 			PojoModelPathWalker<T, P, V> walker) {
-		PojoModelPathPropertyNode unboundPathParentNode = unboundPathValueNode.parent();
+		P propertyNode = applyPath( rootNode, unboundPathValueNode.parent(), walker );
 		ContainerExtractorPath extractorPath = unboundPathValueNode.extractorPath();
-		if ( unboundPathParentNode != null ) {
-			P propertyNode = applyPath( rootNode, unboundPathParentNode, walker );
-			return walker.value( propertyNode, extractorPath );
-		}
-		else {
-			return walker.valueFromType( rootNode, extractorPath );
-		}
+		return walker.value( propertyNode, extractorPath );
 	}
 
 	private static <T, P, V> P applyPath(T rootNode, PojoModelPathPropertyNode unboundPathPropertyNode,

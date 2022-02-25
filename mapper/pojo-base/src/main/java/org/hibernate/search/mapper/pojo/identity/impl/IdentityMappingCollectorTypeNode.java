@@ -12,15 +12,15 @@ import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorPropertyNode;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorTypeNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 
 class IdentityMappingCollectorTypeNode<T> extends AbstractIdentityMappingCollectorNode
 		implements PojoMappingCollectorTypeNode {
 
-	private final BoundPojoModelPathValueNode<?, T> modelPath;
+	private final BoundPojoModelPathTypeNode<T> modelPath;
 	private final PojoIdentityMappingCollector identityMappingCollector;
 
-	IdentityMappingCollectorTypeNode(BoundPojoModelPathValueNode<?, T> modelPath,
+	IdentityMappingCollectorTypeNode(BoundPojoModelPathTypeNode<T> modelPath,
 			PojoMappingHelper mappingHelper,
 			PojoIdentityMappingCollector identityMappingCollector) {
 		super( mappingHelper );
@@ -29,7 +29,7 @@ class IdentityMappingCollectorTypeNode<T> extends AbstractIdentityMappingCollect
 	}
 
 	@Override
-	BoundPojoModelPathValueNode<?, T> getModelPath() {
+	BoundPojoModelPathTypeNode<T> getModelPath() {
 		return modelPath;
 	}
 

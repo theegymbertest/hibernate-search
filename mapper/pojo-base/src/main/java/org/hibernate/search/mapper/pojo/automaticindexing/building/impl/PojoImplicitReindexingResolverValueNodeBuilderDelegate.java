@@ -50,7 +50,7 @@ class PojoImplicitReindexingResolverValueNodeBuilderDelegate<V> {
 	}
 
 	PojoTypeModel<V> getTypeModel() {
-		return modelPath.getTypeModel();
+		return modelPath.type().getTypeModel();
 	}
 
 	<U> AbstractPojoImplicitReindexingResolverTypeNodeBuilder<V, ?> type(PojoRawTypeModel<U> targetTypeModel) {
@@ -80,7 +80,7 @@ class PojoImplicitReindexingResolverValueNodeBuilderDelegate<V> {
 	PojoImplicitReindexingResolverOriginalTypeNodeBuilder<V> type() {
 		if ( typeNodeBuilder == null ) {
 			checkNotFrozen();
-			typeNodeBuilder = new PojoImplicitReindexingResolverOriginalTypeNodeBuilder<>( modelPath, buildingHelper );
+			typeNodeBuilder = new PojoImplicitReindexingResolverOriginalTypeNodeBuilder<>( modelPath.type(), buildingHelper );
 		}
 		return typeNodeBuilder;
 	}
@@ -153,7 +153,7 @@ class PojoImplicitReindexingResolverValueNodeBuilderDelegate<V> {
 			PojoRawTypeModel<U> targetTypeModel) {
 		checkNotFrozen();
 		return new PojoImplicitReindexingResolverCastedTypeNodeBuilder<>(
-				modelPath.castTo( targetTypeModel ), buildingHelper
+				modelPath.type().castTo( targetTypeModel ), buildingHelper
 		);
 	}
 

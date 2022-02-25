@@ -18,16 +18,16 @@ import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
  */
 public class BoundPojoModelPathPropertyNode<T, P> extends BoundPojoModelPath {
 
-	private final BoundPojoModelPathValueNode<?, T> parent;
+	private final BoundPojoModelPathTypeNode<T> parent;
 	private final PojoPropertyModel<P> propertyModel;
 
-	BoundPojoModelPathPropertyNode(BoundPojoModelPathValueNode<?, T> parent, PojoPropertyModel<P> propertyModel) {
+	BoundPojoModelPathPropertyNode(BoundPojoModelPathTypeNode<T> parent, PojoPropertyModel<P> propertyModel) {
 		this.parent = parent;
 		this.propertyModel = propertyModel;
 	}
 
 	@Override
-	public BoundPojoModelPathValueNode<?, T> getParent() {
+	public BoundPojoModelPathTypeNode<T> getParent() {
 		return parent;
 	}
 
@@ -43,12 +43,12 @@ public class BoundPojoModelPathPropertyNode<T, P> extends BoundPojoModelPath {
 		return builder.toPropertyPathOrNull();
 	}
 
-	public BoundPojoModelPathOriginalTypeValueNode<P, P> valueWithoutExtractors() {
+	public BoundPojoModelPathValueNode<P, P> valueWithoutExtractors() {
 		return value( BoundContainerExtractorPath.noExtractors( propertyModel.typeModel() ) );
 	}
 
-	public <V> BoundPojoModelPathOriginalTypeValueNode<P, V> value(BoundContainerExtractorPath<? super P, V> extractorPath) {
-		return new BoundPojoModelPathOriginalTypeValueNode<>( this, extractorPath );
+	public <V> BoundPojoModelPathValueNode<P, V> value(BoundContainerExtractorPath<? super P, V> extractorPath) {
+		return new BoundPojoModelPathValueNode<>( this, extractorPath );
 	}
 
 	public PojoPropertyModel<P> getPropertyModel() {

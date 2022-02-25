@@ -8,21 +8,21 @@ package org.hibernate.search.mapper.pojo.automaticindexing.building.impl;
 
 import org.hibernate.search.mapper.pojo.automaticindexing.impl.PojoImplicitReindexingResolverNode;
 import org.hibernate.search.mapper.pojo.automaticindexing.impl.PojoImplicitReindexingResolverCastedTypeNode;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeValueNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeNode;
 
 class PojoImplicitReindexingResolverCastedTypeNodeBuilder<T, U>
 		extends AbstractPojoImplicitReindexingResolverTypeNodeBuilder<T, U> {
 
-	private final BoundPojoModelPathCastedTypeValueNode<?, U> modelPath;
+	private final BoundPojoModelPathCastedTypeNode<T, U> modelPath;
 
-	PojoImplicitReindexingResolverCastedTypeNodeBuilder(BoundPojoModelPathCastedTypeValueNode<?, U> modelPath,
+	PojoImplicitReindexingResolverCastedTypeNodeBuilder(BoundPojoModelPathCastedTypeNode<T, U> modelPath,
 			PojoImplicitReindexingResolverBuildingHelper buildingHelper) {
 		super( modelPath, buildingHelper );
 		this.modelPath = modelPath;
 	}
 
 	@Override
-	BoundPojoModelPathCastedTypeValueNode<?, U> getModelPath() {
+	BoundPojoModelPathCastedTypeNode<T, U> getModelPath() {
 		return modelPath;
 	}
 

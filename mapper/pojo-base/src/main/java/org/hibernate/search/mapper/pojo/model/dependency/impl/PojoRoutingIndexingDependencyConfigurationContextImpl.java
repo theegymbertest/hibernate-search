@@ -17,7 +17,7 @@ import org.hibernate.search.mapper.pojo.model.dependency.PojoRoutingIndexingDepe
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.path.binding.impl.PojoModelPathBinder;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
@@ -26,7 +26,7 @@ public class PojoRoutingIndexingDependencyConfigurationContextImpl<T>
 		extends AbstractPojoBridgedElementDependencyContext
 		implements PojoRoutingIndexingDependencyConfigurationContext {
 
-	private final BoundPojoModelPathOriginalTypeValueNode<?, T> modelPath;
+	private final BoundPojoModelPathTypeNode<T> modelPath;
 	private final List<BoundPojoModelPathValueNode<?, ?>> usedPaths = new ArrayList<>();
 	private final List<PojoOtherEntityIndexingDependencyConfigurationContextImpl<?>> otherEntityDependencyContexts = new ArrayList<>();
 

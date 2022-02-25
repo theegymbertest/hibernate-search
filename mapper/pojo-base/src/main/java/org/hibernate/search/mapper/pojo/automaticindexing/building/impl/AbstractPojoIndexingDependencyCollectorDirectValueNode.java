@@ -77,7 +77,7 @@ public abstract class AbstractPojoIndexingDependencyCollectorDirectValueNode<P, 
 	public PojoIndexingDependencyCollectorTypeNode<V> type() {
 		return new PojoIndexingDependencyCollectorTypeNode<>(
 				this,
-				modelPathFromLastEntityNode,
+				modelPathFromLastEntityNode.type(),
 				buildingHelper
 		);
 	}
@@ -85,7 +85,7 @@ public abstract class AbstractPojoIndexingDependencyCollectorDirectValueNode<P, 
 	public <U> PojoIndexingDependencyCollectorTypeNode<? extends U> castedType(PojoRawTypeModel<U> typeModel) {
 		return new PojoIndexingDependencyCollectorTypeNode<>(
 				this,
-				modelPathFromLastEntityNode.castTo( typeModel ),
+				modelPathFromLastEntityNode.type().castTo( typeModel ),
 				buildingHelper
 		);
 	}
@@ -113,7 +113,7 @@ public abstract class AbstractPojoIndexingDependencyCollectorDirectValueNode<P, 
 			BoundPojoModelPathValueNode<?, ?> dependencyPathFromInverseSideEntityTypeNode) {
 		PojoTypeModel<?> inverseSideEntityType = inverseSideEntityTypeNodeBuilder.getTypeModel();
 		PojoRawTypeModel<?> inverseSideRawEntityType = inverseSideEntityType.rawType();
-		PojoTypeModel<V> expectedInverseSideEntityType = modelPathFromLastEntityNode.getTypeModel();
+		PojoTypeModel<V> expectedInverseSideEntityType = modelPathFromLastEntityNode.type().getTypeModel();
 		PojoRawTypeModel<?> expectedInverseSideEntityRawType = expectedInverseSideEntityType.rawType();
 		if ( !inverseSideRawEntityType.isSubTypeOf( expectedInverseSideEntityRawType ) ) {
 			throw new AssertionFailure(

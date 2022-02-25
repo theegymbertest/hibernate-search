@@ -22,7 +22,7 @@ import org.hibernate.search.mapper.pojo.model.dependency.PojoOtherEntityIndexing
 import org.hibernate.search.mapper.pojo.model.dependency.PojoPropertyIndexingDependencyConfigurationContext;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.path.binding.impl.PojoModelPathBinder;
-import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeValueNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
@@ -94,12 +94,14 @@ public class PojoPropertyIndexingDependencyConfigurationContextImpl<P> extends A
 	}
 
 	private class ValueDependencyContext {
-		private final BoundPojoModelPathOriginalTypeValueNode<?, ?> valuePath;
+		private final BoundPojoModelPathOriginalTypeNode<?> valueTypePath;
 		private final List<PojoModelPathValueNode> usedPaths = new ArrayList<>();
 		private final List<PojoOtherEntityIndexingDependencyConfigurationContextImpl<?>> otherEntityDependencyContexts = new ArrayList<>();
 
 		private ValueDependencyContext(ContainerExtractorPath extractorPathFromBridgedProperty) {
-			valuePath = bindingPathWalker.value( modelPath, extractorPathFromBridgedProperty );
+			BoundPojoModelPathValueNode<?, ?> valuePath =
+					bindingPathWalker.value( modelPath, extractorPathFromBridgedProperty );
+			valueTypePath = valuePath.type();
 		}
 
 		public void contributeDependencies(
@@ -121,7 +123,7 @@ public class PojoPropertyIndexingDependencyConfigurationContextImpl<P> extends A
 		private PojoOtherEntityIndexingDependencyConfigurationContextImpl<?> addOtherEntityDependencyContext(
 				Class<?> otherEntityType, PojoModelPathValueNode pathFromOtherEntityTypeToBridgedPropertyExtractedType) {
 			PojoOtherEntityIndexingDependencyConfigurationContextImpl<?> otherContext = createOtherEntityDependencyContext(
-					valuePath.getTypeModel().rawType(),
+					valueTypePath.getTypeModel().rawType(),
 					otherEntityType, pathFromOtherEntityTypeToBridgedPropertyExtractedType
 			);
 
@@ -133,7 +135,7 @@ public class PojoPropertyIndexingDependencyConfigurationContextImpl<P> extends A
 
 		public void use(PojoModelPathValueNode pathFromExtractedBridgedPropertyValueToUsedValue) {
 			PojoModelPathBinder.bind(
-					valuePath, pathFromExtractedBridgedPropertyValueToUsedValue, bindingPathWalker
+					valueTypePath, pathFromExtractedBridgedPropertyValueToUsedValue, bindingPathWalker
 			);
 
 			// If we get here, the path is valid

@@ -342,7 +342,7 @@ public interface Log extends BasicLogger {
 	SearchException badURISyntax(String value, @Cause URISyntaxException e);
 
 	@Message(id = ID_OFFSET + 45,
-			value = "A property path must include at least one property."
+			value = "A PojoModelPath must include at least one property."
 	)
 	SearchException cannotDefinePojoModelPathWithoutProperty();
 

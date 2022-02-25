@@ -15,6 +15,7 @@ import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataCon
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoTypeAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoValueAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathPropertyNode;
+import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
@@ -36,11 +37,11 @@ public class PojoTypeAdditionalMetadataProvider {
 	}
 
 	public PojoValueAdditionalMetadata get(BoundPojoModelPathValueNode<?, ?> valueNode) {
-		BoundPojoModelPathPropertyNode<?, ?> previousPropertyNode = valueNode.getParent();
-		BoundPojoModelPathValueNode<?, ?> previousValueNode = previousPropertyNode.getParent();
-		PojoTypeModel<?> typeModel = previousValueNode.getTypeModel();
+		BoundPojoModelPathPropertyNode<?, ?> propertyNode = valueNode.getParent();
+		BoundPojoModelPathTypeNode<?> typeNode = propertyNode.getParent();
+		PojoTypeModel<?> typeModel = typeNode.getTypeModel();
 		return get( typeModel.rawType() )
-				.getPropertyAdditionalMetadata( previousPropertyNode.getPropertyModel().name() )
+				.getPropertyAdditionalMetadata( propertyNode.getPropertyModel().name() )
 				.getValueAdditionalMetadata( valueNode.getExtractorPath() );
 	}
 
