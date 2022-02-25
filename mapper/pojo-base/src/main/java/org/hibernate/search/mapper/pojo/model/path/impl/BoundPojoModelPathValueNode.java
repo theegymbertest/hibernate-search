@@ -9,7 +9,6 @@ package org.hibernate.search.mapper.pojo.model.path.impl;
 import org.hibernate.search.mapper.pojo.extractor.impl.BoundContainerExtractorPath;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPath;
-import org.hibernate.search.mapper.pojo.model.spi.PojoGenericTypeModel;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoTypeModel;
 
@@ -61,7 +60,7 @@ public class BoundPojoModelPathValueNode<P, V> extends BoundPojoModelPath {
 		return elementTypePathNode;
 	}
 
-	public PojoGenericTypeModel<V> getTypeModel() {
+	public PojoTypeModel<V> getTypeModel() {
 		return boundExtractorPath.getExtractedType();
 	}
 
