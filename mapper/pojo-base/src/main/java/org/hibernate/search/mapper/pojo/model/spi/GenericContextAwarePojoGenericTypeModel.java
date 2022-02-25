@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.hibernate.search.util.common.reflect.impl.GenericTypeContext;
 
 /**
- * An implementation of {@link PojoGenericTypeModel} that takes advantage of the context
+ * An implementation of {@link PojoTypeModel} that takes advantage of the context
  * in which a given property appears to derive more precise type information.
  * <p>
  * Instances wrap a {@link PojoRawTypeModel}, and propagate generics information to properties
@@ -45,7 +45,13 @@ import org.hibernate.search.util.common.reflect.impl.GenericTypeContext;
  */
 public final class GenericContextAwarePojoGenericTypeModel<T>
 		extends AbstractPojoGenericTypeModel<T>
-		implements PojoGenericTypeModel<T> {
+		implements PojoTypeModel<T> {
+
+	private static GenericContextAwarePojoGenericTypeModel<?> createTypeArgumentModel(Helper helper,
+			GenericTypeContext selfTypeContext, Type declaredType) {
+		return new GenericContextAwarePojoGenericTypeModel<>( helper,
+				new GenericTypeContext( selfTypeContext.declaringContext(), declaredType ) );
+	}
 
 	private final Helper helper;
 	private final GenericTypeContext genericTypeContext;
@@ -71,9 +77,12 @@ public final class GenericContextAwarePojoGenericTypeModel<T>
 			this.genericTypeContext = new GenericTypeContext( rawType );
 		}
 
-		@SuppressWarnings( "unchecked" ) // The cast is safe by contract, see the called method
-		public <U> PojoGenericTypeModel<U> createGenericTypeModel(Class<U> declaredType) {
-			return (PojoGenericTypeModel<U>) createGenericTypeModel( (Type) declaredType );
+		public GenericTypeContext genericTypeContext() {
+			return genericTypeContext;
+		}
+
+		public PojoTypeModel<?> createTypeArgumentModel(Type declaredType) {
+			return GenericContextAwarePojoGenericTypeModel.createTypeArgumentModel( helper, genericTypeContext, declaredType );
 		}
 
 		/**
@@ -85,7 +94,7 @@ public final class GenericContextAwarePojoGenericTypeModel<T>
 		 * If {@code declaredType} is {@code List<String>}, it will be {@code PojoGenericTypeModel<List<String>>},
 		 * and so on.
 		 */
-		public PojoGenericTypeModel<?> createGenericTypeModel(Type declaredType) {
+		public PojoTypeModel<?> createPropertyTypeModel(Type declaredType) {
 			/*
 			 * The declaring type, even raw, could extend parameterized types in which the given "type" was declared.
 			 * Thus we need the declaring context even for property types on raw types,
@@ -121,19 +130,15 @@ public final class GenericContextAwarePojoGenericTypeModel<T>
 	}
 
 	@Override
-	public Optional<PojoGenericTypeModel<?>> typeArgument(Class<?> rawSuperType, int typeParameterIndex) {
+	public Optional<PojoTypeModel<?>> typeArgument(Class<?> rawSuperType, int typeParameterIndex) {
 		return genericTypeContext.resolveTypeArgument( rawSuperType, typeParameterIndex )
-				.map( type -> new GenericContextAwarePojoGenericTypeModel<>(
-						helper, new GenericTypeContext( genericTypeContext.declaringContext(), type )
-				) );
+				.map( type -> createTypeArgumentModel( helper, genericTypeContext, type ) );
 	}
 
 	@Override
-	public Optional<PojoGenericTypeModel<?>> arrayElementType() {
+	public Optional<PojoTypeModel<?>> arrayElementType() {
 		return genericTypeContext.resolveArrayElementType()
-				.map( type -> new GenericContextAwarePojoGenericTypeModel<>(
-						helper, new GenericTypeContext( genericTypeContext.declaringContext(), type )
-				) );
+				.map( type -> createTypeArgumentModel( helper, genericTypeContext, type ) );
 	}
 
 	private <U> PojoPropertyModel<? extends U> wrapProperty(PojoPropertyModel<U> rawPropertyModel) {
