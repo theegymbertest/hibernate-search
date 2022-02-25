@@ -95,7 +95,7 @@ public class LuceneNumericFieldTest {
 		@DocumentId
 		Long id;
 
-		@IndexedEmbedded(includeEmbeddedObjectId = true, prefix = "score_")
+		@IndexedEmbedded(includeRootObjectId = true, prefix = "score_")
 		Set<Score> scores = new HashSet<Score>();
 
 	}

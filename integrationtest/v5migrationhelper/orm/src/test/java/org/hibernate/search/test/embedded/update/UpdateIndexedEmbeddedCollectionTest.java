@@ -160,7 +160,7 @@ public class UpdateIndexedEmbeddedCollectionTest extends SearchTestBase {
 		public void setLastName(String lastName) { this.lastName = lastName; }
 		private String lastName;
 
-		@IndexedEmbedded(includeEmbeddedObjectId = true)
+		@IndexedEmbedded(includeRootObjectId = true)
 		@OneToOne(cascade = CascadeType.ALL)
 		@IndexingDependency(reindexOnUpdate = ReindexOnUpdate.SHALLOW)
 		public Truck getTruck() { return truck; }

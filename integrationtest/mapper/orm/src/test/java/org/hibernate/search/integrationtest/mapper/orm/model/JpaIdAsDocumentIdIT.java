@@ -84,7 +84,7 @@ public class JpaIdAsDocumentIdIT {
 
 		@OneToMany(mappedBy = "containing")
 		@OrderColumn
-		@IndexedEmbedded(includeEmbeddedObjectId = true)
+		@IndexedEmbedded(includeRootObjectId = true)
 		private List<ContainedEntity> contained = new ArrayList<>();
 
 		public Integer getId() {

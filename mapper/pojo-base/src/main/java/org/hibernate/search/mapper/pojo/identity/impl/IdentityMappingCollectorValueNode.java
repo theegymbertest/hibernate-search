@@ -39,9 +39,17 @@ class IdentityMappingCollectorValueNode extends AbstractIdentityMappingCollector
 	}
 
 	@Override
+	public void objectField(PojoRawTypeModel<?> definingTypeModel,
+			String relativePrefix, ObjectStructure structure,
+			Integer includeDepth, Set<String> includePaths, boolean includeRootObjectId,
+			Class<?> targetType) {
+		// No-op, we're just collecting the identity mapping.
+	}
+
+	@Override
 	public void indexedEmbedded(PojoRawTypeModel<?> definingTypeModel, String relativePrefix,
 			ObjectStructure structure,
-			Integer includeDepth, Set<String> includePaths, boolean includeEmbeddedObjectId,
+			Integer includeDepth, Set<String> includePaths, boolean includeRootObjectId,
 			Class<?> targetType) {
 		// No-op, we're just collecting the identity mapping.
 	}

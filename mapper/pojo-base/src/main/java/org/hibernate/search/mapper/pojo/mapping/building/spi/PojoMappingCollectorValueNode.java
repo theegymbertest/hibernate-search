@@ -19,7 +19,11 @@ public interface PojoMappingCollectorValueNode extends PojoMappingCollector {
 	void valueBinder(ValueBinder binder, Map<String, Object> params,
 			String relativeFieldName, FieldModelContributor fieldModelContributor);
 
+	void objectField(PojoRawTypeModel<?> definingTypeModel,
+			String relativeFieldName, ObjectStructure structure,
+			Integer includeDepth, Set<String> includePaths, boolean includeRootObjectId, Class<?> targetType);
+
 	void indexedEmbedded(PojoRawTypeModel<?> definingTypeModel, String relativePrefix, ObjectStructure structure,
-			Integer includeDepth, Set<String> includePaths, boolean includeEmbeddedObjectId, Class<?> targetType);
+			Integer includeDepth, Set<String> includePaths, boolean includeRootObjectId, Class<?> targetType);
 
 }

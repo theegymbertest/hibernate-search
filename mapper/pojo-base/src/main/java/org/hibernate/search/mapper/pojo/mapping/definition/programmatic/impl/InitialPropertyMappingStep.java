@@ -22,6 +22,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.Property
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingGenericFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingIndexedEmbeddedStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingKeywordFieldOptionsStep;
+import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingObjectFieldStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingScaledNumberFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
@@ -139,6 +140,20 @@ class InitialPropertyMappingStep
 	public PropertyMappingFieldOptionsStep<?> nonStandardField(String relativeFieldName) {
 		PropertyMappingNonStandardFieldOptionsStep child =
 				new PropertyMappingNonStandardFieldOptionsStep( this, relativeFieldName );
+		children.add( child );
+		return child;
+	}
+
+	@Override
+	public PropertyMappingObjectFieldStep objectField() {
+		return objectField( null );
+	}
+
+	@Override
+	public PropertyMappingObjectFieldStep objectField(String relativeFieldName) {
+		PropertyMappingObjectFieldStepImpl child = new PropertyMappingObjectFieldStepImpl(
+				this, parent.getTypeModel(), relativeFieldName
+		);
 		children.add( child );
 		return child;
 	}

@@ -86,5 +86,5 @@ public @interface IndexedEmbedded {
 	 * @return Returns {@code true}, if the id of the embedded object should be included into the index,
 	 * {@code false} otherwise.
 	 */
-	boolean includeEmbeddedObjectId() default false;
+	boolean includeRootObjectId() default false;
 }

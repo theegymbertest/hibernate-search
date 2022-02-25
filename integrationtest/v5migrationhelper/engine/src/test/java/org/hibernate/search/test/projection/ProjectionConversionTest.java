@@ -162,14 +162,14 @@ public class ProjectionConversionTest {
 				includePaths = {
 					"id", "stringTypedId"
 				},
-				includeEmbeddedObjectId = true
+				includeRootObjectId = true
 		)
 		ExampleEntity embedded;
 
 		@AssociationInverseSide(inversePath = @ObjectPath(@PropertyValue(propertyName = "embedded")))
 		ExampleEntity containing;
 
-		@IndexedEmbedded(includeEmbeddedObjectId = true)
+		@IndexedEmbedded(includeRootObjectId = true)
 		ConflictingMappedType second;
 
 	}

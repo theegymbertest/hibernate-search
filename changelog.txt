@@ -2562,7 +2562,7 @@ Version 5.1.0.Final (3-3-2015)
     * [HSEARCH-295] - Generate the "right" FilterKey instance even on parameterized filters
     * [HSEARCH-1624] - Injection of an instance of ErrorHandler
     * [HSEARCH-1698] - Async backends using Infinispan should enable Directory option writeFileListAsynchronously
-    * [HSEARCH-1764] - Programmatically defining includeEmbeddedObjectId for embedded entities
+    * [HSEARCH-1764] - Programmatically defining includeRootObjectId for embedded entities
     * [HSEARCH-1795] - Allow for the serialization of DocValues as part of the LuceneWork serialization
 
 ** Task
