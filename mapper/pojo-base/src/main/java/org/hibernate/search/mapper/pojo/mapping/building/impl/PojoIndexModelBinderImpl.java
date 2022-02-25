@@ -15,15 +15,18 @@ import org.hibernate.search.engine.mapper.mapping.building.spi.IndexFieldTypeDef
 import org.hibernate.search.engine.mapper.mapping.building.spi.IndexedEntityBindingContext;
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingBuildContext;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundIdentifierBridge;
+import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundObjectBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundPropertyBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundTypeBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundValueBridge;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.DefaultIdentifierBindingContext;
+import org.hibernate.search.mapper.pojo.bridge.binding.impl.ObjectBindingContextImpl;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.PropertyBindingContextImpl;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.TypeBindingContextImpl;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.ValueBindingContextImpl;
 import org.hibernate.search.mapper.pojo.bridge.mapping.impl.BridgeResolver;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.IdentifierBinder;
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ObjectBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.PropertyBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ValueBinder;
@@ -34,8 +37,10 @@ import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.Container
 import org.hibernate.search.mapper.pojo.bridge.binding.spi.FieldModelContributor;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.impl.PojoTypeAdditionalMetadataProvider;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoEntityTypeAdditionalMetadata;
+import org.hibernate.search.mapper.pojo.model.dependency.impl.PojoObjectIndexingDependencyConfigurationContextImpl;
 import org.hibernate.search.mapper.pojo.model.dependency.impl.PojoPropertyIndexingDependencyConfigurationContextImpl;
 import org.hibernate.search.mapper.pojo.model.dependency.impl.PojoTypeIndexingDependencyConfigurationContextImpl;
+import org.hibernate.search.mapper.pojo.model.impl.PojoModelObjectRootElement;
 import org.hibernate.search.mapper.pojo.model.impl.PojoModelPropertyRootElement;
 import org.hibernate.search.mapper.pojo.model.impl.PojoModelTypeRootElement;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPath;
@@ -110,6 +115,34 @@ public class PojoIndexModelBinderImpl implements PojoIndexModelBinder {
 		);
 
 		return bindingContext.applyBinder( defaultedBinder );
+	}
+
+	@Override
+	public <T> Optional<BoundObjectBridge<T>> bindObject(IndexBindingContext indexBindingContext,
+			BoundPojoModelPathTypeNode<T> modelPath, ObjectBinder binder, Map<String, Object> params) {
+		PojoModelObjectRootElement<T> pojoModelRootElement =
+				new PojoModelObjectRootElement<>( modelPath, introspector, typeAdditionalMetadataProvider );
+
+		PojoTypeModel<T> typeModel = modelPath.getTypeModel();
+
+		PojoObjectIndexingDependencyConfigurationContextImpl<T> pojoDependencyContext =
+				new PojoObjectIndexingDependencyConfigurationContextImpl<>(
+						introspector,
+						extractorBinder,
+						typeAdditionalMetadataProvider,
+						modelPath
+				);
+
+		ObjectBindingContextImpl<T> bindingContext = new ObjectBindingContextImpl<>(
+				beanResolver, introspector,
+				typeModel,
+				indexBindingContext,
+				pojoModelRootElement,
+				pojoDependencyContext,
+				params
+		);
+
+		return bindingContext.applyBinder( binder );
 	}
 
 	@Override

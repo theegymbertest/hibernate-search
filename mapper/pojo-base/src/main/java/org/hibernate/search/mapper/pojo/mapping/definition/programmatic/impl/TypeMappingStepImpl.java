@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingConfigurationCollector;
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingBuildContext;
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ObjectBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.ErrorCollectingPojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorTypeNode;
@@ -55,6 +56,12 @@ public class TypeMappingStepImpl
 		TypeMappingIndexedStepImpl child = new TypeMappingIndexedStepImpl( typeModel.typeIdentifier() );
 		children.add( child );
 		return child;
+	}
+
+	@Override
+	public TypeMappingStep objectBinding(ObjectBinder binder, Map<String, Object> params) {
+		children.add( new ObjectBinderMappingContributor( binder, params ) );
+		return this;
 	}
 
 	@Override

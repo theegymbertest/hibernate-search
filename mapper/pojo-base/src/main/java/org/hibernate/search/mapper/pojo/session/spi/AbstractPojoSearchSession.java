@@ -7,6 +7,7 @@
 package org.hibernate.search.mapper.pojo.session.spi;
 
 import org.hibernate.search.mapper.pojo.bridge.runtime.IdentifierBridgeFromDocumentIdentifierContext;
+import org.hibernate.search.mapper.pojo.bridge.runtime.ObjectBridgeWriteContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.PropertyBridgeWriteContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.RoutingBridgeRouteContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
@@ -40,6 +41,11 @@ public abstract class AbstractPojoSearchSession implements PojoWorkSessionContex
 
 	@Override
 	public RoutingBridgeRouteContext routingBridgeRouteContext() {
+		return sessionBasedBridgeOperationContext;
+	}
+
+	@Override
+	public ObjectBridgeWriteContext objectBridgeWriteContext() {
 		return sessionBasedBridgeOperationContext;
 	}
 

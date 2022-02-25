@@ -8,9 +8,12 @@ package org.hibernate.search.mapper.pojo.mapping.building.spi;
 
 import java.util.Map;
 
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ObjectBinder;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 
 public interface PojoMappingCollectorTypeNode extends PojoMappingCollector {
+
+	void objectBinder(ObjectBinder binder, Map<String, Object> params);
 
 	void typeBinder(TypeBinder builder, Map<String, Object> params);
 
