@@ -23,11 +23,4 @@ public interface PojoModelProperty extends PojoModelCompositeElement {
 	 */
 	String name();
 
-	/**
-	 * @param markerType A type of marker.
-	 * @param <M> The type of returned markers.
-	 * @return A collection of markers with the given type found on this property.
-	 */
-	<M> Collection<M> markers(Class<M> markerType);
-
 }
