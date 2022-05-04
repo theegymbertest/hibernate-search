@@ -11,11 +11,11 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorValueNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionValueNode;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoValueAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 
-class PojoValueAdditionalMetadataBuilder implements PojoAdditionalMetadataCollectorValueNode {
+class PojoValueAdditionalMetadataBuilder implements PojoAdditionalMetadataContributionValueNode {
 	private PojoModelPathValueNode inverseSidePath;
 	private boolean associationEmbedded = false;
 	private Optional<ReindexOnUpdate> reindexOnUpdate = Optional.empty();

@@ -10,12 +10,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorEntityTypeNode;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoEntityTypeAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.path.spi.PojoPathsDefinition;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
-class PojoEntityTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataCollectorEntityTypeNode {
+class PojoEntityTypeAdditionalMetadataBuilder {
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 

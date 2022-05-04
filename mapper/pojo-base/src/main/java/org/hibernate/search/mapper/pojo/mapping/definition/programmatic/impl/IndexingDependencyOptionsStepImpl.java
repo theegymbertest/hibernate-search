@@ -14,8 +14,8 @@ import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.Container
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoPropertyMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.IndexingDependencyOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorPropertyNode;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorValueNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionPropertyNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionValueNode;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 
 
@@ -34,8 +34,8 @@ class IndexingDependencyOptionsStepImpl
 	}
 
 	@Override
-	public void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorPropertyNode collector) {
-		PojoAdditionalMetadataCollectorValueNode collectorValueNode = collector.value( extractorPath );
+	public void contributeAdditionalMetadata(PojoAdditionalMetadataContributionPropertyNode collector) {
+		PojoAdditionalMetadataContributionValueNode collectorValueNode = collector.value( extractorPath );
 		if ( reindexOnUpdate != null ) {
 			collectorValueNode.reindexOnUpdate( reindexOnUpdate );
 		}

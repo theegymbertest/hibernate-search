@@ -11,16 +11,16 @@ import java.util.Map;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.ErrorCollectingPojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorTypeNode;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
+import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMappingContributor;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingIndexedStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionTypeNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoPropertyModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 
 public class TypeMappingStepImpl
-		implements TypeMappingStep, PojoTypeMetadataContributor {
+		implements TypeMappingStep, PojoAdditionalMetadataContributionTypeNode, PojoTypeMappingContributor {
 
 	private final PojoRawTypeModel<?> typeModel;
 
@@ -31,7 +31,7 @@ public class TypeMappingStepImpl
 	}
 
 	@Override
-	public void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorTypeNode collector) {
+	public void contributeAdditionalMetadata(PojoAdditionalMetadataContributionTypeNode collector) {
 		children.contributeAdditionalMetadata( collector );
 	}
 

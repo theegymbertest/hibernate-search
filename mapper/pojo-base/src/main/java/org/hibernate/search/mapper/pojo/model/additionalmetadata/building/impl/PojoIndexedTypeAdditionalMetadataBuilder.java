@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.RoutingBinder;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorIndexedTypeNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionIndexedTypeNode;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoIndexedTypeAdditionalMetadata;
 
-class PojoIndexedTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataCollectorIndexedTypeNode {
+class PojoIndexedTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataContributionIndexedTypeNode {
 
 	private Optional<String> backendName = Optional.empty();
 	private Optional<String> indexName = Optional.empty();

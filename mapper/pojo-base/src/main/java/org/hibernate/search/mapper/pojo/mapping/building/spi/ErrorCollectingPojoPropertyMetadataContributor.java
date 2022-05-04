@@ -9,14 +9,14 @@ package org.hibernate.search.mapper.pojo.mapping.building.spi;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorPropertyNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionPropertyNode;
 
 public final class ErrorCollectingPojoPropertyMetadataContributor implements PojoPropertyMetadataContributor {
 
 	private List<PojoPropertyMetadataContributor> children;
 
 	@Override
-	public void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorPropertyNode collector) {
+	public void contributeAdditionalMetadata(PojoAdditionalMetadataContributionPropertyNode collector) {
 		if ( hasContent() ) {
 			for ( PojoPropertyMetadataContributor child : children ) {
 				child.contributeAdditionalMetadata( collector );

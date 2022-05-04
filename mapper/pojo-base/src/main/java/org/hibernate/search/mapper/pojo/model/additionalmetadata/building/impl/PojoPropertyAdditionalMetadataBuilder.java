@@ -18,12 +18,12 @@ import org.hibernate.search.engine.environment.bean.BeanResolver;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.MarkerBindingContextImpl;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.MarkerBinder;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorPropertyNode;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorValueNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionPropertyNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionValueNode;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoPropertyAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoValueAdditionalMetadata;
 
-class PojoPropertyAdditionalMetadataBuilder implements PojoAdditionalMetadataCollectorPropertyNode {
+class PojoPropertyAdditionalMetadataBuilder implements PojoAdditionalMetadataContributionPropertyNode {
 	private final BeanResolver beanResolver;
 	// Use a LinkedHashMap for deterministic iteration
 	private final Map<ContainerExtractorPath, PojoValueAdditionalMetadataBuilder> valueBuilders =
@@ -35,7 +35,7 @@ class PojoPropertyAdditionalMetadataBuilder implements PojoAdditionalMetadataCol
 	}
 
 	@Override
-	public PojoAdditionalMetadataCollectorValueNode value(ContainerExtractorPath extractorPath) {
+	public PojoAdditionalMetadataContributionValueNode value(ContainerExtractorPath extractorPath) {
 		return valueBuilders.computeIfAbsent(
 				extractorPath,
 				path -> new PojoValueAdditionalMetadataBuilder()

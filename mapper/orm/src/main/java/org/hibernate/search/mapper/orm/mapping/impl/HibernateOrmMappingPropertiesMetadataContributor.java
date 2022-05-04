@@ -23,8 +23,8 @@ import org.hibernate.search.mapper.orm.model.impl.HibernateOrmBasicTypeMetadataP
 import org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtractors;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorPropertyNode;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionPropertyNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPath;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 
@@ -46,14 +46,14 @@ public final class HibernateOrmMappingPropertiesMetadataContributor implements P
 	}
 
 	@Override
-	public void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorTypeNode collector) {
+	public void contributeAdditionalMetadata(PojoAdditionalMetadataContributionTypeNode collector) {
 		for ( Property property : properties ) {
 			collector.property( property.getName(), collectorPropertyNode ->
 					collectMetadataFromHibernateOrmMappingProperty( collectorPropertyNode, property ) );
 		}
 	}
 
-	private void collectMetadataFromHibernateOrmMappingProperty(PojoAdditionalMetadataCollectorPropertyNode collector,
+	private void collectMetadataFromHibernateOrmMappingProperty(PojoAdditionalMetadataContributionPropertyNode collector,
 			Property property) {
 		Value value = property.getValue();
 		if ( value instanceof org.hibernate.mapping.Collection ) {
@@ -93,7 +93,7 @@ public final class HibernateOrmMappingPropertiesMetadataContributor implements P
 		}
 	}
 
-	private void collectScale(PojoAdditionalMetadataCollectorPropertyNode collector, Value value) {
+	private void collectScale(PojoAdditionalMetadataContributionPropertyNode collector, Value value) {
 		Iterator<Selectable> ci = value.getColumnIterator();
 		while ( ci.hasNext() ) {
 			Selectable selectable = ci.next();

@@ -6,15 +6,15 @@
  */
 package org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi;
 
-import java.util.Map;
+import java.util.List;
 
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.MarkerBinder;
 import org.hibernate.search.mapper.pojo.extractor.mapping.programmatic.ContainerExtractorPath;
 
-public interface PojoAdditionalMetadataCollectorPropertyNode extends PojoAdditionalMetadataCollector {
+public interface PojoAdditionalMetadataContributionPropertyNode {
 
-	PojoAdditionalMetadataCollectorValueNode value(ContainerExtractorPath extractorPath);
+	PojoAdditionalMetadataContributionValueNode value(ContainerExtractorPath extractorPath);
 
-	void markerBinder(MarkerBinder definition, Map<String, Object> params);
+	List<MappingComponentDefinition<MarkerBinder>> markerBinder();
 
 }

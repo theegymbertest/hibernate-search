@@ -18,15 +18,14 @@ import java.util.function.Supplier;
 import org.hibernate.search.engine.environment.bean.BeanResolver;
 import org.hibernate.search.mapper.pojo.bridge.binding.impl.MarkerBindingContextImpl;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.MarkerBinder;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorPropertyNode;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionPropertyNode;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoPropertyAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoTypeAdditionalMetadata;
 import org.hibernate.search.mapper.pojo.model.path.spi.PojoPathsDefinition;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeIdentifier;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 
-class PojoTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataCollectorTypeNode {
+class PojoTypeAdditionalMetadataBuilder {
 
 	private final BeanResolver beanResolver;
 	private final PojoRawTypeModel<?> rawTypeModel;
@@ -34,7 +33,7 @@ class PojoTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataCollect
 	private PojoEntityTypeAdditionalMetadataBuilder entityTypeMetadataBuilder;
 	private PojoIndexedTypeAdditionalMetadataBuilder indexedTypeMetadataBuilder;
 	// Use a LinkedHashMap for deterministic iteration
-	private final Map<String, List<Consumer<PojoAdditionalMetadataCollectorPropertyNode>>> propertyContributors = new LinkedHashMap<>();
+	private final Map<String, List<Consumer<PojoAdditionalMetadataContributionPropertyNode>>> propertyContributors = new LinkedHashMap<>();
 
 	PojoTypeAdditionalMetadataBuilder(BeanResolver beanResolver, PojoRawTypeModel<?> rawTypeModel) {
 		this.beanResolver = beanResolver;
@@ -70,7 +69,7 @@ class PojoTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataCollect
 
 	@Override
 	public void property(String propertyName,
-			Consumer<PojoAdditionalMetadataCollectorPropertyNode> propertyMetadataContributor) {
+			Consumer<PojoAdditionalMetadataContributionPropertyNode> propertyMetadataContributor) {
 		propertyContributors.computeIfAbsent( propertyName, ignored -> new ArrayList<>() )
 				.add( propertyMetadataContributor );
 	}
@@ -82,14 +81,14 @@ class PojoTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataCollect
 
 	public PojoTypeAdditionalMetadata build() {
 		Map<String, Supplier<PojoPropertyAdditionalMetadata>> propertiesAdditionalMetadataSuppliers = new HashMap<>();
-		for ( Map.Entry<String, List<Consumer<PojoAdditionalMetadataCollectorPropertyNode>>> entry :
+		for ( Map.Entry<String, List<Consumer<PojoAdditionalMetadataContributionPropertyNode>>> entry :
 				propertyContributors.entrySet() ) {
 			String propertyName = entry.getKey();
-			List<Consumer<PojoAdditionalMetadataCollectorPropertyNode>> contributors = entry.getValue();
+			List<Consumer<PojoAdditionalMetadataContributionPropertyNode>> contributors = entry.getValue();
 			propertiesAdditionalMetadataSuppliers.put( propertyName, () -> {
 				PojoPropertyAdditionalMetadataBuilder builder =
 						new PojoPropertyAdditionalMetadataBuilder( beanResolver );
-				for ( Consumer<PojoAdditionalMetadataCollectorPropertyNode> contributor : contributors ) {
+				for ( Consumer<PojoAdditionalMetadataContributionPropertyNode> contributor : contributors ) {
 					contributor.accept( builder );
 				}
 				return builder.build();

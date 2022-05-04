@@ -10,20 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
-
 public final class ErrorCollectingPojoTypeMetadataContributor implements PojoTypeMetadataContributor {
 
 	private List<PojoTypeMetadataContributor> children;
-
-	@Override
-	public void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorTypeNode collector) {
-		if ( children != null ) {
-			for ( PojoTypeMetadataContributor child : children ) {
-				child.contributeAdditionalMetadata( collector );
-			}
-		}
-	}
 
 	@Override
 	public void contributeMapping(PojoMappingCollectorTypeNode collector) {

@@ -11,8 +11,8 @@ import java.util.Map;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.RoutingBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingIndexedStep;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorIndexedTypeNode;
-import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionIndexedTypeNode;
+import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataContributionTypeNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeIdentifier;
 
 
@@ -56,8 +56,8 @@ class TypeMappingIndexedStepImpl implements TypeMappingIndexedStep, PojoTypeMeta
 	}
 
 	@Override
-	public void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorTypeNode collector) {
-		PojoAdditionalMetadataCollectorIndexedTypeNode indexedCollector = collector.markAsIndexed( enabled );
+	public void contributeAdditionalMetadata(PojoAdditionalMetadataContributionTypeNode collector) {
+		PojoAdditionalMetadataContributionIndexedTypeNode indexedCollector = collector.markAsIndexed( enabled );
 		if ( backendName != null ) {
 			indexedCollector.backendName( backendName );
 		}
