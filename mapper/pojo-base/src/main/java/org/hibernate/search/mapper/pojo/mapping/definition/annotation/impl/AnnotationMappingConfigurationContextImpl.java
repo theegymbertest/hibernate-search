@@ -56,7 +56,7 @@ public class AnnotationMappingConfigurationContextImpl implements AnnotationMapp
 
 	@Override
 	public void configure(MappingBuildContext buildContext, PojoMappingConfigurationContext configurationContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> collector) {
+			MappingConfigurationCollector collector) {
 		BeanResolver beanResolver = buildContext.beanResolver();
 		FailureCollector failureCollector = buildContext.failureCollector();
 		AnnotationHelper annotationHelper = new AnnotationHelper( introspector.annotationValueReadHandleFactory() );
@@ -79,10 +79,10 @@ public class AnnotationMappingConfigurationContextImpl implements AnnotationMapp
 			// Ignore types that were already contributed
 			// TODO optimize by completely ignoring standard Java types, e.g. Object or standard Java interfaces such as Serializable?
 			if ( neverContributed ) {
-				Optional<PojoTypeMetadataContributor> contributorOptional =
+				Optional<PojoTypeMetadataContributor> mappingOptional =
 						contributorFactory.createIfAnnotated( typeModel );
-				if ( contributorOptional.isPresent() ) {
-					collector.collectContributor( typeModel, contributorOptional.get() );
+				if ( mappingOptional.isPresent() ) {
+					collector.collectContributor( typeModel, mappingOptional.get() );
 				}
 			}
 		}
@@ -102,7 +102,7 @@ public class AnnotationMappingConfigurationContextImpl implements AnnotationMapp
 	 * A type metadata discoverer that will provide annotation-based metadata
 	 * for types that were not explicitly requested .
 	 */
-	private static class PojoAnnotationTypeMetadataDiscoverer implements TypeMetadataDiscoverer<PojoTypeMetadataContributor> {
+	private static class PojoAnnotationTypeMetadataDiscoverer implements TypeMetadataDiscoverer {
 		private final AnnotationPojoTypeMetadataContributorFactory contributorFactory;
 		private final Set<PojoRawTypeModel<?>> alreadyContributedTypes;
 

@@ -8,8 +8,6 @@ package org.hibernate.search.mapper.pojo.mapping.definition.programmatic.impl;
 
 import java.util.Map;
 
-import org.hibernate.search.engine.mapper.mapping.building.spi.MappingBuildContext;
-import org.hibernate.search.engine.mapper.mapping.building.spi.MappingConfigurationCollector;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.ErrorCollectingPojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorTypeNode;
@@ -17,14 +15,12 @@ import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataCon
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingIndexedStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
-import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContext;
-import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContributor;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoPropertyModel;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
 
 public class TypeMappingStepImpl
-		implements TypeMappingStep, PojoMappingConfigurationContributor, PojoTypeMetadataContributor {
+		implements TypeMappingStep, PojoTypeMetadataContributor {
 
 	private final PojoRawTypeModel<?> typeModel;
 
@@ -32,12 +28,6 @@ public class TypeMappingStepImpl
 
 	public TypeMappingStepImpl(PojoRawTypeModel<?> typeModel) {
 		this.typeModel = typeModel;
-	}
-
-	@Override
-	public void configure(MappingBuildContext buildContext, PojoMappingConfigurationContext configurationContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
-		configurationCollector.collectContributor( typeModel, this );
 	}
 
 	@Override

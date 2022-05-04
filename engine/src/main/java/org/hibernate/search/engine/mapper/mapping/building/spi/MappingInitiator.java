@@ -18,9 +18,9 @@ import org.hibernate.search.engine.mapper.model.spi.TypeMetadataContributorProvi
 public interface MappingInitiator<C, MPBS extends MappingPartialBuildState> {
 
 	void configure(MappingBuildContext buildContext,
-			MappingConfigurationCollector<C> configurationCollector);
+			MappingConfigurationCollector configurationCollector);
 
 	Mapper<MPBS> createMapper(MappingBuildContext buildContext,
-			TypeMetadataContributorProvider<C> contributorProvider);
+			TypeMetadataContributorProvider contributorProvider);
 
 }

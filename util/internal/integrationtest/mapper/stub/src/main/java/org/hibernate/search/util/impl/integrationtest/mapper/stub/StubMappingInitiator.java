@@ -31,7 +31,7 @@ public class StubMappingInitiator implements MappingInitiator<StubMappedIndex, S
 
 	@Override
 	public void configure(MappingBuildContext buildContext,
-			MappingConfigurationCollector<StubMappedIndex> configurationCollector) {
+			MappingConfigurationCollector configurationCollector) {
 		for ( StubMappedIndex mappedIndex : mappedIndexes ) {
 			configurationCollector.collectContributor( new StubTypeModel( mappedIndex.typeName() ), mappedIndex );
 		}
@@ -39,7 +39,7 @@ public class StubMappingInitiator implements MappingInitiator<StubMappedIndex, S
 
 	@Override
 	public Mapper<StubMappingPartialBuildState> createMapper(MappingBuildContext buildContext,
-			TypeMetadataContributorProvider<StubMappedIndex> contributorProvider) {
+			TypeMetadataContributorProvider contributorProvider) {
 		return new StubMapper( buildContext, contributorProvider, tenancyMode );
 	}
 

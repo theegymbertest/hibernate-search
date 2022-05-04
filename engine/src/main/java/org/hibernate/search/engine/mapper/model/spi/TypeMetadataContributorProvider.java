@@ -21,34 +21,35 @@ import java.util.stream.Collectors;
 /**
  * A provider of type metadata contributors, taking into account explicit contributions,
  * implicit discovery and inheritance.
- *
- * @param <C> The Java type of type metadata contributors.
  */
-public final class TypeMetadataContributorProvider<C> {
+public final class TypeMetadataContributorProvider {
 
-	public static <C> Builder<C> builder() {
-		return new Builder<>();
+	public static Builder builder() {
+		return new Builder();
 	}
 
-	private final Map<MappableTypeModel, List<C>> contributionByType;
-	private final List<TypeMetadataDiscoverer<C>> metadataDiscoverers;
+	private final Map<MappableTypeModel, List<Object>> contributionByType;
+	private final List<TypeMetadataDiscoverer> metadataDiscoverers;
 	private final Set<MappableTypeModel> typesSubmittedToDiscoverers = new HashSet<>();
 
-	private TypeMetadataContributorProvider(Builder<C> builder) {
+	private TypeMetadataContributorProvider(Builder builder) {
 		this.contributionByType = builder.contributionByType;
 		this.metadataDiscoverers = builder.metadataDiscoverers;
 	}
 
 	/**
 	 * @param typeModel The model of a type to retrieve contributors for, including supertype contributors.
-	 *
+	 * @param contributorType The Java type of the type metadata contributor.
 	 * @return A set of the Java types of the metadata contributors
+	 * @param <C> The Java type of the type metadata contributor.
 	 */
-	public Set<C> get(MappableTypeModel typeModel) {
+	public <C> Set<C> get(MappableTypeModel typeModel, Class<C> contributorType) {
 		return typeModel.descendingSuperTypes()
 				.map( this::getContributionIncludingAutomaticallyDiscovered )
 				.filter( Objects::nonNull )
 				.flatMap( List::stream )
+				.map( o -> contributorType.isInstance( o ) ? contributorType.cast( o ) : null )
+				.filter( Objects::nonNull )
 				// Using a LinkedHashSet because the order matters.
 				.collect( Collectors.toCollection( LinkedHashSet::new ) );
 	}
@@ -61,12 +62,12 @@ public final class TypeMetadataContributorProvider<C> {
 		return Collections.unmodifiableSet( new LinkedHashSet<>( contributionByType.keySet() ) );
 	}
 
-	private List<C> getContributionIncludingAutomaticallyDiscovered(
+	private List<Object> getContributionIncludingAutomaticallyDiscovered(
 			MappableTypeModel typeModel) {
 		if ( !typesSubmittedToDiscoverers.contains( typeModel ) ) {
 			// Allow automatic discovery of metadata the first time we encounter each type
-			for ( TypeMetadataDiscoverer<C> metadataDiscoverer : metadataDiscoverers ) {
-				Optional<C> discoveredContributor = metadataDiscoverer.discover( typeModel );
+			for ( TypeMetadataDiscoverer metadataDiscoverer : metadataDiscoverers ) {
+				Optional<?> discoveredContributor = metadataDiscoverer.discover( typeModel );
 				if ( discoveredContributor.isPresent() ) {
 					contributionByType.computeIfAbsent( typeModel, ignored -> new ArrayList<>() )
 							.add( discoveredContributor.get() );
@@ -77,25 +78,25 @@ public final class TypeMetadataContributorProvider<C> {
 		return contributionByType.get( typeModel );
 	}
 
-	public static final class Builder<C> {
+	public static final class Builder {
 		// Use a LinkedHashMap for deterministic iteration
-		private final Map<MappableTypeModel, List<C>> contributionByType = new LinkedHashMap<>();
-		private final List<TypeMetadataDiscoverer<C>> metadataDiscoverers = new ArrayList<>();
+		private final Map<MappableTypeModel, List<Object>> contributionByType = new LinkedHashMap<>();
+		private final List<TypeMetadataDiscoverer> metadataDiscoverers = new ArrayList<>();
 
 		private Builder() {
 		}
 
-		public void contributor(MappableTypeModel typeModel, C contributor) {
+		public void contributor(MappableTypeModel typeModel, Object contributor) {
 			contributionByType.computeIfAbsent( typeModel, ignored -> new ArrayList<>() )
 					.add( contributor );
 		}
 
-		public void discoverer(TypeMetadataDiscoverer<C> metadataDiscoverer) {
+		public void discoverer(TypeMetadataDiscoverer metadataDiscoverer) {
 			metadataDiscoverers.add( metadataDiscoverer );
 		}
 
-		public TypeMetadataContributorProvider<C> build() {
-			return new TypeMetadataContributorProvider<>( this );
+		public TypeMetadataContributorProvider build() {
+			return new TypeMetadataContributorProvider( this );
 		}
 	}
 }

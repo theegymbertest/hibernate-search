@@ -21,7 +21,6 @@ import org.hibernate.search.mapper.orm.common.impl.HibernateOrmUtils;
 import org.hibernate.search.mapper.orm.model.impl.HibernateOrmBasicTypeMetadataProvider;
 import org.hibernate.search.mapper.orm.model.impl.HibernateOrmBootstrapIntrospector;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.ErrorCollectingPojoTypeMetadataContributor;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContext;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContributor;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
@@ -45,7 +44,7 @@ public final class HibernateOrmMappingConfigurationContributor implements PojoMa
 
 	@Override
 	public void configure(MappingBuildContext buildContext, PojoMappingConfigurationContext configurationContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
+			MappingConfigurationCollector configurationCollector) {
 		Set<PojoRawTypeModel<?>> processedEmbeddableTypes = new LinkedHashSet<>();
 
 		for ( PersistentClass persistentClass : basicTypeMetadataProvider.getPersistentClasses() ) {
@@ -86,7 +85,7 @@ public final class HibernateOrmMappingConfigurationContributor implements PojoMa
 
 	@SuppressWarnings( "rawtypes" )
 	private void contributeEmbeddableTypeMetadata(
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector,
+			MappingConfigurationCollector configurationCollector,
 			Set<PojoRawTypeModel<?>> processedEmbeddableTypes,
 			List<Property> properties) {
 		for ( Property property : properties ) {
@@ -95,7 +94,7 @@ public final class HibernateOrmMappingConfigurationContributor implements PojoMa
 	}
 
 	private void contributeEmbeddableTypeMetadata(
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector,
+			MappingConfigurationCollector configurationCollector,
 			Set<PojoRawTypeModel<?>> processedEmbeddableTypes,
 			Property property) {
 		Value value = property.getValue();

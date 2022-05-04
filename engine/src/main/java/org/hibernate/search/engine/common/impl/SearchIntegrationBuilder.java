@@ -249,7 +249,7 @@ public class SearchIntegrationBuilder implements SearchIntegration.Builder {
 		private final MappingKey<PBM, ?> mappingKey;
 		private final MappingInitiator<C, PBM> mappingInitiator;
 
-		private TypeMetadataContributorProvider<C> metadataContributorProvider;
+		private TypeMetadataContributorProvider metadataContributorProvider;
 
 		private Mapper<PBM> mapper; // Initially null, set in createMapper()
 
@@ -261,7 +261,7 @@ public class SearchIntegrationBuilder implements SearchIntegration.Builder {
 		}
 
 		void collect() {
-			TypeMetadataContributorProvider.Builder<C> builder = TypeMetadataContributorProvider.builder();
+			TypeMetadataContributorProvider.Builder builder = TypeMetadataContributorProvider.builder();
 			mappingInitiator.configure( buildContext, new MappingConfigurationCollectorImpl( builder ) );
 			metadataContributorProvider = builder.build();
 		}
@@ -321,20 +321,19 @@ public class SearchIntegrationBuilder implements SearchIntegration.Builder {
 			}
 		}
 
-		private class MappingConfigurationCollectorImpl implements MappingConfigurationCollector<C> {
-			private final TypeMetadataContributorProvider.Builder<C> builder;
-
-			private MappingConfigurationCollectorImpl(TypeMetadataContributorProvider.Builder<C> builder) {
+		private static class MappingConfigurationCollectorImpl implements MappingConfigurationCollector {
+			private final TypeMetadataContributorProvider.Builder builder;
+			private MappingConfigurationCollectorImpl(TypeMetadataContributorProvider.Builder builder) {
 				this.builder = builder;
 			}
 
 			@Override
-			public void collectContributor(MappableTypeModel typeModel, C contributor) {
+			public void collectContributor(MappableTypeModel typeModel, Object contributor) {
 				builder.contributor( typeModel, contributor );
 			}
 
 			@Override
-			public void collectDiscoverer(TypeMetadataDiscoverer<C> metadataDiscoverer) {
+			public void collectDiscoverer(TypeMetadataDiscoverer metadataDiscoverer) {
 				builder.discoverer( metadataDiscoverer );
 			}
 		}

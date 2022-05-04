@@ -7,11 +7,11 @@
 package org.hibernate.search.mapper.javabean.impl;
 
 import org.hibernate.search.mapper.javabean.model.impl.JavaBeanPojoPathsDefinition;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
+import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeAdditonalMetadataContributor;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeIdentifier;
 
-class JavaBeanEntityTypeContributor implements PojoTypeMetadataContributor {
+class JavaBeanEntityTypeContributor implements PojoTypeAdditonalMetadataContributor {
 
 	private final PojoRawTypeIdentifier<?> typeIdentifier;
 	private final String entityName;

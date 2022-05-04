@@ -18,7 +18,6 @@ import org.hibernate.search.mapper.javabean.model.impl.JavaBeanBootstrapIntrospe
 import org.hibernate.search.mapper.javabean.schema.management.SchemaManagementStrategyName;
 import org.hibernate.search.mapper.javabean.schema.management.impl.SchemaManagementListener;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMapperDelegate;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.spi.AbstractPojoMappingInitiator;
 
 public class JavaBeanMappingInitiator extends AbstractPojoMappingInitiator<JavaBeanMappingPartialBuildState> {
@@ -45,7 +44,7 @@ public class JavaBeanMappingInitiator extends AbstractPojoMappingInitiator<JavaB
 
 	@Override
 	public void configure(MappingBuildContext buildContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
+			MappingConfigurationCollector configurationCollector) {
 		entityTypeMetadataProvider = entityTypeMetadataProviderBuilder.build();
 
 		SchemaManagementStrategyName schemaManagementStrategyName = SCHEMA_MANAGEMENT_STRATEGY.get(

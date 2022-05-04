@@ -8,12 +8,15 @@ package org.hibernate.search.mapper.pojo.mapping.building.spi;
 
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
 
-public interface PojoTypeMetadataContributor {
+// TODO Remove this interface in the next few commits; we're only keeping it temporarily because it's simpler that way.
+public interface PojoTypeMetadataContributor extends PojoTypeAdditonalMetadataContributor, PojoTypeMappingContributor {
 
+	@Override
 	default void contributeAdditionalMetadata(PojoAdditionalMetadataCollectorTypeNode collector) {
 		// No-op by default
 	}
 
+	@Override
 	default void contributeMapping(PojoMappingCollectorTypeNode collector) {
 		// No-op by default
 	}

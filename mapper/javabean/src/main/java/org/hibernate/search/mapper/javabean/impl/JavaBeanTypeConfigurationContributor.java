@@ -6,10 +6,10 @@
  */
 package org.hibernate.search.mapper.javabean.impl;
 
+
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingBuildContext;
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingConfigurationCollector;
 import org.hibernate.search.mapper.javabean.mapping.metadata.impl.JavaBeanEntityTypeMetadataProvider;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContext;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContributor;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeModel;
@@ -24,7 +24,7 @@ class JavaBeanTypeConfigurationContributor implements PojoMappingConfigurationCo
 
 	@Override
 	public void configure(MappingBuildContext buildContext, PojoMappingConfigurationContext configurationContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
+			MappingConfigurationCollector configurationCollector) {
 		for ( PojoRawTypeModel<?> type : entityTypeMetadataProvider.allEntityTypes() ) {
 			configurationCollector.collectContributor(
 					type,

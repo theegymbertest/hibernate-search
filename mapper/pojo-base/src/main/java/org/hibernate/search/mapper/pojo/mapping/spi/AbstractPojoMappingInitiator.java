@@ -115,7 +115,7 @@ public abstract class AbstractPojoMappingInitiator<MPBS extends MappingPartialBu
 
 	@Override
 	public void configure(MappingBuildContext buildContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
+			MappingConfigurationCollector configurationCollector) {
 		ContainerExtractorRegistry containerExtractorRegistry = containerExtractorRegistryBuilder.build();
 		extractorBinder = new ContainerExtractorBinder( buildContext.beanResolver(),
 				containerExtractorRegistry, typePatternMatcherFactory );
@@ -130,7 +130,7 @@ public abstract class AbstractPojoMappingInitiator<MPBS extends MappingPartialBu
 
 	@Override
 	public Mapper<MPBS> createMapper(MappingBuildContext buildContext,
-			TypeMetadataContributorProvider<PojoTypeMetadataContributor> contributorProvider) {
+			TypeMetadataContributorProvider contributorProvider) {
 		return new PojoMapper<>(
 				buildContext, contributorProvider,
 				introspector,

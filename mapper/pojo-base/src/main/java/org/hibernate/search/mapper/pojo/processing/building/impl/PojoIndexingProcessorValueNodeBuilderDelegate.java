@@ -28,7 +28,7 @@ import org.hibernate.search.mapper.pojo.bridge.binding.impl.BoundValueBridge;
 import org.hibernate.search.mapper.pojo.mapping.building.impl.PojoMappingHelper;
 import org.hibernate.search.mapper.pojo.bridge.binding.spi.FieldModelContributor;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorValueNode;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
+import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMappingContributor;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathCastedTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathOriginalTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.impl.BoundPojoModelPathValueNode;
@@ -135,8 +135,8 @@ class PojoIndexingProcessorValueNodeBuilderDelegate<P, V> extends AbstractPojoPr
 
 		PojoTypeModel<?> targetTypeModel = nestedProcessorBuilder.getModelPath().getTypeModel();
 
-		Set<PojoTypeMetadataContributor> contributors = mappingHelper.contributorProvider()
-				.get( targetTypeModel.rawType() );
+		Set<PojoTypeMappingContributor> contributors = mappingHelper.contributorProvider()
+				.get( targetTypeModel.rawType(), PojoTypeMappingContributor.class );
 		if ( !includeEmbeddedObjectId && contributors.isEmpty() ) {
 			throw log.invalidIndexedEmbedded( targetTypeModel );
 		}

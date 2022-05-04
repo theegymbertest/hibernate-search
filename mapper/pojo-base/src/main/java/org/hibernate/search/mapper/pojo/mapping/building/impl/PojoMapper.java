@@ -48,7 +48,7 @@ import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoContainedTypeExtendedMappingCollector;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMapperDelegate;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMappingCollectorTypeNode;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
+import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMappingContributor;
 import org.hibernate.search.mapper.pojo.mapping.impl.PojoContainedTypeManager;
 import org.hibernate.search.mapper.pojo.mapping.impl.PojoContainedTypeManagerContainer;
 import org.hibernate.search.mapper.pojo.mapping.impl.PojoIndexedTypeManagerContainer;
@@ -77,7 +77,7 @@ public class PojoMapper<MPBS extends MappingPartialBuildState> implements Mapper
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	private final ContextualFailureCollector failureCollector;
-	private final TypeMetadataContributorProvider<PojoTypeMetadataContributor> contributorProvider;
+	private final TypeMetadataContributorProvider contributorProvider;
 	private final BeanReference<? extends IdentifierBridge<Object>> providedIdentifierBridge;
 	private final IdentityMappingMode containedEntityIdentityMappingMode;
 	private final TenancyMode tenancyMode;
@@ -103,7 +103,7 @@ public class PojoMapper<MPBS extends MappingPartialBuildState> implements Mapper
 	private boolean closed = false;
 
 	public PojoMapper(MappingBuildContext buildContext,
-			TypeMetadataContributorProvider<PojoTypeMetadataContributor> contributorProvider,
+			TypeMetadataContributorProvider contributorProvider,
 			PojoBootstrapIntrospector introspector,
 			ContainerExtractorBinder extractorBinder,
 			BridgeResolver bridgeResolver,
@@ -401,7 +401,8 @@ public class PojoMapper<MPBS extends MappingPartialBuildState> implements Mapper
 	}
 
 	private <E> void collectMapping(PojoRawTypeModel<E> type, PojoMappingCollectorTypeNode collector) {
-		for ( PojoTypeMetadataContributor contributor : contributorProvider.get( type ) ) {
+		for ( PojoTypeMappingContributor contributor :
+				contributorProvider.get( type, PojoTypeMappingContributor.class ) ) {
 			contributor.contributeMapping( collector );
 		}
 	}

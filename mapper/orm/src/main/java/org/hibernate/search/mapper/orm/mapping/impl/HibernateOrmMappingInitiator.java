@@ -31,7 +31,6 @@ import org.hibernate.search.mapper.orm.model.impl.HibernateOrmBootstrapIntrospec
 import org.hibernate.search.mapper.orm.coordination.impl.CoordinationConfigurationContextImpl;
 import org.hibernate.search.mapper.orm.session.impl.ConfiguredAutomaticIndexingStrategy;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoMapperDelegate;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.AnnotationMappingConfigurationContext;
 import org.hibernate.search.mapper.pojo.mapping.spi.AbstractPojoMappingInitiator;
 import org.hibernate.search.util.common.impl.Closer;
@@ -108,7 +107,7 @@ public class HibernateOrmMappingInitiator extends AbstractPojoMappingInitiator<H
 
 	@Override
 	public void configure(MappingBuildContext buildContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
+			MappingConfigurationCollector configurationCollector) {
 		BeanResolver beanResolver = buildContext.beanResolver();
 		ConfigurationPropertySource propertySource = buildContext.configurationPropertySource();
 

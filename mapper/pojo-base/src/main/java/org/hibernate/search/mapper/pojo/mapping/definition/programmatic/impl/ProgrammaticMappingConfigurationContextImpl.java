@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingBuildContext;
 import org.hibernate.search.engine.mapper.mapping.building.spi.MappingConfigurationCollector;
-import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.ProgrammaticMappingConfigurationContext;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
 import org.hibernate.search.mapper.pojo.mapping.spi.PojoMappingConfigurationContext;
@@ -33,9 +32,9 @@ public class ProgrammaticMappingConfigurationContextImpl
 
 	@Override
 	public void configure(MappingBuildContext buildContext, PojoMappingConfigurationContext configurationContext,
-			MappingConfigurationCollector<PojoTypeMetadataContributor> configurationCollector) {
-		for ( TypeMappingStepImpl typeMappingContributor : typeMappingContributors.values() ) {
-			typeMappingContributor.configure( buildContext, configurationContext, configurationCollector );
+			MappingConfigurationCollector configurationCollector) {
+		for ( Map.Entry<PojoRawTypeModel<?>, TypeMappingStepImpl> entry : typeMappingContributors.entrySet() ) {
+			configurationCollector.collectContributor( entry.getKey(), entry.getValue() );
 		}
 	}
 

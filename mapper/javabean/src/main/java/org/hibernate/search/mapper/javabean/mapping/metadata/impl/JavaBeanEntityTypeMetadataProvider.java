@@ -63,7 +63,7 @@ public class JavaBeanEntityTypeMetadataProvider {
 		}
 
 		public JavaBeanEntityTypeMetadataProvider build() {
-			TypeMetadataContributorProvider<EntityConfigurer<?>> contributorProvider =
+			TypeMetadataContributorProvider contributorProvider =
 					buildMetadataContributorProvider();
 			// Use a LinkedHashMap for deterministic iteration
 			Map<PojoRawTypeModel<?>, JavaBeanEntityTypeMetadata<?>> entityTypeMetadata = new LinkedHashMap<>();
@@ -76,8 +76,8 @@ public class JavaBeanEntityTypeMetadataProvider {
 			return new JavaBeanEntityTypeMetadataProvider( entityTypeMetadata );
 		}
 
-		TypeMetadataContributorProvider<EntityConfigurer<?>> buildMetadataContributorProvider() {
-			TypeMetadataContributorProvider.Builder<EntityConfigurer<?>> builder =
+		TypeMetadataContributorProvider buildMetadataContributorProvider() {
+			TypeMetadataContributorProvider.Builder builder =
 					TypeMetadataContributorProvider.builder();
 			for ( Map.Entry<PojoRawTypeModel<?>, EntityDefinition<?>> entry : entityDefinitionByType.entrySet() ) {
 				EntityConfigurer<?> configurerOrNull = entry.getValue().configurerOrNull;
@@ -89,10 +89,10 @@ public class JavaBeanEntityTypeMetadataProvider {
 		}
 
 		private <E> JavaBeanEntityTypeMetadata<E> buildEntityTypeMetadata(EntityDefinition<E> definition,
-				TypeMetadataContributorProvider<EntityConfigurer<?>> contributorProvider) {
+				TypeMetadataContributorProvider contributorProvider) {
 			JavaBeanEntityTypeMetadata.Builder<E> builder =
 					new JavaBeanEntityTypeMetadata.Builder<>( definition.entityName );
-			for ( EntityConfigurer<?> configurer : contributorProvider.get( definition.type ) ) {
+			for ( EntityConfigurer<?> configurer : contributorProvider.get( definition.type, EntityConfigurer.class ) ) {
 				@SuppressWarnings("unchecked") // By constructions, all configurers returned here apply to supertypes of E
 				EntityConfigurer<? super E> castConfigurer = (EntityConfigurer<? super E>) configurer;
 				castConfigurer.configure( toConfigurationContext( builder ) );

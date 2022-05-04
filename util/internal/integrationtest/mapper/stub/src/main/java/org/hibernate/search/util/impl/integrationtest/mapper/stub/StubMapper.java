@@ -30,7 +30,7 @@ import org.hibernate.search.engine.tenancy.spi.TenancyMode;
 class StubMapper implements Mapper<StubMappingPartialBuildState>, IndexedEntityBindingMapperContext {
 
 	private final ContextualFailureCollector failureCollector;
-	private final TypeMetadataContributorProvider<StubMappedIndex> contributorProvider;
+	private final TypeMetadataContributorProvider contributorProvider;
 
 	private final TenancyMode tenancyMode;
 
@@ -38,7 +38,7 @@ class StubMapper implements Mapper<StubMappingPartialBuildState>, IndexedEntityB
 	private final Map<IndexedEmbeddedDefinition, IndexedEmbeddedPathTracker> pathTrackers = new HashMap<>();
 
 	StubMapper(MappingBuildContext buildContext,
-			TypeMetadataContributorProvider<StubMappedIndex> contributorProvider,
+			TypeMetadataContributorProvider contributorProvider,
 			TenancyMode tenancyMode) {
 		this.failureCollector = buildContext.failureCollector();
 		this.contributorProvider = contributorProvider;
@@ -98,7 +98,7 @@ class StubMapper implements Mapper<StubMappingPartialBuildState>, IndexedEntityB
 	}
 
 	private Optional<StubMappedIndex> getMappedIndex(MappableTypeModel type) {
-		Set<StubMappedIndex> stubMappedIndices = contributorProvider.get( type );
+		Set<StubMappedIndex> stubMappedIndices = contributorProvider.get( type, StubMappedIndex.class );
 		if ( stubMappedIndices.isEmpty() ) {
 			return Optional.empty();
 		}
