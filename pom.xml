@@ -2226,6 +2226,29 @@
         </pluginManagement>
     </build>
 
+    <repositories>
+        <!--
+            Enable the sonatype-oss Snapshots repository, for Hibernate ORM.
+         -->
+        <repository>
+            <id>sonatype-oss</id>
+            <name>JBoss Public Maven Repository Group</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <layout>default</layout>
+            <releases>
+                <!-- versions-maven-plugin will ignore this repo, even for snapshots,
+                     unless we enable releases.
+                     This is most likely a bug. -->
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <distributionManagement>
         <repository>
             <id>${ossrh.releases.repo.id}</id>

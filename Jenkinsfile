@@ -432,7 +432,7 @@ stage('Default build') {
 							deploy \
 					" : "\
 							install \
-					"} \
+					"} -U \
 					$mavenArgs \
 			"""
 
@@ -899,7 +899,7 @@ void mavenNonDefaultBuild(BuildEnvironment buildEnv, String args, String project
 
 	dir(projectPath) {
 		sh """ \
-				mvn clean install -Dsurefire.environment=$testSuffix \
+				mvn clean install -U -Dsurefire.environment=$testSuffix \
 						${toTestJdkArg(buildEnv)} \
 						--fail-at-end \
 						$args \
