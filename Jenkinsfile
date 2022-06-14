@@ -961,12 +961,12 @@ String toTestJdkArg(BuildEnvironment buildEnv) {
 }
 
 void upgradeToLatestOrmSnapshot() {
-	// Upgrade to the latest snapshot version in the same major + minor
+	// Upgrade to the latest snapshot version in the same major
 	sh """
 			mvn -U org.codehaus.mojo:versions-maven-plugin:2.11.0:update-properties \
 			-DgenerateBackupPoms=false \
 			-DallowMajorUpdates=false \
-			-DallowMinorUpdates=false \
+			-DallowMinorUpdates=true \
 			-DallowSnapshots=true \
 			-DincludeProperties='version.org.hibernate.orm' \
 			-Dmaven.version.rules="file://\$(pwd)/maven-version-plugin-rules.xml" \
