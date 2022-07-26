@@ -103,6 +103,43 @@ public class ElasticsearchIndexSchemaManagerValidationManyIndexesIT {
 		);
 	}
 
+	@Test
+	public void attribute_searchAnalyzer_sameAsAnalyzer_valid() {
+		List<StubMappedIndex> indexes = new ArrayList<>();
+		for ( int i = 0; i < 42; i++ ) {
+			StubMappedIndex index = StubMappedIndex.ofNonRetrievable(
+					root -> root.field( "myField", f -> f.asString()
+									.analyzer( "keyword" ).searchAnalyzer( "keyword" ) ).toReference()
+					)
+					.name( "idx" + i );
+			indexes.add( index );
+		}
+
+		indexes.stream()
+				.map( index -> ForkJoinPool.commonPool().submit( () -> {
+					elasticSearchClient.index( index.name() ).deleteAndCreate();
+					elasticSearchClient.index( index.name() ).type().putMapping(
+							simpleMappingForInitialization(
+									"'myField': {"
+											+ "'type': 'text',"
+											+ "'index': true,"
+											+ "'analyzer': 'keyword',"
+											+ "'search_analyzer': 'keyword'"
+											+ "}"
+							)
+					);
+				} ) )
+				.collect( Collectors.toList())
+				.forEach( ForkJoinTask::join );
+
+		setupAndValidateExpectingFailure(
+				indexes,
+				hasValidationFailureReport()
+						.indexFieldContext( "myField" )
+						.mappingAttributeContext( "search_analyzer" )
+						.failure( "Invalid value. Expected 'keyword', actual is 'null'" ) );
+	}
+
 	private List<StubMappedIndex> createManyIndexes() {
 		List<StubMappedIndex> indexes = new ArrayList<>();
 		for ( int i = 0; i < 42; i++ ) {
