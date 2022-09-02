@@ -26,6 +26,14 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-pojo-base</artifactId>
+            <exclusions>
+                <!-- Already imported by Hibernate ORM, and we want to use *that* version if different
+                     (e.g. if an application developer uses a more recent version of ORM) -->
+                <exclusion>
+                    <groupId>org.hibernate.common</groupId>
+                    <artifactId>hibernate-commons-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
@@ -40,12 +48,18 @@
             <artifactId>jandex</artifactId>
             <!-- DO NOT REMOVE and DO NOT MANAGE the version of this dependency. See the version property declaration. -->
             <version>${version.org.jboss.jandex}</version>
+            <!-- This is a hack to give priority to the version of the dependency brought in by Hibernate ORM
+                 when users depend on a different version of Hibernate ORM than expected. -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>javax.persistence-api</artifactId>
             <!-- DO NOT REMOVE and DO NOT MANAGE the version of this dependency. See the version property declaration. -->
             <version>${version.javax.persistence}</version>
+            <!-- This is a hack to give priority to the version of the dependency brought in by Hibernate ORM
+                 when users depend on a different version of Hibernate ORM than expected. -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
@@ -59,6 +73,9 @@
             <artifactId>hibernate-commons-annotations</artifactId>
             <!-- DO NOT REMOVE and DO NOT MANAGE the version of this dependency. See the version property declaration. -->
             <version>${version.org.hibernate.commons.annotations}</version>
+            <!-- This is a hack to give priority to the version of the dependency brought in by Hibernate ORM
+                 when users depend on a different version of Hibernate ORM than expected. -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
