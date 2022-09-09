@@ -78,7 +78,7 @@ abstract class OutboxEventLoader {
 			Query<OutboxEvent> query = session.createQuery( LOAD_QUERY, OutboxEvent.class );
 			query.setParameter( "ids", ids );
 
-			query.setLockOptions( new LockOptions( LockMode.PESSIMISTIC_WRITE ).setTimeOut( LockOptions.SKIP_LOCKED ) );
+			query.setLockOptions( new LockOptions( LockMode.UPGRADE_SKIPLOCKED ) );
 
 			return query.getResultList();
 		}

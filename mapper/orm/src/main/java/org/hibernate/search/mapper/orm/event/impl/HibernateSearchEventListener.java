@@ -299,7 +299,7 @@ public final class HibernateSearchEventListener implements PostDeleteEventListen
 
 		BitSet dirtyPaths;
 		if ( dirtyCheckingEnabled ) {
-			PersistentCollection persistentCollection = event.getCollection();
+			PersistentCollection<?> persistentCollection = event.getCollection();
 			String collectionRole = null;
 			if ( persistentCollection != null ) {
 				collectionRole = persistentCollection.getRole();

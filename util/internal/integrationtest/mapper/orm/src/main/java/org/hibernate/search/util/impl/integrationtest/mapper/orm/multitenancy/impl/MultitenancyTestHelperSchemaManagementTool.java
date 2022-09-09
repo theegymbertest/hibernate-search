@@ -21,6 +21,7 @@ import org.hibernate.tool.schema.internal.SchemaCreatorImpl;
 import org.hibernate.tool.schema.internal.SchemaDropperImpl;
 import org.hibernate.tool.schema.internal.exec.GenerationTarget;
 import org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase;
+import org.hibernate.tool.schema.internal.exec.JdbcContext;
 import org.hibernate.tool.schema.spi.ContributableMatcher;
 import org.hibernate.tool.schema.spi.DelayedDropAction;
 import org.hibernate.tool.schema.spi.ExecutionOptions;
@@ -29,6 +30,7 @@ import org.hibernate.tool.schema.spi.SchemaCreator;
 import org.hibernate.tool.schema.spi.SchemaDropper;
 import org.hibernate.tool.schema.spi.SchemaManagementTool;
 import org.hibernate.tool.schema.spi.SchemaMigrator;
+import org.hibernate.tool.schema.spi.SchemaTruncator;
 import org.hibernate.tool.schema.spi.SchemaValidator;
 import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.hibernate.tool.schema.spi.TargetDescriptor;
@@ -135,12 +137,23 @@ class MultitenancyTestHelperSchemaManagementTool
 	}
 
 	@Override
+	public SchemaTruncator getSchemaTruncator(Map<String, Object> options) {
+		throw notSupported();
+	}
+
+	@Override
 	public void setCustomDatabaseGenerationTarget(GenerationTarget generationTarget) {
 		throw notSupported();
 	}
 
 	@Override
 	public ExtractionTool getExtractionTool() {
+		throw notSupported();
+	}
+
+	@Override
+	public GenerationTarget[] buildGenerationTargets(TargetDescriptor targetDescriptor, JdbcContext jdbcContext,
+			Map<String, Object> options, boolean needsAutoCommit) {
 		throw notSupported();
 	}
 

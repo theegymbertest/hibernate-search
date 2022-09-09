@@ -1129,10 +1129,10 @@ public class ToHibernateOrmScrollableResultsIT {
 	public void close() {
 		setupHolder.runInTransaction( session -> {
 			expectScrollCreate();
-			try ( ScrollableResults<?> scroll = createSimpleQuery( session ).scroll() ) {
+			try ( ScrollableResults<IndexedEntity> scroll = createSimpleQuery( session ).scroll() ) {
 				backendMock.verifyExpectationsMet();
 
-				ScrollableResultsImplementor implementor = (ScrollableResultsImplementor) scroll;
+				ScrollableResultsImplementor<IndexedEntity> implementor = (ScrollableResultsImplementor<IndexedEntity>) scroll;
 
 				assertThat( implementor.isClosed() ).isFalse();
 

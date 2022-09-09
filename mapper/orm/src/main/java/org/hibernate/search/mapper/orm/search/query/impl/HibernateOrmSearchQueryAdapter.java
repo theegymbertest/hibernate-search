@@ -235,12 +235,12 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 	}
 
 	@Override
-	public QueryImplementor<R> setParameterList(String s, Collection collection, Class aClass) {
+	public <P> QueryImplementor<R> setParameterList(String s, Collection<? extends P> collection, Class<P> aClass) {
 		throw parametersNoSupported();
 	}
 
 	@Override
-	public QueryImplementor<R> setParameterList(int i, Collection collection, Class aClass) {
+	public <P> QueryImplementor<R> setParameterList(int i, Collection<? extends P> collection, Class<P> aClass) {
 		throw parametersNoSupported();
 	}
 
@@ -249,12 +249,12 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 	}
 
 	@Override
-	public QueryImplementor<R> setTupleTransformer(TupleTransformer transformer) {
+	public <T> QueryImplementor<T> setTupleTransformer(TupleTransformer<T> transformer) {
 		throw resultOrTupleTransformerNotImplemented();
 	}
 
 	@Override
-	public QueryImplementor<R> setResultListTransformer(ResultListTransformer resultListTransformer) {
+	public QueryImplementor<R> setResultListTransformer(ResultListTransformer<R> resultListTransformer) {
 		throw resultOrTupleTransformerNotImplemented();
 	}
 

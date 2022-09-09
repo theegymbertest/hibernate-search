@@ -108,8 +108,7 @@ public final class HibernateOrmUtils {
 
 	public static boolean targetsAllConcreteSubTypes(SessionFactoryImplementor sessionFactory,
 			EntityPersister parentType, Collection<?> targetConcreteSubTypes) {
-		@SuppressWarnings("unchecked")
-		Set<String> subClassEntityNames = parentType.getEntityMetamodel().getSubclassEntityNames();
+		Set<String> subClassEntityNames = parentType.getEntityMappingType().getSubclassEntityNames();
 		// Quick check to return true immediately if all subtypes are concrete
 		if ( subClassEntityNames.size() == targetConcreteSubTypes.size() ) {
 			return true;
