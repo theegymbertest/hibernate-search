@@ -94,7 +94,6 @@
         <dependency>
             <groupId>${jdbc.driver.groupId}</groupId>
             <artifactId>${jdbc.driver.artifactId}</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -113,6 +112,27 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${version.org.springframework.boot}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.hibernate.search.integrationtest.showcase.library.Application</mainClass>
+                    <fork>true</fork>
+                    <!--
+                    Enable the line below to have remote debugging of your application on port 5005
+                    <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</jvmArguments>
+                    -->
+                    <jvmArguments>-Djgroups.tcp.address=NON_LOOPBACK -Djava.net.preferIPv4Stack=true -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005</jvmArguments>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.jboss.jandex</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
