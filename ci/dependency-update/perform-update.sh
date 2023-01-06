@@ -36,7 +36,8 @@ then
 	shift
 fi
 
-: ${BRANCH_NAME:="$(git branch --show-current)"}
+#: ${BRANCH_NAME:="$(git branch --show-current)"}
+BRANCH_NAME=main
 
 WIP_BRANCH_NAME="wip/${BRANCH_NAME}/dependency-update/${DEPENDENCY_UPDATE_NAME}"
 echo "Searching for WIP branch '$WIP_BRANCH_NAME'..."
