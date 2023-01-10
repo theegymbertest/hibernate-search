@@ -6,6 +6,7 @@
  */
 package org.hibernate.search.test.testsupport;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +21,8 @@ import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.mapper.orm.schema.management.SchemaManagementStrategyName;
 import org.hibernate.search.testsupport.TestConstants;
 import org.hibernate.search.testsupport.configuration.V5MigrationHelperTestLuceneBackendConfiguration;
+import org.hibernate.search.util.common.logging.impl.Log;
+import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendSetupStrategy;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.BackendMappingHandle;
 import org.hibernate.search.util.impl.integrationtest.common.rule.MappingSetupHelper;
@@ -30,6 +33,8 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.multitenancy.im
 public final class V5MigrationHelperOrmSetupHelper
 		extends MappingSetupHelper<V5MigrationHelperOrmSetupHelper.SetupContext, SimpleSessionFactoryBuilder, SimpleSessionFactoryBuilder, SessionFactory> {
 
+	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
+
 	public static V5MigrationHelperOrmSetupHelper create() {
 		return new V5MigrationHelperOrmSetupHelper(
 				BackendSetupStrategy.withSingleBackend( new V5MigrationHelperTestLuceneBackendConfiguration() )
@@ -38,6 +43,7 @@ public final class V5MigrationHelperOrmSetupHelper
 
 	private V5MigrationHelperOrmSetupHelper(BackendSetupStrategy backendSetupStrategy) {
 		super( backendSetupStrategy );
+		log.infof( "Tested Hibernate ORM version: %s", org.hibernate.Version.getVersionString() );
 	}
 
 	@Override

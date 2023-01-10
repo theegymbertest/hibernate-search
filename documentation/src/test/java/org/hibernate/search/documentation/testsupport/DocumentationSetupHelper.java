@@ -6,6 +6,7 @@
  */
 package org.hibernate.search.documentation.testsupport;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +22,8 @@ import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.mapper.orm.mapping.HibernateOrmSearchMappingConfigurer;
 import org.hibernate.search.mapper.orm.schema.management.SchemaManagementStrategyName;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.ProgrammaticMappingConfigurationContext;
+import org.hibernate.search.util.common.logging.impl.Log;
+import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendConfiguration;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendSetupStrategy;
 import org.hibernate.search.util.impl.integrationtest.common.rule.MappingSetupHelper;
@@ -31,6 +34,8 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.multitenancy.im
 
 public final class DocumentationSetupHelper
 		extends MappingSetupHelper<DocumentationSetupHelper.SetupContext, SimpleSessionFactoryBuilder, SimpleSessionFactoryBuilder, SessionFactory> {
+
+	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	public static List<DocumentationSetupHelper> testParamsForBothAnnotationsAndProgrammatic(
 			BackendConfiguration backendConfiguration,
@@ -112,6 +117,7 @@ public final class DocumentationSetupHelper
 		super( backendSetupStrategy );
 		this.annotationProcessingEnabled = annotationProcessingEnabled;
 		this.defaultMappingConfigurer = defaultMappingConfigurer;
+		log.infof( "Tested Hibernate ORM version: %s", org.hibernate.Version.getVersionString() );
 	}
 
 	@Override

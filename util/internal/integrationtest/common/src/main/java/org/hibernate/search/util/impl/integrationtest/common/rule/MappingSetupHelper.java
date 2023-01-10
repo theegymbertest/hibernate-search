@@ -6,6 +6,7 @@
  */
 package org.hibernate.search.util.impl.integrationtest.common.rule;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,15 +19,21 @@ import java.util.stream.Collectors;
 
 import org.hibernate.search.engine.cfg.EngineSettings;
 import org.hibernate.search.util.common.impl.Closer;
+import org.hibernate.search.util.common.logging.impl.Log;
+import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.impl.integrationtest.common.TestConfigurationProvider;
 import org.hibernate.search.util.impl.integrationtest.common.stub.backend.BackendMappingHandle;
 
+import org.hibernate.search.util.impl.test.ClassPathHelper;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-public abstract class MappingSetupHelper<C extends MappingSetupHelper<C, B, BC, R>.AbstractSetupContext, B, BC, R> implements TestRule {
+public abstract class MappingSetupHelper<C extends MappingSetupHelper<C, B, BC, R>.AbstractSetupContext, B, BC, R>
+		implements TestRule {
+
+	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	private final TestConfigurationProvider configurationProvider;
 	private final BackendSetupStrategy backendSetupStrategy;
@@ -41,6 +48,8 @@ public abstract class MappingSetupHelper<C extends MappingSetupHelper<C, B, BC, 
 		this.delegateRule = setupStrategyTestRule
 				.<TestRule>map( rule -> RuleChain.outerRule( configurationProvider ).around( rule ) )
 				.orElse( configurationProvider );
+		log.infof( "Test classpath: %s",
+				ClassPathHelper.collectClassPath( MappingSetupHelper.class.getClassLoader() ) );
 	}
 
 	@Override

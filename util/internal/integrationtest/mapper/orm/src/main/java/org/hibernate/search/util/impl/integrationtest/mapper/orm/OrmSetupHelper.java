@@ -8,6 +8,7 @@ package org.hibernate.search.util.impl.integrationtest.mapper.orm;
 
 import static org.junit.Assume.assumeFalse;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +25,8 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.search.mapper.orm.cfg.HibernateOrmMapperSettings;
 import org.hibernate.search.mapper.orm.schema.management.SchemaManagementStrategyName;
 import org.hibernate.search.util.common.impl.Closer;
+import org.hibernate.search.util.common.logging.impl.Log;
+import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendConfiguration;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendMock;
 import org.hibernate.search.util.impl.integrationtest.common.rule.BackendSetupStrategy;
@@ -33,6 +36,8 @@ import org.hibernate.search.util.impl.integrationtest.mapper.orm.multitenancy.im
 
 public final class OrmSetupHelper
 		extends MappingSetupHelper<OrmSetupHelper.SetupContext, SimpleSessionFactoryBuilder, SimpleSessionFactoryBuilder, SessionFactory> {
+
+	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	private static final CoordinationStrategyExpectations DEFAULT_COORDINATION_STRATEGY_EXPECTATIONS;
 	private static final Map<String, Object> DEFAULT_PROPERTIES;
@@ -108,6 +113,7 @@ public final class OrmSetupHelper
 		super( backendSetupStrategy );
 		this.backendMocks = backendMocks;
 		this.schemaManagementStrategyName = schemaManagementStrategyName;
+		log.infof( "Tested Hibernate ORM version: %s", org.hibernate.Version.getVersionString() );
 	}
 
 	public OrmSetupHelper coordinationStrategy(CoordinationStrategyExpectations coordinationStrategyExpectations) {
