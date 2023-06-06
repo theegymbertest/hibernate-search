@@ -16,6 +16,7 @@ import org.hibernate.search.backend.elasticsearch.util.spi.URLEncodedString;
 import org.hibernate.search.backend.elasticsearch.work.factory.impl.ElasticsearchWorkFactory;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
+import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -40,12 +41,20 @@ public class ElasticsearchIndexWorkspace implements IndexWorkspace {
 	}
 
 	@Override
-	public CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter) {
-		return orchestrator.submit( workFactory.mergeSegments().index( indexName ).build(), operationSubmitter );
+	public CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter,
+			UnsupportedOperationBehavior unsupportedOperationBehavior) {
+		if ( workFactory.isMergeSegmentsSupported() || UnsupportedOperationBehavior.FAIL.equals( unsupportedOperationBehavior ) ) {
+			return orchestrator.submit( workFactory.mergeSegments().index( indexName ).build(), operationSubmitter );
+		}
+		else {
+			return CompletableFuture.completedFuture( null );
+		}
 	}
 
 	@Override
-	public CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter) {
+	public CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter,
+			// Purge is always supported
+			UnsupportedOperationBehavior ignored) {
 		JsonArray filters = new JsonArray();
 		JsonObject filter = multiTenancyStrategy.filterOrNull( tenantIds );
 		if ( filter != null ) {
@@ -70,12 +79,24 @@ public class ElasticsearchIndexWorkspace implements IndexWorkspace {
 	}
 
 	@Override
-	public CompletableFuture<?> flush(OperationSubmitter operationSubmitter) {
-		return orchestrator.submit( workFactory.flush().index( indexName ).build(), operationSubmitter );
+	public CompletableFuture<?> flush(OperationSubmitter operationSubmitter,
+			UnsupportedOperationBehavior unsupportedOperationBehavior) {
+		if ( workFactory.isFlushSupported() || UnsupportedOperationBehavior.FAIL.equals( unsupportedOperationBehavior ) ) {
+			return orchestrator.submit( workFactory.flush().index( indexName ).build(), operationSubmitter );
+		}
+		else {
+			return CompletableFuture.completedFuture( null );
+		}
 	}
 
 	@Override
-	public CompletableFuture<?> refresh(OperationSubmitter operationSubmitter) {
-		return orchestrator.submit( workFactory.refresh().index( indexName ).build(), operationSubmitter );
+	public CompletableFuture<?> refresh(OperationSubmitter operationSubmitter,
+			UnsupportedOperationBehavior unsupportedOperationBehavior) {
+		if ( workFactory.isRefreshSupported() || UnsupportedOperationBehavior.FAIL.equals( unsupportedOperationBehavior ) ) {
+			return orchestrator.submit( workFactory.refresh().index( indexName ).build(), operationSubmitter );
+		}
+		else {
+			return CompletableFuture.completedFuture( null );
+		}
 	}
 }

@@ -7,8 +7,11 @@
 Hibernate Search expects an link:{elasticsearchUrl}[Elasticsearch] cluster running version {elasticsearchExpectedRunningVersions},
 or an link:{openSearchUrl}[OpenSearch] cluster running version {opensearchExpectedRunningVersions}.
 
-The version running on your cluster will be automatically detected on startup,
-and Hibernate Search will adapt based on the detected version;
+Where possible, the version running on your cluster will be automatically detected on startup,
+and Hibernate Search will adapt based on the detected version.
+When detection is not possible (e.g. with link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless]),
+or if your application must not make an HTTP call to the cluster on startup,
+you can configure the version explicitly:
 see <<backend-elasticsearch-configuration-version>> for details.
 
 [TIP]
@@ -20,14 +23,30 @@ refer to the https://hibernate.org/community/compatibility-policy/#compatibility
 
 The targeted version is mostly transparent to Hibernate Search users,
 but there are a few differences in how Hibernate Search behaves depending
-on the Elasticsearch version that may affect you.
+on the Elasticsearch distribution and version that may affect you.
 The following table details those differences.
 
-[cols="h,4*",options="header"]
+[cols="h,5*",options="header"]
 |===============
-| 2+|Elasticsearch 2+|OpenSearch
-||7.x|8.x|1.x|2.x
+| 2+|Elasticsearch 2+|OpenSearch |link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless]
+||7.x|8.x|1.x|2.x|
+|<<backend-elasticsearch-configuration-version-check,Distribution/version detection on startup>> 4+|Available |Not available, must be configured explicitly
+|Explicit <<indexing-workspace-flush,flush>>, <<indexing-workspace-refresh,refresh>>, and <<indexing-workspace-merge-segments,merge segments>> 4+|Available |Not available
+|<<backend-elasticsearch-index-lifecycle,Minimal index status requirement>> for schema management 4+|Available |Not available
 |===============
+
+[[backend-elasticsearch-compatibility-amazon]]
+=== Amazon OpenSearch Service
+
+Amazon's managed OpenSearch services (both link:{amazonOpenSearchServiceUrl}[classic]
+and link:{amazonOpenSearchServerlessUrl}[serverless])
+require <<backend-elasticsearch-configuration-aws,proprietary authentication>> that involves extra configuration.
+
+Also, some operations are not available on link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless],
+in particular:
+
+*
+* .
 
 [[backend-elasticsearch-upgrading]]
 === [[_upgrading_elasticsearch]] Upgrading Elasticsearch
@@ -182,8 +201,9 @@ your password will be transmitted in clear text over the network.
 === [[elasticsearch-integration-configuration-aws]] Authentication on Amazon Web Services
 
 The Hibernate Search Elasticsearch backend, once configured, will work just fine in most setups.
-However, if you need to use Amazon's link:{amazonOpenSearchServiceUrl}[managed OpenSearch service],
-you will find it requires a proprietary authentication method:
+However, if you need to use Amazon's link:{amazonOpenSearchServiceUrl}[managed OpenSearch service]
+or link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless],
+you will find they require a proprietary authentication method:
 https://docs.aws.amazon.com/opensearch-service/latest/developerguide/request-signing.html[request signing].
 
 While request signing is not supported by default,
@@ -349,7 +369,7 @@ Any setting defined by a custom http client configurer will override any other s
 == [[backend-elasticsearch-configuration-dialect]] Version compatibility
 
 [[backend-elasticsearch-configuration-version-check]]
-=== Version check on startup
+=== Version detection on startup
 
 Different distributions and versions of Elasticsearch/OpenSearch expose slightly different APIs.
 As a result, Hibernate Search needs to be aware of the distribution and version it is talking to
@@ -362,7 +382,7 @@ You can force Hibernate Search to expect a specific version of Elasticsearch/Ope
 setting the property `hibernate.search.backend.version` to a version string
 following the format `x.y.z-qualifier` or `<distribution>:x.y.z-qualifier`, where:
 
-* `<distribution>` is either `elastic` or `opensearch`. Optional, defaults to `elastic`.
+* `<distribution>` is either `elastic`, `opensearch` or `amazon-opensearch-serverless`. Optional, defaults to `elastic`.
 * `x`, `y` and `z` are integers. `x` is mandatory, `y` and `z` are optional.
 * `qualifier` is a string of word characters (alphanumeric or `_`). Optional.
 
@@ -380,6 +400,12 @@ If necessary, you can disable the call to the Elasticsearch/OpenSearch cluster o
 and provide the information manually.
 
 To do that, set the property `hibernate.search.backend.version_check.enabled` to `false`.
+
+[NOTE]
+====
+The check is already disabled by default for link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless],
+because it doesn't allow retrieving the underlying version of OpenSearch.
+====
 
 You will also have to set the property `hibernate.search.backend.version` to a version string
 as explained in the <<backend-elasticsearch-configuration-version-check,previous section>>.
@@ -426,7 +452,9 @@ hibernate.search.backend.indexes.<index-name>.schema_management.minimal_required
 ----
 
 * `minimal_required_status` defines the minimal required status of an index before creation is considered complete.
-The default for this property is `yellow`.
+The default for this property is `yellow`,
+except on link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless]
+where index status checks are skipped because Amazon OpenSearch Serverless does not support index status checks.
 * `minimal_required_status_wait_timeout` defines the maximum time to wait for this status,
 as an <<configuration-property-types,integer value>> in milliseconds.
 The default for this property is `10000`.

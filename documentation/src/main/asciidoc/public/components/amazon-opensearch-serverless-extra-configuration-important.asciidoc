@@ -1,0 +1,7 @@
+[IMPORTANT]
+====
+link:{amazonOpenSearchServerlessUrl}[Amazon OpenSearch Serverless]
+requires additional configuration:
+since it doesn't allow retrieving the underlying version of OpenSearch,
+you will need to <<backend-elasticsearch-configuration-version-check-disabling,disable version checks on startup>>.
+====

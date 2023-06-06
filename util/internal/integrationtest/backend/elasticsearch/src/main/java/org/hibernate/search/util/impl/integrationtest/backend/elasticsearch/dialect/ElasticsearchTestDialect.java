@@ -110,7 +110,7 @@ public class ElasticsearchTestDialect {
 				throw new IllegalArgumentException( "Qualifiers are ignored for version ranges." );
 			}
 
-			return Comparator.comparing( ElasticsearchVersion::major )
+			return Comparator.comparing( (ElasticsearchVersion version) -> version.majorOptional().orElse( defaultInt ) )
 					.thenComparing( version -> version.minor().orElse( defaultInt ) )
 					.thenComparing( version -> version.micro().orElse( defaultInt ) )
 					.compare( a, b );

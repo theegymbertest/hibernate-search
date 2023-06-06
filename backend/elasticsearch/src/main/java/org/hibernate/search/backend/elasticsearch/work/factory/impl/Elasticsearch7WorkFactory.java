@@ -75,13 +75,28 @@ public class Elasticsearch7WorkFactory implements ElasticsearchWorkFactory {
 	}
 
 	@Override
+	public boolean isFlushSupported() {
+		return true;
+	}
+
+	@Override
 	public FlushWork.Builder flush() {
 		return new FlushWork.Builder();
 	}
 
 	@Override
+	public boolean isRefreshSupported() {
+		return true;
+	}
+
+	@Override
 	public RefreshWork.Builder refresh() {
 		return new RefreshWork.Builder();
+	}
+
+	@Override
+	public boolean isMergeSegmentsSupported() {
+		return true;
 	}
 
 	@Override
@@ -160,7 +175,12 @@ public class Elasticsearch7WorkFactory implements ElasticsearchWorkFactory {
 	}
 
 	@Override
-	public WaitForIndexStatusWork.Builder waitForIndexStatusWork(URLEncodedString indexName, IndexStatus requiredStatus,
+	public boolean isWaitForIndexStatusSupported() {
+		return true;
+	}
+
+	@Override
+	public WaitForIndexStatusWork.Builder waitForIndexStatus(URLEncodedString indexName, IndexStatus requiredStatus,
 			int requiredStatusTimeoutInMs) {
 		return new WaitForIndexStatusWork.Builder( indexName, requiredStatus, requiredStatusTimeoutInMs );
 	}
