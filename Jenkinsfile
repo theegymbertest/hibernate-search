@@ -272,7 +272,11 @@ stage('Configure') {
 					new OpenSearchAwsBuildEnvironment(version: '2.3', condition: TestCondition.ON_DEMAND),
 					new OpenSearchAwsBuildEnvironment(version: '2.5', condition: TestCondition.AFTER_MERGE),
 					// Also test static credentials, but only for the latest version
-					new OpenSearchAwsBuildEnvironment(version: '2.5', condition: TestCondition.AFTER_MERGE, staticCredentials: true)
+					new OpenSearchAwsBuildEnvironment(version: '2.5', condition: TestCondition.AFTER_MERGE, staticCredentials: true),
+
+					// --------------------------------------------
+					// AWS OpenSearch Serverless
+					new OpenSearchServerlessAwsBuildEnvironment(version: '1.0', condition: TestCondition.AFTER_MERGE)
 			]
 	])
 
@@ -708,40 +712,48 @@ class DatabaseBuildEnvironment extends BuildEnvironment {
 
 class EsLocalBuildEnvironment extends BuildEnvironment {
 	String version
+	String getTagPrefix() { 'elasticsearch' }
 	@Override
-    String getTag() { "elasticsearch-local-$version" }
-    String getDistribution() { "elastic" }
+	String getTag() { "$tagPrefix-local-$version" }
+	String getDistribution() { 'elastic' }
 }
 
 class OpenSearchLocalBuildEnvironment extends EsLocalBuildEnvironment {
 	String version
 	@Override
-	String getTag() { "opensearch-local-$version" }
+	String getTagPrefix() { 'opensearch' }
 	@Override
-	String getDistribution() { "opensearch" }
+	String getDistribution() { 'opensearch' }
 }
 
 class EsAwsBuildEnvironment extends EsLocalBuildEnvironment {
 	boolean staticCredentials = false
 	@Override
-	String getTag() { "elasticsearch-aws-$version" + (staticCredentials ? "-credentials-static" : "") }
-	String getNameEmbeddableVersion() {
-		version.replaceAll('\\.', '-')
+	String getTag() {
+		"$tagPrefix-aws-$version" + (staticCredentials ? '-credentials-static' : '')
 	}
+	String getLockedResourcesPrefix() { 'es' }
 	String getLockedResourcesLabel() {
-		"es-aws-${nameEmbeddableVersion}"
+		"$lockedResourcesPrefix-aws-${version.replaceAll('\\.', '-')}"
 	}
 }
 
 class OpenSearchAwsBuildEnvironment extends EsAwsBuildEnvironment {
 	@Override
-	String getTag() { "opensearch-aws-$version" + (staticCredentials ? "-credentials-static" : "") }
+	String getTagPrefix() { 'opensearch' }
 	@Override
-	String getDistribution() { "opensearch" }
+	String getDistribution() { 'opensearch' }
 	@Override
-	String getLockedResourcesLabel() {
-		"opensearch-aws-${nameEmbeddableVersion}"
-	}
+	String getLockedResourcesPrefix() { 'opensearch' }
+}
+
+class OpenSearchServerlessAwsBuildEnvironment extends OpenSearchAwsBuildEnvironment {
+	@Override
+	String getTagPrefix() { 'opensearch-serverless' }
+	@Override
+	String getDistribution() { 'amazon-opensearch-serverless' }
+	@Override
+	String getLockedResourcesPrefix() { 'opensearch-serverless' }
 }
 
 void keepOnlyEnvironmentsMatchingFilter(String regex) {

@@ -33,7 +33,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:6.7.0" ),
 						es -> es.isBetween( "6.7", "6.9" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -41,7 +42,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isBetween( "1.0.1", "1.1.2" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -49,7 +51,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isBetween( "1.1.1", "1.1.2" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -57,7 +60,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.2" ),
 						es -> es.isBetween( "1.1.1", "1.1.2" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -65,7 +69,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:2.2.2" ),
 						es -> es.isBetween( "1.1", "2.2" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -73,7 +78,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:2.2.2" ),
 						es -> es.isBetween( "1", "2" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 	}
@@ -84,7 +90,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> false,
-						os -> true
+						os -> true,
+						oss -> true
 				)
 		).isFalse();
 
@@ -92,7 +99,17 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "opensearch:1.1.1" ),
 						es -> true,
-						os -> false
+						os -> false,
+						oss -> true
+				)
+		).isFalse();
+
+		assertThat(
+				isVersion(
+						ElasticsearchVersion.of( "amazon-opensearch-serverless:1" ),
+						es -> true,
+						os -> true,
+						oss -> false
 				)
 		).isFalse();
 
@@ -100,7 +117,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> true,
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -108,7 +126,17 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "opensearch:1.1.1" ),
 						es -> false,
-						os -> true
+						os -> true,
+						oss -> false
+				)
+		).isTrue();
+
+		assertThat(
+				isVersion(
+						ElasticsearchVersion.of( "amazon-opensearch-serverless:1" ),
+						es -> false,
+						os -> false,
+						oss -> true
 				)
 		).isTrue();
 	}
@@ -119,7 +147,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isMatching( "1.1.2" ),
-						os -> true
+						os -> true,
+						oss -> true
 				)
 		).isFalse();
 
@@ -127,7 +156,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isMatching( "1.1.1" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -135,7 +165,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isMatching( "1.1" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 	}
@@ -146,7 +177,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.2" ),
 						es -> es.isAtMost( "1.1.1" ),
-						os -> true
+						os -> true,
+						oss -> true
 				)
 		).isFalse();
 
@@ -154,7 +186,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "opensearch:1.1.1" ),
 						es -> true,
-						os -> os.isAtMost( "1.1.0" )
+						os -> os.isAtMost( "1.1.0" ),
+						oss -> true
 				)
 		).isFalse();
 
@@ -162,7 +195,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isAtMost( "1.1.1" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -170,7 +204,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.0.1" ),
 						es -> es.isAtMost( "1.1.1" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 	}
@@ -181,7 +216,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isLessThan( "1.1.2" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 
@@ -189,7 +225,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "opensearch:1.1.1" ),
 						es -> true,
-						os -> os.isLessThan( "1.1.0" )
+						os -> os.isLessThan( "1.1.0" ),
+						oss -> true
 				)
 		).isFalse();
 
@@ -197,7 +234,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1" ),
 						es -> es.isLessThan( "1.1.0" ),
-						os -> true
+						os -> true,
+						oss -> true
 				)
 		).isFalse();
 
@@ -205,7 +243,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.1.1" ),
 						es -> es.isLessThan( "1.0.1" ),
-						os -> true
+						os -> true,
+						oss -> true
 				)
 		).isFalse();
 
@@ -213,7 +252,8 @@ public class ElasticsearchTestDialectVersionTest {
 				isVersion(
 						ElasticsearchVersion.of( "elastic:1.0.1" ),
 						es -> es.isLessThan( "1.1.1" ),
-						os -> false
+						os -> false,
+						oss -> false
 				)
 		).isTrue();
 	}

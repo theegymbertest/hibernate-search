@@ -40,14 +40,29 @@ public class ElasticsearchTestDialect {
 		return isVersion(
 				ACTUAL_VERSION,
 				elasticsearchPredicate,
+				opensearchPredicate,
 				opensearchPredicate
+		);
+	}
+
+	public static boolean isActualVersion(
+			Predicate<ElasticsearchVersionCondition> elasticsearchPredicate,
+			Predicate<ElasticsearchVersionCondition> opensearchPredicate,
+			Predicate<ElasticsearchVersionCondition> opensearchServerlessPredicate
+	) {
+		return isVersion(
+				ACTUAL_VERSION,
+				elasticsearchPredicate,
+				opensearchPredicate,
+				opensearchServerlessPredicate
 		);
 	}
 
 	static boolean isVersion(
 			ElasticsearchVersion version,
 			Predicate<ElasticsearchVersionCondition> elasticsearchPredicate,
-			Predicate<ElasticsearchVersionCondition> opensearchPredicate
+			Predicate<ElasticsearchVersionCondition> opensearchPredicate,
+			Predicate<ElasticsearchVersionCondition> opensearchServerlessPredicate
 	) {
 		ElasticsearchVersionCondition condition = new ElasticsearchVersionCondition( version );
 
@@ -56,6 +71,8 @@ public class ElasticsearchTestDialect {
 				return elasticsearchPredicate.test( condition );
 			case OPENSEARCH:
 				return opensearchPredicate.test( condition );
+			case AMAZON_OPENSEARCH_SERVERLESS:
+				return opensearchServerlessPredicate.test( condition );
 			default:
 				throw new IllegalStateException( "Unknown distribution" );
 		}

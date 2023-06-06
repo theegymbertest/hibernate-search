@@ -56,7 +56,7 @@ public abstract class StubMappedIndex {
 	private String typeName;
 	private String backendName;
 	private MappedIndexManager manager;
-	private StubMapping mapping;
+	private StubMappingImpl mapping;
 
 	public StubMappedIndex() {
 		this.indexName = "indexName";
@@ -124,7 +124,18 @@ public abstract class StubMappedIndex {
 	}
 
 	public BulkIndexer bulkIndexer(StubSession sessionContext, boolean refresh) {
-		return new BulkIndexer( delegate(), sessionContext, refresh );
+		boolean refreshEachBatch;
+		boolean refreshAtEnd;
+		if ( mapping.backendFeatures().supportsExplicitRefresh() ) {
+			refreshEachBatch = false;
+			refreshAtEnd = refresh;
+		}
+		else {
+			// This will perform poorly, but we don't have a choice since we can't do an explicit refresh.
+			refreshEachBatch = refresh;
+			refreshAtEnd = false;
+		}
+		return new BulkIndexer( delegate(), sessionContext, refreshEachBatch, refreshAtEnd );
 	}
 
 	public IndexIndexingPlan createIndexingPlan() {
@@ -230,7 +241,7 @@ public abstract class StubMappedIndex {
 		this.manager = manager;
 	}
 
-	protected void onMappingCreated(StubMapping mapping) {
+	protected void onMappingCreated(StubMappingImpl mapping) {
 		this.mapping = mapping;
 	}
 

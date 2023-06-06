@@ -9,6 +9,7 @@ package org.hibernate.search.integrationtest.backend.tck.work;
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
 import static org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMapperUtils.referenceProvider;
 import static org.hibernate.search.util.impl.test.FutureAssert.assertThatFuture;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -25,6 +26,7 @@ import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexIndexer;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.configuration.DefaultAnalysisDefinitions;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.common.logging.impl.Log;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -76,6 +78,13 @@ public class IndexIndexerIT {
 	@Before
 	public void setup() {
 		setupHelper.start().withIndex( index ).setup();
+
+		if ( refreshStrategy == DocumentRefreshStrategy.NONE ) {
+			assumeTrue(
+					"Can only test indexers with DocumentRefreshStrategy.NONE if the backend supports explicit refresh",
+					TckConfiguration.get().getBackendFeatures().supportsExplicitRefresh()
+			);
+		}
 	}
 
 	@Test

@@ -7,19 +7,31 @@
 package org.hibernate.search.integrationtest.backend.tck.work;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendAccessor;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
+
+import org.junit.Before;
 
 public class IndexWorkspaceRefreshIT extends AbstractIndexWorkspaceSimpleOperationIT {
 
 	public IndexWorkspaceRefreshIT() {
 		super( new SearchSetupHelper( helper -> helper.createRarePeriodicRefreshBackendSetupStrategy() ) );
+	}
+
+	@Before
+	public void checkAssumptions() {
+		assumeTrue(
+				"This test only makes sense if the backend supports explicit refresh",
+				TckConfiguration.get().getBackendFeatures().supportsExplicitRefresh()
+		);
 	}
 
 	@Override

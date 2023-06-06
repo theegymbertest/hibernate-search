@@ -7,6 +7,7 @@
 package org.hibernate.search.integrationtest.backend.tck.sharding;
 
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.impl.test.annotation.PortedFromSearch5;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
@@ -102,6 +104,8 @@ public class ShardingHashDocumentIdIT extends AbstractShardingIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3824")
 	public void purgeWithRoutingKey() {
+		assumePurgeAndRefreshSupported();
+
 		Iterator<String> iterator = docIds.iterator();
 		String someDocumentId = iterator.next();
 
@@ -113,6 +117,14 @@ public class ShardingHashDocumentIdIT extends AbstractShardingIT {
 				.hits().asNormalizedDocRefs()
 				.hasSize( TOTAL_DOCUMENT_COUNT )
 				.containsExactlyInAnyOrder( allDocRefs( docIdByRoutingKey ) );
+	}
+
+	private static void assumePurgeAndRefreshSupported() {
+		assumeTrue(
+				"This test only makes sense if the backend supports explicit purge and refresh",
+				TckConfiguration.get().getBackendFeatures().supportsExplicitPurge()
+						&& TckConfiguration.get().getBackendFeatures().supportsExplicitRefresh()
+		);
 	}
 
 }

@@ -24,6 +24,7 @@ import org.hibernate.search.engine.backend.work.execution.spi.DocumentContributo
 import org.hibernate.search.engine.backend.work.execution.spi.DocumentReferenceProvider;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexIndexer;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.configuration.DefaultAnalysisDefinitions;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.SimpleMappedIndex;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
@@ -63,7 +64,13 @@ public class IndexIndexerLargeDocumentsIT {
 
 	private final SimpleMappedIndex<IndexBinding> index = SimpleMappedIndex.of( IndexBinding::new );
 
+	private final DocumentRefreshStrategy refreshStrategy;
+
 	public IndexIndexerLargeDocumentsIT() {
+		refreshStrategy = TckConfiguration.get().getBackendFeatures().supportsExplicitRefresh()
+				? DocumentRefreshStrategy.NONE
+				// This will perform poorly, but we don't have a choice.
+				: DocumentRefreshStrategy.FORCE;
 	}
 
 	@Before
@@ -98,7 +105,10 @@ public class IndexIndexerLargeDocumentsIT {
 
 		indexAndWait( count, valueProvider, operation );
 
-		index.createWorkspace().refresh( OperationSubmitter.blocking() ).join();
+		if ( refreshStrategy == DocumentRefreshStrategy.NONE ) {
+			// If the operation itself did not refresh, do it now.
+			index.createWorkspace().refresh( OperationSubmitter.blocking() ).join();
+		}
 
 		assertThatQuery( index.query()
 				.where( f -> f.matchAll() ) )
@@ -111,7 +121,8 @@ public class IndexIndexerLargeDocumentsIT {
 		for ( int i = 0; i < count; i++ ) {
 			final int id = i;
 			tasks[i] = operation.apply( indexer, referenceProvider( String.valueOf( id ) ),
-					document -> document.addValue( index.binding().content, valueProvider.apply( id ) ) );
+					document -> document.addValue( index.binding().content, valueProvider.apply( id ) ),
+					refreshStrategy );
 		}
 		CompletableFuture<?> future = CompletableFuture.allOf( tasks );
 		Awaitility.await().until( future::isDone );
@@ -151,22 +162,22 @@ public class IndexIndexerLargeDocumentsIT {
 		ADD {
 			@Override
 			public CompletableFuture<?> apply(IndexIndexer indexer, DocumentReferenceProvider referenceProvider,
-					DocumentContributor documentContributor) {
+					DocumentContributor documentContributor, DocumentRefreshStrategy refreshStrategy) {
 				return indexer.add( referenceProvider, documentContributor,
-						DocumentCommitStrategy.NONE, DocumentRefreshStrategy.NONE, OperationSubmitter.blocking() );
+						DocumentCommitStrategy.NONE, refreshStrategy, OperationSubmitter.blocking() );
 			}
 		},
 		ADD_OR_UPDATE {
 			@Override
 			public CompletableFuture<?> apply(IndexIndexer indexer, DocumentReferenceProvider referenceProvider,
-					DocumentContributor documentContributor) {
+					DocumentContributor documentContributor, DocumentRefreshStrategy refreshStrategy) {
 				return indexer.addOrUpdate( referenceProvider, documentContributor,
-						DocumentCommitStrategy.NONE, DocumentRefreshStrategy.NONE, OperationSubmitter.blocking()
+						DocumentCommitStrategy.NONE, refreshStrategy, OperationSubmitter.blocking()
 				);
 			}
 		};
 
 		public abstract CompletableFuture<?> apply(IndexIndexer indexer, DocumentReferenceProvider referenceProvider,
-				DocumentContributor documentContributor);
+				DocumentContributor documentContributor, DocumentRefreshStrategy refreshStrategy);
 	}
 }

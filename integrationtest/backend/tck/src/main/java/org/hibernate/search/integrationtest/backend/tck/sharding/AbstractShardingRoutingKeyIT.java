@@ -7,6 +7,7 @@
 package org.hibernate.search.integrationtest.backend.tck.sharding;
 
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,7 @@ import java.util.function.Function;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendHelper;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendSetupStrategy;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.common.impl.CollectionHelper;
 import org.hibernate.search.util.impl.test.annotation.TestForIssue;
@@ -134,6 +136,8 @@ public abstract class AbstractShardingRoutingKeyIT extends AbstractShardingIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3824")
 	public void purge_noRoutingKey() {
+		assumePurgeAndRefreshSupported();
+
 		index.createWorkspace().purge( Collections.emptySet(), OperationSubmitter.blocking() ).join();
 
 		// No routing key => all documents should be purged
@@ -145,6 +149,8 @@ public abstract class AbstractShardingRoutingKeyIT extends AbstractShardingIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3824")
 	public void purge_oneRoutingKey() {
+		assumePurgeAndRefreshSupported();
+
 		Iterator<String> iterator = docIdByRoutingKey.keySet().iterator();
 		String someRoutingKey = iterator.next();
 
@@ -166,6 +172,8 @@ public abstract class AbstractShardingRoutingKeyIT extends AbstractShardingIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3824")
 	public void purge_twoRoutingKeys() {
+		assumePurgeAndRefreshSupported();
+
 		Iterator<String> iterator = docIdByRoutingKey.keySet().iterator();
 		Set<String> twoRoutingKeys = CollectionHelper.asImmutableSet( iterator.next(), iterator.next() );
 
@@ -187,12 +195,22 @@ public abstract class AbstractShardingRoutingKeyIT extends AbstractShardingIT {
 	@Test
 	@TestForIssue(jiraKey = "HSEARCH-3824")
 	public void purge_allRoutingKeys() {
+		assumePurgeAndRefreshSupported();
+
 		index.createWorkspace().purge( routingKeys, OperationSubmitter.blocking() ).join();
 
 		// All routing keys => all documents should be purged
 		index.createWorkspace().refresh( OperationSubmitter.blocking() ).join();
 		assertThatQuery( index.createScope().query().where( f -> f.matchAll() ).toQuery() )
 				.hasNoHits();
+	}
+
+	private static void assumePurgeAndRefreshSupported() {
+		assumeTrue(
+				"This test only makes sense if the backend supports explicit purge and refresh",
+				TckConfiguration.get().getBackendFeatures().supportsExplicitPurge()
+				&& TckConfiguration.get().getBackendFeatures().supportsExplicitRefresh()
+		);
 	}
 
 	protected void configure(SearchSetupHelper.SetupContext setupContext) {

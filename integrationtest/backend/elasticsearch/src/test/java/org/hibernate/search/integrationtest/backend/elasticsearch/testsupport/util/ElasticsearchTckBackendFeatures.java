@@ -198,4 +198,9 @@ class ElasticsearchTckBackendFeatures extends TckBackendFeatures {
 				osVersion -> true
 		);
 	}
+
+	@Override
+	public boolean supportsExplicitPurge() {
+		return super.supportsExplicitPurge();
+	}
 }

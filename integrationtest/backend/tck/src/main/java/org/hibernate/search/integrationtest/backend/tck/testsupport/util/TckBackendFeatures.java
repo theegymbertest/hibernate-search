@@ -7,8 +7,9 @@
 package org.hibernate.search.integrationtest.backend.tck.testsupport.util;
 
 import org.hibernate.search.engine.backend.types.ObjectStructure;
+import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappingBackendFeatures;
 
-public abstract class TckBackendFeatures {
+public abstract class TckBackendFeatures implements StubMappingBackendFeatures {
 
 	public boolean worksFineWithStrictAboveRangedQueriesOnDecimalScaledField() {
 		return true;
@@ -117,4 +118,22 @@ public abstract class TckBackendFeatures {
 	public boolean supportsHighlighterUnifiedPhraseMatching() {
 		return false;
 	}
+
+	public boolean supportsExplicitMergeSegments() {
+		return true;
+	}
+
+	public boolean supportsExplicitPurge() {
+		return true;
+	}
+
+	public boolean supportsExplicitFlush() {
+		return true;
+	}
+
+	@Override
+	public boolean supportsExplicitRefresh() {
+		return true;
+	}
+
 }

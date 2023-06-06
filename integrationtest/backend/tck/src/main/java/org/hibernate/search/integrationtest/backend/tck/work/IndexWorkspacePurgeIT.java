@@ -7,6 +7,7 @@
 package org.hibernate.search.integrationtest.backend.tck.work;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -14,9 +15,21 @@ import java.util.concurrent.CompletableFuture;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendAccessor;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMappedIndex;
 
+import org.junit.Before;
+
 public class IndexWorkspacePurgeIT extends AbstractIndexWorkspaceSimpleOperationIT {
+
+	@Before
+	public void checkAssumptions() {
+		assumeTrue(
+				"This test only makes sense if the backend supports explicit purge and refresh",
+				TckConfiguration.get().getBackendFeatures().supportsExplicitPurge()
+						&& TckConfiguration.get().getBackendFeatures().supportsExplicitRefresh()
+		);
+	}
 
 	@Override
 	protected void ensureOperationsFail(TckBackendAccessor accessor, String indexName) {
