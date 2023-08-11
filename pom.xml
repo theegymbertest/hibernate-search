@@ -762,6 +762,66 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${version.checkstyle.plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.hibernate.search</groupId>
+                            <artifactId>hibernate-search-build-config</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${version.com.puppycrawl.tools.checkstyle}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <!-- Location is relative to the classpath -->
+                        <configLocation>checkstyle.xml</configLocation>
+                        <logViolationsToConsole>true</logViolationsToConsole>
+                        <failOnViolation>true</failOnViolation>
+                        <violationSeverity>error</violationSeverity>
+                        <includeTestResources>true</includeTestResources>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <resourceIncludes>**/*.xml,**/*.properties</resourceIncludes>
+                        <!-- generated respectively copied code -->
+                        <excludes>
+                            **/Generated.java,**/TypeHelper*.java,**/MatchSuppressor.java,**/CommentSuppressor.java,**/NeverSuppress.java,
+                            **/*_$logger.java,**/*_$bundle.java,
+                            **/module-info.java,
+                            **/avro/generated/**/*.java
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>check-style</id>
+                            <phase>verify</phase>
+                            <!-- not using checkstyle:checkstyle here, as for
+                                some reason checkstyle:check finds more errors -->
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <!--
+                            Execution specific to test sources that are compiled with no `-parameters` flag.
+                            Checks whether package of such tests is constructed with a `noparameters` subpackage.
+                            -->
+                            <id>check-style-noparameters</id>
+                            <phase>verify</phase>
+                            <!-- not using checkstyle:checkstyle here, as for
+                                some reason checkstyle:check finds more errors -->
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <skip>${maven.compiler.testSources.noParameterCompilation.skip}</skip>
+                                <configLocation>checkstyle-noparameters.xml</configLocation>
+                                <testSourceDirectories>
+                                    <testSourceDirectory>${project.basedir}/src/test/java17-noparameters</testSourceDirectory>
+                                </testSourceDirectories>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.moditect</groupId>
