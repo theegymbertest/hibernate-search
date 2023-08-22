@@ -24,7 +24,6 @@ import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.DocumentContributor;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexIndexer;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
-import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
 import org.hibernate.search.engine.mapper.mapping.spi.MappedIndexManager;
 import org.hibernate.search.util.common.impl.Futures;
 
@@ -125,8 +124,7 @@ public class BulkIndexer {
 					mappingContext,
 					asSetIgnoreNull( tenantId )
 			);
-			future = future.thenCompose( ignored ->
-					workspace.refresh( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ) );
+			future = future.thenCompose( ignored -> workspace.refresh( OperationSubmitter.blocking() ) );
 		}
 		return future;
 	}

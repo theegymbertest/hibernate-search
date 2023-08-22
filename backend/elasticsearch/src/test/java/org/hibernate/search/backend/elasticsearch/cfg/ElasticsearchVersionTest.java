@@ -60,9 +60,6 @@ public class ElasticsearchVersionTest {
 				.containsExactly( ElasticsearchDistributionName.OPENSEARCH, 1, 1, 4, null );
 		assertComponents( ElasticsearchVersion.of( "opensearch:1.0.0-rc1" ) )
 				.containsExactly( ElasticsearchDistributionName.OPENSEARCH, 1, 0, 0, "rc1" );
-
-		assertComponents( ElasticsearchVersion.of( "amazon-opensearch-serverless" ) )
-				.containsExactly( ElasticsearchDistributionName.AMAZON_OPENSEARCH_SERVERLESS, null, null, null, null );
 	}
 
 	@Test
@@ -73,8 +70,6 @@ public class ElasticsearchVersionTest {
 				.containsExactly( ElasticsearchDistributionName.ELASTIC, 7, 0, 0, "beta1" );
 		assertComponents( ElasticsearchVersion.of( "OpenSearch:1.0.0-RC1" ) )
 				.containsExactly( ElasticsearchDistributionName.OPENSEARCH, 1, 0, 0, "rc1" );
-		assertComponents( ElasticsearchVersion.of( "Amazon-OpenSearch-Serverless" ) )
-				.containsExactly( ElasticsearchDistributionName.AMAZON_OPENSEARCH_SERVERLESS, null, null, null, null );
 	}
 
 	@Test
@@ -88,33 +83,18 @@ public class ElasticsearchVersionTest {
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll( "Invalid Elasticsearch version",
 						"'elastic7'",
-						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier' or just '<distribution>'" );
+						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier'" );
 		assertThatThrownBy( () -> ElasticsearchVersion.of( "opensearch;7.0" ) )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll( "Invalid Elasticsearch version",
 						"'opensearch;7.0'",
-						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier' or just '<distribution>'" );
+						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier'" );
 		assertThatThrownBy( () -> ElasticsearchVersion.of( "elasticsearch:7.0" ) )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll( "Invalid Elasticsearch version",
 						"'elasticsearch:7.0'",
-						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier' or just '<distribution>'",
-						"where '<distribution>' is one of [elastic, opensearch, amazon-opensearch-serverless] (defaults to 'elastic')" );
-		assertThatThrownBy( () -> ElasticsearchVersion.of( "elastic:" ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll( "Invalid Elasticsearch version",
-						"'elastic:'",
-						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier' or just '<distribution>'" );
-		assertThatThrownBy( () -> ElasticsearchVersion.of( "opensearch:" ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll( "Invalid Elasticsearch version",
-						"'opensearch:'",
-						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier' or just '<distribution>'" );
-		assertThatThrownBy( () -> ElasticsearchVersion.of( "amazon-opensearch-service:" ) )
-				.isInstanceOf( SearchException.class )
-				.hasMessageContainingAll( "Invalid Elasticsearch version",
-						"'amazon-opensearch-service:'",
-						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier'" );
+						"Expected format is 'x.y.z-qualifier' or '<distribution>:x.y.z-qualifier'",
+						"where '<distribution>' is one of [elastic, opensearch] (defaults to 'elastic')" );
 	}
 
 	@Test
@@ -152,9 +132,6 @@ public class ElasticsearchVersionTest {
 				.containsExactly( ElasticsearchDistributionName.OPENSEARCH, 1, 1, 4, null );
 		assertComponents( ElasticsearchVersion.of( ElasticsearchDistributionName.OPENSEARCH, "1.0.0-rc1" ) )
 				.containsExactly( ElasticsearchDistributionName.OPENSEARCH, 1, 0, 0, "rc1" );
-
-		assertComponents( ElasticsearchVersion.of( ElasticsearchDistributionName.AMAZON_OPENSEARCH_SERVERLESS, null ) )
-				.containsExactly( ElasticsearchDistributionName.AMAZON_OPENSEARCH_SERVERLESS, null, null, null, null );
 	}
 
 	@Test
@@ -204,11 +181,6 @@ public class ElasticsearchVersionTest {
 		assertMatch( "opensearch:2.0.1", ElasticsearchDistributionName.OPENSEARCH, "2.0.1" ).isTrue();
 		assertMatch( "opensearch:2.1.0", ElasticsearchDistributionName.OPENSEARCH, "2.1.0" ).isTrue();
 		assertMatch( "opensearch:2.1.1", ElasticsearchDistributionName.OPENSEARCH, "2.1.1" ).isTrue();
-	}
-
-	@Test
-	public void exactMatch_amazonOpensearchServerless() {
-		assertMatch( "amazon-opensearch-serverless", ElasticsearchDistributionName.AMAZON_OPENSEARCH_SERVERLESS, null ).isTrue();
 	}
 
 	@Test
@@ -345,7 +317,7 @@ public class ElasticsearchVersionTest {
 	private ObjectArrayAssert<Object> assertComponents(ElasticsearchVersion version) {
 		return assertThat( new Object[] {
 				version.distribution(),
-				toNullable( version.majorOptional() ),
+				version.major(),
 				toNullable( version.minor() ),
 				toNullable( version.micro() ),
 				version.qualifier().orElse( null ) } );

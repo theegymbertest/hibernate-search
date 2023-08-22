@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.hibernate.search.backend.elasticsearch.logging.impl.Log;
 import org.hibernate.search.engine.cfg.spi.ParseUtils;
-import org.hibernate.search.util.common.annotation.Incubating;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 
 public enum ElasticsearchDistributionName {
@@ -23,26 +22,13 @@ public enum ElasticsearchDistributionName {
 	 * <p>
 	 * See: <a href="https://www.elastic.co/elasticsearch/">https://www.elastic.co/elasticsearch/</a>.
 	 */
-	ELASTIC( "elastic", "elastic" ),
+	ELASTIC( "elastic" ),
 	/**
 	 * The OpenSearch distribution from the OpenSearch organization.
 	 * <p>
-	 * When used through Amazon OpenSearch Service, requires extra dependencies for authentication;
-	 * refer to the reference documentation.
-	 * <p>
 	 * See: <a href="https://www.opensearch.org/">https://www.opensearch.org/</a>.
 	 */
-	OPENSEARCH( "opensearch", "opensearch" ),
-	/**
-	 * Amazon OpenSearch Serverless.
-	 * <p>
-	 * Requires extra dependencies for authentication;
-	 * refer to the reference documentation.
-	 * <p>
-	 * See: <a href="https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-overview.html">https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-overview.html</a>.
-	 */
-	@Incubating
-	AMAZON_OPENSEARCH_SERVERLESS( "amazon-opensearch-serverless", null );
+	OPENSEARCH( "opensearch" );
 
 	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
@@ -62,25 +48,14 @@ public enum ElasticsearchDistributionName {
 				.collect( Collectors.toList() );
 	}
 
-	public static ElasticsearchDistributionName fromServerResponseRepresentation(String value) {
-		return ParseUtils.parseDiscreteValues(
-				ElasticsearchDistributionName.values(),
-				ElasticsearchDistributionName::serverResponseRepresentation,
-				log::invalidElasticsearchDistributionName,
-				value
-		);
-	}
-
 	static ElasticsearchDistributionName defaultValue() {
 		return ElasticsearchDistributionName.ELASTIC;
 	}
 
 	private final String externalRepresentation;
-	private final String serverResponseRepresentation;
 
-	ElasticsearchDistributionName(String externalRepresentation, String serverResponseRepresentation) {
+	ElasticsearchDistributionName(String externalRepresentation) {
 		this.externalRepresentation = externalRepresentation;
-		this.serverResponseRepresentation = serverResponseRepresentation;
 	}
 
 	@Override
@@ -93,10 +68,6 @@ public enum ElasticsearchDistributionName {
 	 */
 	public String externalRepresentation() {
 		return externalRepresentation;
-	}
-
-	String serverResponseRepresentation() {
-		return serverResponseRepresentation;
 	}
 
 }

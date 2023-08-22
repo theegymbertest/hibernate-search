@@ -17,7 +17,6 @@ import org.hibernate.search.backend.lucene.index.LuceneIndexManager;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
-import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.configuration.DefaultAnalysisDefinitions;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
 import org.hibernate.search.util.impl.integrationtest.backend.lucene.LuceneAnalysisUtils;
@@ -96,7 +95,7 @@ public class LuceneIndexManagerIT {
 				) )
 				.join();
 
-		index.createWorkspace().flush( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		index.createWorkspace().flush( OperationSubmitter.blocking() ).join();
 
 		long finalSize = indexApi.computeSizeInBytes();
 		assertThat( finalSize ).isGreaterThan( 0L );
@@ -119,7 +118,7 @@ public class LuceneIndexManagerIT {
 				) )
 				.join();
 
-		index.createWorkspace().flush( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		index.createWorkspace().flush( OperationSubmitter.blocking() ).join();
 
 		CompletableFuture<Long> finalSizeFuture = indexApi.computeSizeInBytesAsync().toCompletableFuture();
 		await().untilAsserted( () -> assertThat( finalSizeFuture ).isCompleted() );

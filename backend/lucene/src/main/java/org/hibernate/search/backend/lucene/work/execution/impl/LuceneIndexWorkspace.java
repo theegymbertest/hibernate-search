@@ -15,7 +15,6 @@ import org.hibernate.search.backend.lucene.work.impl.IndexManagementWork;
 import org.hibernate.search.backend.lucene.work.impl.LuceneWorkFactory;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
-import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
 
 public class LuceneIndexWorkspace implements IndexWorkspace {
 
@@ -32,16 +31,12 @@ public class LuceneIndexWorkspace implements IndexWorkspace {
 	}
 
 	@Override
-	public CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter,
-			// mergeSegments is always supported
-			UnsupportedOperationBehavior ignored) {
+	public CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter) {
 		return doSubmit( indexManagerContext.allManagementOrchestrators(), factory.mergeSegments(), false, operationSubmitter );
 	}
 
 	@Override
-	public CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter,
-			// purge is always supported
-			UnsupportedOperationBehavior ignored) {
+	public CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter) {
 		return doSubmit(
 				indexManagerContext.managementOrchestrators( routingKeys ),
 				factory.deleteAll( tenantIds, routingKeys ),
@@ -50,16 +45,12 @@ public class LuceneIndexWorkspace implements IndexWorkspace {
 	}
 
 	@Override
-	public CompletableFuture<?> flush(OperationSubmitter operationSubmitter,
-			// flush is always supported
-			UnsupportedOperationBehavior ignored) {
+	public CompletableFuture<?> flush(OperationSubmitter operationSubmitter) {
 		return doSubmit( indexManagerContext.allManagementOrchestrators(), factory.flush(), false, operationSubmitter );
 	}
 
 	@Override
-	public CompletableFuture<?> refresh(OperationSubmitter operationSubmitter,
-			// refresh is always supported
-			UnsupportedOperationBehavior ignored) {
+	public CompletableFuture<?> refresh(OperationSubmitter operationSubmitter) {
 		return doSubmit( indexManagerContext.allManagementOrchestrators(), factory.refresh(), false, operationSubmitter );
 	}
 

@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -1173,8 +1172,7 @@ public class ElasticsearchClientFactoryImplIT {
 		return new ElasticsearchClientFactoryImpl().create( beanResolver, clientPropertySource,
 				threadPoolProvider.threadProvider(), "Client",
 				new DelegatingSimpleScheduledExecutor( timeoutExecutorService, true ),
-				GsonProvider.create( GsonBuilder::new, true ),
-				Optional.of( ElasticsearchTestDialect.getActualVersion() )
+				GsonProvider.create( GsonBuilder::new, true )
 		);
 	}
 

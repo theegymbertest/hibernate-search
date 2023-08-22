@@ -16,7 +16,6 @@ import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
 import org.hibernate.search.engine.backend.work.execution.spi.IndexWorkspace;
-import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
 import org.hibernate.search.engine.search.query.SearchQuery;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckBackendHelper;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.rule.SearchSetupHelper;
@@ -29,10 +28,7 @@ import org.junit.Test;
 
 /**
  * Verify that the work executor operations:
- * {@link IndexWorkspace#mergeSegments(OperationSubmitter, UnsupportedOperationBehavior)},
- * {@link IndexWorkspace#purge(java.util.Set, OperationSubmitter, UnsupportedOperationBehavior)},
- * {@link IndexWorkspace#flush(OperationSubmitter, UnsupportedOperationBehavior)},
- * {@link IndexWorkspace#refresh(OperationSubmitter, UnsupportedOperationBehavior)}
+ * {@link IndexWorkspace#mergeSegments(OperationSubmitter)}, {@link IndexWorkspace#purge(java.util.Set, OperationSubmitter)}, {@link IndexWorkspace#flush(OperationSubmitter)}, {@link IndexWorkspace#refresh(OperationSubmitter)}
  * work properly, in every backends.
  */
 public class IndexWorkspaceIT {
@@ -64,17 +60,16 @@ public class IndexWorkspaceIT {
 		IndexWorkspace workspace = index.createWorkspace();
 		createBookIndexes( noTenantSessionContext );
 
-		workspace.refresh( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		workspace.refresh( OperationSubmitter.blocking() ).join();
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, noTenantSessionContext );
 
-		workspace.mergeSegments( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		workspace.mergeSegments( OperationSubmitter.blocking() ).join();
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, noTenantSessionContext );
 
 		// purge without providing a tenant
-		workspace.purge( Collections.emptySet(), OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL )
-				.join();
-		workspace.flush( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
-		workspace.refresh( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		workspace.purge( Collections.emptySet(), OperationSubmitter.blocking() ).join();
+		workspace.flush( OperationSubmitter.blocking() ).join();
+		workspace.refresh( OperationSubmitter.blocking() ).join();
 
 		assertBookNumberIsEqualsTo( 0, noTenantSessionContext );
 	}
@@ -90,19 +85,18 @@ public class IndexWorkspaceIT {
 
 		createBookIndexes( tenant1SessionContext );
 		createBookIndexes( tenant2SessionContext );
-		workspace.refresh( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		workspace.refresh( OperationSubmitter.blocking() ).join();
 
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, tenant1SessionContext );
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, tenant2SessionContext );
 
-		workspace.mergeSegments( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		workspace.mergeSegments( OperationSubmitter.blocking() ).join();
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, tenant1SessionContext );
 		assertBookNumberIsEqualsTo( NUMBER_OF_BOOKS, tenant2SessionContext );
 
-		workspace.purge( Collections.emptySet(), OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL )
-				.join();
-		workspace.flush( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
-		workspace.refresh( OperationSubmitter.blocking(), UnsupportedOperationBehavior.FAIL ).join();
+		workspace.purge( Collections.emptySet(), OperationSubmitter.blocking() ).join();
+		workspace.flush( OperationSubmitter.blocking() ).join();
+		workspace.refresh( OperationSubmitter.blocking() ).join();
 
 		// check that only TENANT_1 is affected by the purge
 		assertBookNumberIsEqualsTo( 0, tenant1SessionContext );

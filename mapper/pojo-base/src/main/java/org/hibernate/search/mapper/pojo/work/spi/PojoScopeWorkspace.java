@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.search.engine.backend.work.execution.OperationSubmitter;
-import org.hibernate.search.engine.backend.work.execution.spi.UnsupportedOperationBehavior;
 
 public interface PojoScopeWorkspace {
 
@@ -19,51 +18,27 @@ public interface PojoScopeWorkspace {
 		return mergeSegments( OperationSubmitter.blocking() );
 	}
 
-	@Deprecated
-	default CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter) {
-		return mergeSegments( operationSubmitter, UnsupportedOperationBehavior.FAIL );
-	}
-
-	CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter,
-			UnsupportedOperationBehavior unsupportedOperationBehavior);
+	CompletableFuture<?> mergeSegments(OperationSubmitter operationSubmitter);
 
 	@Deprecated
 	default CompletableFuture<?> purge(Set<String> routingKeys) {
 		return purge( routingKeys, OperationSubmitter.blocking() );
 	}
 
-	@Deprecated
-	default CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter) {
-		return purge( routingKeys, operationSubmitter, UnsupportedOperationBehavior.FAIL );
-	}
-
-	CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter,
-			UnsupportedOperationBehavior unsupportedOperationBehavior);
+	CompletableFuture<?> purge(Set<String> routingKeys, OperationSubmitter operationSubmitter);
 
 	@Deprecated
 	default CompletableFuture<?> flush() {
 		return flush( OperationSubmitter.blocking() );
 	}
 
-	@Deprecated
-	default CompletableFuture<?> flush(OperationSubmitter operationSubmitter) {
-		return flush( operationSubmitter, UnsupportedOperationBehavior.FAIL );
-	}
-
-	CompletableFuture<?> flush(OperationSubmitter operationSubmitter,
-			UnsupportedOperationBehavior unsupportedOperationBehavior);
+	CompletableFuture<?> flush(OperationSubmitter operationSubmitter);
 
 	@Deprecated
 	default CompletableFuture<?> refresh() {
 		return refresh( OperationSubmitter.blocking() );
 	}
 
-	@Deprecated
-	default CompletableFuture<?> refresh(OperationSubmitter operationSubmitter) {
-		return refresh( operationSubmitter, UnsupportedOperationBehavior.FAIL );
-	}
-
-	CompletableFuture<?> refresh(OperationSubmitter operationSubmitter,
-			UnsupportedOperationBehavior unsupportedOperationBehavior);
+	CompletableFuture<?> refresh(OperationSubmitter operationSubmitter);
 
 }

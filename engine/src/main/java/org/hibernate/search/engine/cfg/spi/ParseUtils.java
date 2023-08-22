@@ -35,7 +35,6 @@ import java.time.format.SignStyle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -353,7 +352,7 @@ public final class ParseUtils {
 		final String normalizedValue = value.trim().toLowerCase( Locale.ROOT );
 
 		for ( T candidate : allowedValues ) {
-			if ( normalizedValue.equals( stringRepresentationFunction.apply( candidate ) ) ) {
+			if ( stringRepresentationFunction.apply( candidate ).equals( normalizedValue ) ) {
 				return candidate;
 			}
 		}
@@ -362,7 +361,6 @@ public final class ParseUtils {
 				normalizedValue,
 				Arrays.stream( allowedValues )
 						.map( stringRepresentationFunction )
-						.filter( Objects::nonNull )
 						.collect( Collectors.toList() )
 		);
 	}

@@ -6,11 +6,9 @@
  */
 package org.hibernate.search.integrationtest.backend.elasticsearch.testsupport.util;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hibernate.search.backend.elasticsearch.ElasticsearchVersion;
 import org.hibernate.search.backend.elasticsearch.client.impl.ElasticsearchClientFactoryImpl;
 import org.hibernate.search.backend.elasticsearch.client.spi.ElasticsearchClientFactory;
 import org.hibernate.search.backend.elasticsearch.client.spi.ElasticsearchClientImplementor;
@@ -102,11 +100,11 @@ public class ElasticsearchClientSpy implements TestRule {
 		public ElasticsearchClientImplementor create(BeanResolver beanResolver,
 				ConfigurationPropertySource propertySource,
 				ThreadProvider threadProvider, String threadNamePrefix, SimpleScheduledExecutor timeoutExecutorService,
-				GsonProvider gsonProvider, Optional<ElasticsearchVersion> configuredVersion) {
+				GsonProvider gsonProvider) {
 			createdClientCount.incrementAndGet();
 			return new SpyingElasticsearchClient( delegate.create(
 					beanResolver, propertySource, threadProvider, threadNamePrefix,
-					timeoutExecutorService, gsonProvider, configuredVersion
+					timeoutExecutorService, gsonProvider
 			) );
 		}
 	}

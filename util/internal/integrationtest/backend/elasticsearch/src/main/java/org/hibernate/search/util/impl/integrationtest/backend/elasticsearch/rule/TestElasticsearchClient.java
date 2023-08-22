@@ -497,8 +497,7 @@ public class TestElasticsearchClient implements TestRule, Closeable {
 						timeoutExecutorService,
 						threadPoolProvider.isScheduledExecutorBlocking()
 				),
-				GsonProvider.create( GsonBuilder::new, true ),
-				Optional.of( ElasticsearchTestDialect.getActualVersion() )
+				GsonProvider.create( GsonBuilder::new, true )
 		);
 	}
 

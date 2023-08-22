@@ -38,9 +38,7 @@ public final class ElasticsearchIndexSettings {
 	 * <p>
 	 * Expects an {@link IndexStatus} value, or a String representation of such value.
 	 * <p>
-	 * Defaults to {@code yellow} when targeting an Elasticsearch distribution that supports index status checking,
-	 * and to no value (no requirement) when targeting an Elasticsearch distribution
-	 * that does not support index status checking (like Amazon OpenSearch Service).
+	 * Defaults to {@link Defaults#SCHEMA_MANAGEMENT_MINIMAL_REQUIRED_STATUS}.
 	 */
 	public static final String SCHEMA_MANAGEMENT_MINIMAL_REQUIRED_STATUS = "schema_management.minimal_required_status";
 
@@ -178,12 +176,6 @@ public final class ElasticsearchIndexSettings {
 		private Defaults() {
 		}
 
-		/**
-		 * @deprecated The default for the {@link ElasticsearchIndexSettings#SCHEMA_MANAGEMENT_MINIMAL_REQUIRED_STATUS} property
-		 * is now dynamic and depends on the targeted Elasticsearch distribution.
-		 * @see ElasticsearchIndexSettings#SCHEMA_MANAGEMENT_MINIMAL_REQUIRED_STATUS
-		 */
-		@Deprecated
 		public static final IndexStatus SCHEMA_MANAGEMENT_MINIMAL_REQUIRED_STATUS = IndexStatus.YELLOW;
 		public static final int SCHEMA_MANAGEMENT_MINIMAL_REQUIRED_STATUS_WAIT_TIMEOUT = 10_000;
 		public static final int INDEXING_QUEUE_COUNT = 10;
