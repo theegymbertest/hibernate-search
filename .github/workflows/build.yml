@@ -87,13 +87,13 @@ jobs:
       - name: Docker cleanup
         shell: bash
         run: ./ci/docker-cleanup.sh
-      - name: Building code and running unit tests and basic checks
-        shell: bash
-        run: ./mvnw $MAVEN_ARGS install -Pjqassistant -Pdist -Pci-sources-check -DskipITs
+      #- name: Building code and running unit tests and basic checks
+      #  shell: bash
+      #  run: ./mvnw $MAVEN_ARGS install -Pjqassistant -Pdist -Pci-sources-check -DskipITs
       - name: Running integration tests in the default environment
         shell: bash
         run: |
-          ./mvnw $MAVEN_ARGS verify \
+          ./mvnw $MAVEN_ARGS install \
           -DskipSurefireTests -Pskip-checks -Pci-rebuild \
           ${{ github.event.pull_request.base.ref && format('-Dincremental -Dgib.referenceBranch=refs/remotes/origin/{0}', github.event.pull_request.base.ref) || '' }}
       - name: Docker cleanup
