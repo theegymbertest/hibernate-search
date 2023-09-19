@@ -82,20 +82,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Set up Maven
+        shell: bash
         run: ./mvnw -v
       - name: Docker cleanup
+        shell: bash
         run: ./ci/docker-cleanup.sh
       - name: Building code and running unit tests and basic checks
+        shell: bash
         run: ./mvnw $MAVEN_ARGS install -Pjqassistant -Pdist -Pci-sources-check -DskipITs
       - name: Running integration tests in the default environment
+        shell: bash
         run: |
           ./mvnw $MAVEN_ARGS verify \
           -DskipSurefireTests -Pskip-checks -Pci-rebuild \
           ${{ github.event.pull_request.base.ref && format('-Dincremental -Dgib.referenceBranch=refs/remotes/origin/{0}', github.event.pull_request.base.ref) || '' }}
       - name: Docker cleanup
         if: always()
+        shell: bash
         run: ./ci/docker-cleanup.sh
       - name: Omit produced artifacts from build cache
+        shell: bash
         run: rm -r ~/.m2/repository/org/hibernate/search
       - name: Upload build reports (if build failed)
         uses: actions/upload-artifact@v3
