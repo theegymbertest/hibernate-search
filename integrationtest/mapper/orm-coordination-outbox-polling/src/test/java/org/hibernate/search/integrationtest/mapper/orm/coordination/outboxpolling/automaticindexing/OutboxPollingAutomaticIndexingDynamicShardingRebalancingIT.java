@@ -23,6 +23,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Environment;
 import org.hibernate.search.engine.backend.analysis.AnalyzerNames;
 import org.hibernate.search.integrationtest.mapper.orm.coordination.outboxpolling.testsupport.util.OutboxAgentDisconnectionSimulator;
+import org.hibernate.search.integrationtest.mapper.orm.coordination.outboxpolling.testsupport.util.OutboxEventFilter;
 import org.hibernate.search.integrationtest.mapper.orm.coordination.outboxpolling.testsupport.util.PerSessionFactoryIndexingCountHelper;
 import org.hibernate.search.integrationtest.mapper.orm.coordination.outboxpolling.testsupport.util.TestingOutboxPollingInternalConfigurer;
 import org.hibernate.search.mapper.orm.coordination.outboxpolling.cfg.impl.HibernateOrmMapperOutboxPollingImplSettings;
@@ -68,6 +69,8 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 	private final List<OutboxAgentDisconnectionSimulator> outboxAgentDisconnectionSimulators =
 			new ArrayList<>();
 
+	private final OutboxEventFilter eventFilter = new OutboxEventFilter();
+
 	public void setup() {
 		setup( "create-drop" );
 		setup( "none" );
@@ -92,6 +95,7 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 				.with( indexingCountHelper::bind )
 				.withProperty( HibernateOrmMapperOutboxPollingImplSettings.COORDINATION_INTERNAL_CONFIGURER,
 						new TestingOutboxPollingInternalConfigurer()
+								.outboxEventFilter( eventFilter )
 								.agentDisconnectionSimulator( outboxAgentDisconnectionSimulator ) )
 				.withProperty( "hibernate.search.coordination.event_processor.polling_interval", POLLING_INTERVAL )
 				.withProperty( "hibernate.search.coordination.event_processor.pulse_expiration", PULSE_EXPIRATION )
@@ -119,6 +123,10 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 						.add( String.valueOf( i ), b -> b.field( "text", "initial" ) );
 			}
 		} );
+
+		// The filter is there to make sure we don't consume all events while we're creating them,
+		// which apparently can happen on Windows.
+		eventFilter.showAllEvents();
 
 		// Stop the last factory as soon as it's processed at least one entity
 		await()
@@ -169,6 +177,10 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 			}
 		} );
 
+		// The filter is there to make sure we don't consume all events while we're creating them,
+		// which apparently can happen on Windows.
+		eventFilter.showAllEvents();
+
 		// Prevent the last factory from accessing the database as soon as it's processed at least one entity,
 		// so that its registration ultimately expires
 		await()
@@ -212,13 +224,16 @@ public class OutboxPollingAutomaticIndexingDynamicShardingRebalancingIT {
 			}
 		} );
 
+		// The filter is there to make sure we don't consume all events while we're creating them,
+		// which apparently can happen on Windows.
+		eventFilter.showAllEvents();
+
 		// Start a new factory as soon as all others have processed at least one entity
 		await()
 				.pollInterval( 1, TimeUnit.MILLISECONDS )
 				.untilAsserted( () -> indexingCountHelper.indexingCounts().assertForEachSessionFactory()
 						.allSatisfy( c -> assertThat( c ).isNotZero() ) );
 		setup( "none" );
-		int newShardCount = initialShardCount + 1;
 
 		backendMock.verifyExpectationsMet();
 		// All works must be executed exactly once
