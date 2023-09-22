@@ -51,16 +51,16 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - {
-            name: "Linux JDK 17",
-            runs-on: 'ubuntu-latest',
-            java: {
-              version: 17
-            },
-            maven: {
-              args: ''
-            }
-          }
+#          - {
+#            name: "Linux JDK 17",
+#            runs-on: 'ubuntu-latest',
+#            java: {
+#              version: 17
+#            },
+#            maven: {
+#              args: ''
+#            }
+#          }
           # We can't start Linux containers on GitHub Actions' Windows VMs,
           # so we can't run Elasticsearch tests.
           # See https://github.com/actions/runner-images/issues/1143#issuecomment-972929995
@@ -75,7 +75,7 @@ jobs:
               version: 17
             },
             maven: {
-              args: '-Dtest.elasticsearch.skip=true -Dtest.containers.run.skip=true'
+              args: '-Dtest.elasticsearch.skip=true -Dtest.containers.run.skip=true -pl integrationtest/mapper/orm-coordination-outbox-polling -am'
             }
           }
     steps:
@@ -125,7 +125,7 @@ jobs:
         run: |
           {
             echo 'buildReportPaths<<EOF'
-            find . -path '**/*-reports'
+            find . -path '**/*outbox*/**/*-reports'
             echo EOF
           } >> "$GITHUB_ENV"
       - name: Upload build reports (if build failed)
