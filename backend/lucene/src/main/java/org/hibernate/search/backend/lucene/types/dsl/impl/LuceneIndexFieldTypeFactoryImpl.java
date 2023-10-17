@@ -31,6 +31,7 @@ import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeOptionsStep;
 import org.hibernate.search.engine.backend.types.dsl.ScaledNumberIndexFieldTypeOptionsStep;
 import org.hibernate.search.engine.backend.types.dsl.StandardIndexFieldTypeOptionsStep;
 import org.hibernate.search.engine.backend.types.dsl.StringIndexFieldTypeOptionsStep;
+import org.hibernate.search.engine.backend.types.dsl.VectorFieldTypeOptionsStep;
 import org.hibernate.search.engine.mapper.mapping.building.spi.IndexFieldTypeDefaultsProvider;
 import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
@@ -120,6 +121,18 @@ public class LuceneIndexFieldTypeFactoryImpl
 		}
 		else if ( BigInteger.class.equals( valueType ) ) {
 			return (StandardIndexFieldTypeOptionsStep<?, F>) asBigInteger();
+		}
+		else {
+			throw log.cannotGuessFieldType( valueType, getEventContext() );
+		}
+	}
+
+	public <F> StandardIndexFieldTypeOptionsStep<?, F> asVector(int dimension, Class<F> valueType) {
+		if ( byte[].class.equals( valueType ) ) {
+			return (StandardIndexFieldTypeOptionsStep<?, F>) asByteVector( dimension );
+		}
+		else if ( float[].class.equals( valueType ) ) {
+			return (StandardIndexFieldTypeOptionsStep<?, F>) asFloatVector( dimension );
 		}
 		else {
 			throw log.cannotGuessFieldType( valueType, getEventContext() );
@@ -229,6 +242,16 @@ public class LuceneIndexFieldTypeFactoryImpl
 	@Override
 	public ScaledNumberIndexFieldTypeOptionsStep<?, BigInteger> asBigInteger() {
 		return new LuceneBigIntegerIndexFieldTypeOptionsStep( this, typeDefaultsProvider );
+	}
+
+	@Override
+	public VectorFieldTypeOptionsStep<?, byte[]> asByteVector(int dimension) {
+		return new LuceneByteVectorFieldTypeOptionsStep( this, dimension );
+	}
+
+	@Override
+	public VectorFieldTypeOptionsStep<?, float[]> asFloatVector(int dimension) {
+		return new LuceneFloatVectorFieldTypeOptionsStep( this, dimension );
 	}
 
 	@Override

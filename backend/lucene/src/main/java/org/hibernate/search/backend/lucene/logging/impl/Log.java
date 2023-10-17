@@ -705,4 +705,13 @@ public interface Log extends BasicLogger {
 	@Message(id = ID_OFFSET + 173, value = "'%1$s' cannot be nested in an object projection. "
 			+ "%2$s")
 	SearchException cannotUseProjectionInNestedContext(String projection, String hint, @Param EventContext eventContext);
+
+	@Message(id = ID_OFFSET + 174,
+			value = "Vector '%1$s' cannot be equal to '%2$s'. It must be a positive integer value not greater than %3$s.")
+	SearchException vectorPropertyUnsupportedValue(String property, Integer value, int max);
+
+	@LogMessage(level = Level.WARN)
+	@Message(id = ID_OFFSET + 175,
+			value = "Vector field configuration property '%1$s' value '%2$s' is out of the recommended range [%3$d, %4$d]")
+	void vectorPropertyOutOfRecommendedRange(String property, Integer value, int min, int max);
 }
