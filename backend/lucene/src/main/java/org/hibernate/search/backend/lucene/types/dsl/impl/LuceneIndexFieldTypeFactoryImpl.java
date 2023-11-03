@@ -127,12 +127,13 @@ public class LuceneIndexFieldTypeFactoryImpl
 		}
 	}
 
-	public <F> StandardIndexFieldTypeOptionsStep<?, F> asVector(int dimension, Class<F> valueType) {
+	@SuppressWarnings("unchecked")
+	public <F> VectorFieldTypeOptionsStep<?, F> asVector(int dimension, Class<F> valueType) {
 		if ( byte[].class.equals( valueType ) ) {
-			return (StandardIndexFieldTypeOptionsStep<?, F>) asByteVector( dimension );
+			return (VectorFieldTypeOptionsStep<?, F>) asByteVector( dimension );
 		}
 		else if ( float[].class.equals( valueType ) ) {
-			return (StandardIndexFieldTypeOptionsStep<?, F>) asFloatVector( dimension );
+			return (VectorFieldTypeOptionsStep<?, F>) asFloatVector( dimension );
 		}
 		else {
 			throw log.cannotGuessFieldType( valueType, getEventContext() );

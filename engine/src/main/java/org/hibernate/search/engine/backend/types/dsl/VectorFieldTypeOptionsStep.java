@@ -22,9 +22,9 @@ public interface VectorFieldTypeOptionsStep<S extends VectorFieldTypeOptionsStep
 
 	S vectorSimilarity(VectorSimilarity vectorSimilarity);
 
-	S beamWidth(Integer beamWidth);
+	S beamWidth(int beamWidth);
 
-	S maxConnections(Integer maxConnections);
+	S maxConnections(int maxConnections);
 
 	/**
 	 * @param indexNullAs A value used instead of null values when indexing.

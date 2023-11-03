@@ -8,6 +8,7 @@ package org.hibernate.search.documentation.mapper.orm.projection;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
@@ -15,6 +16,7 @@ import jakarta.persistence.ManyToMany;
 import org.hibernate.search.engine.backend.types.Projectable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.VectorField;
 
 @Entity
 @Indexed
@@ -29,10 +31,18 @@ public class Author {
 	@FullTextField(analyzer = "name", projectable = Projectable.YES)
 	private String lastName;
 
+	@VectorField(dimension = 4)
+	private byte[] embeddings;
+
+	@VectorField(dimension = 8)
+	private Float[] embeddingsFloat;
+
 	@ManyToMany(mappedBy = "authors")
 	private List<Book> books = new ArrayList<>();
 
 	public Author() {
+		embeddings = new byte[] { 1, 2, 3, 4 };
+		embeddingsFloat = new Float[] { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 	}
 
 	public Integer getId() {
@@ -65,5 +75,13 @@ public class Author {
 
 	public void setBooks(List<Book> books) {
 		this.books = books;
+	}
+
+	public byte[] getEmbeddings() {
+		return embeddings;
+	}
+
+	public void setEmbeddings(byte[] embeddings) {
+		this.embeddings = embeddings;
 	}
 }
