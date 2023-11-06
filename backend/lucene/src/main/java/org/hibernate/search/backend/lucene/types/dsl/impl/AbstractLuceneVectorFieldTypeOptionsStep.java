@@ -113,7 +113,7 @@ abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLucene
 
 		Storage storage = resolvedProjectable ? Storage.ENABLED : Storage.DISABLED;
 
-		AbstractLuceneVectorFieldCodec<F, ?> codec = createCodec( resolvedVectorSimilarity, dimension, storage,
+		AbstractLuceneVectorFieldCodec<F> codec = createCodec( resolvedVectorSimilarity, dimension, storage,
 				indexNullAsValue, new HibernateSearchKnnVectorsFormat( maxConnections, beamWidth )
 		);
 		builder.codec( codec );
@@ -127,7 +127,7 @@ abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLucene
 		return builder.build();
 	}
 
-	protected abstract AbstractLuceneVectorFieldCodec<F, ?> createCodec(VectorSimilarity vectorSimilarity,
+	protected abstract AbstractLuceneVectorFieldCodec<F> createCodec(VectorSimilarity vectorSimilarity,
 			int dimension,
 			Storage storage, F indexNullAsValue, KnnVectorsFormat knnVectorsFormat);
 

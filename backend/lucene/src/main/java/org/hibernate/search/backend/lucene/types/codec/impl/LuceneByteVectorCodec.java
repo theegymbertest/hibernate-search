@@ -10,12 +10,10 @@ import org.hibernate.search.engine.backend.types.VectorSimilarity;
 
 import org.apache.lucene.codecs.KnnVectorsFormat;
 import org.apache.lucene.document.KnnByteVectorField;
-import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.VectorEncoding;
-import org.apache.lucene.util.BytesRef;
 
-public class LuceneByteVectorCodec extends AbstractLuceneVectorFieldCodec<byte[], byte[]> {
+public class LuceneByteVectorCodec extends AbstractLuceneVectorFieldCodec<byte[]> {
 	public LuceneByteVectorCodec(VectorSimilarity vectorSimilarity, int dimension, Storage storage, byte[] indexNullAsValue,
 			KnnVectorsFormat knnVectorsFormat) {
 		super( vectorSimilarity, dimension, storage, indexNullAsValue, knnVectorsFormat );
@@ -39,10 +37,5 @@ public class LuceneByteVectorCodec extends AbstractLuceneVectorFieldCodec<byte[]
 	@Override
 	protected VectorEncoding vectorEncoding() {
 		return VectorEncoding.BYTE;
-	}
-
-	@Override
-	protected IndexableField toStoredField(String absoluteFieldPath, byte[] encodedValue) {
-		return new StoredField( absoluteFieldPath, new BytesRef( encodedValue ) );
 	}
 }

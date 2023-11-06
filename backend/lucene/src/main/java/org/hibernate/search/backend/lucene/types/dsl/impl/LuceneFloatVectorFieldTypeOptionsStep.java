@@ -26,7 +26,7 @@ class LuceneFloatVectorFieldTypeOptionsStep
 	}
 
 	@Override
-	protected AbstractLuceneVectorFieldCodec<float[], ?> createCodec(VectorSimilarity vectorSimilarity, int dimension,
+	protected AbstractLuceneVectorFieldCodec<float[]> createCodec(VectorSimilarity vectorSimilarity, int dimension,
 			Storage storage, float[] indexNullAsValue, KnnVectorsFormat knnVectorsFormat) {
 		return new LuceneFloatVectorCodec( vectorSimilarity, dimension, storage, indexNullAsValue, knnVectorsFormat );
 	}

@@ -26,7 +26,7 @@ class LuceneByteVectorFieldTypeOptionsStep
 	}
 
 	@Override
-	protected AbstractLuceneVectorFieldCodec<byte[], ?> createCodec(VectorSimilarity vectorSimilarity, int dimension,
+	protected AbstractLuceneVectorFieldCodec<byte[]> createCodec(VectorSimilarity vectorSimilarity, int dimension,
 			Storage storage, byte[] indexNullAsValue, KnnVectorsFormat knnVectorsFormat) {
 		return new LuceneByteVectorCodec( vectorSimilarity, dimension, storage, indexNullAsValue, knnVectorsFormat );
 	}

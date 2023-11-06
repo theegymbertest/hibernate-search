@@ -8,6 +8,8 @@ package org.hibernate.search.backend.lucene.lowlevel.codec.impl;
 
 import org.hibernate.search.backend.lucene.document.model.impl.LuceneIndexField;
 import org.hibernate.search.backend.lucene.document.model.impl.LuceneIndexModel;
+import org.hibernate.search.backend.lucene.types.codec.impl.LuceneFieldCodec;
+import org.hibernate.search.backend.lucene.types.codec.impl.LuceneVectorFieldCodec;
 import org.hibernate.search.engine.backend.document.model.spi.IndexFieldFilter;
 
 import org.apache.lucene.codecs.Codec;

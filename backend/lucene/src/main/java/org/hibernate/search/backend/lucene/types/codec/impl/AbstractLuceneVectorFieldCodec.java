@@ -12,11 +12,13 @@ import org.hibernate.search.engine.backend.types.VectorSimilarity;
 
 import org.apache.lucene.codecs.KnnVectorsFormat;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.VectorEncoding;
 import org.apache.lucene.index.VectorSimilarityFunction;
+import org.apache.lucene.util.BytesRef;
 
-public abstract class AbstractLuceneVectorFieldCodec<F, E> implements LuceneStandardFieldCodec<F, E> {
+public abstract class AbstractLuceneVectorFieldCodec<F> implements LuceneVectorFieldCodec<F> {
 
 	protected final FieldType fieldType;
 	protected final VectorSimilarity vectorSimilarity;
@@ -48,7 +50,7 @@ public abstract class AbstractLuceneVectorFieldCodec<F, E> implements LuceneStan
 			return;
 		}
 
-		E encodedValue = encode( value );
+		byte[] encodedValue = encode( value );
 
 		documentBuilder.addField( createIndexField( absoluteFieldPath, value ) );
 		if ( Storage.ENABLED == storage ) {
@@ -56,7 +58,9 @@ public abstract class AbstractLuceneVectorFieldCodec<F, E> implements LuceneStan
 		}
 	}
 
-	protected abstract IndexableField toStoredField(String absoluteFieldPath, E encodedValue);
+	private IndexableField toStoredField(String absoluteFieldPath, byte[] encodedValue) {
+		return new StoredField( absoluteFieldPath, new BytesRef( encodedValue ) );
+	}
 
 	@Override
 	public boolean isCompatibleWith(LuceneFieldCodec<?> obj) {
@@ -67,7 +71,7 @@ public abstract class AbstractLuceneVectorFieldCodec<F, E> implements LuceneStan
 			return false;
 		}
 
-		AbstractLuceneVectorFieldCodec<?, ?> other = (AbstractLuceneVectorFieldCodec<?, ?>) obj;
+		AbstractLuceneVectorFieldCodec<?> other = (AbstractLuceneVectorFieldCodec<?>) obj;
 
 		return dimension == other.dimension
 				&& vectorSimilarity == other.vectorSimilarity
