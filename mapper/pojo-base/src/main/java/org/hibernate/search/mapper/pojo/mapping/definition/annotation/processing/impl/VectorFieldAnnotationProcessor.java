@@ -13,7 +13,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.VectorFiel
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing.PropertyMappingAnnotationProcessor;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing.PropertyMappingAnnotationProcessorContext;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
-import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingVectorFieldStep;
+import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingVectorOptionsFieldStep;
 
 public class VectorFieldAnnotationProcessor implements PropertyMappingAnnotationProcessor<VectorField> {
 
@@ -22,7 +22,7 @@ public class VectorFieldAnnotationProcessor implements PropertyMappingAnnotation
 			PropertyMappingAnnotationProcessorContext context) {
 		String cleanedUpRelativeFieldName = context.toNullIfDefault( annotation.name(), "" );
 
-		PropertyMappingVectorFieldStep fieldContext =
+		PropertyMappingVectorOptionsFieldStep fieldContext =
 				mappingContext.vectorField( annotation.dimension(), cleanedUpRelativeFieldName );
 
 		int maxConnections = annotation.maxConnections();

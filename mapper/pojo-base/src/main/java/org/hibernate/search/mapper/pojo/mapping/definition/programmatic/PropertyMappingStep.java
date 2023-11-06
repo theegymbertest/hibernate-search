@@ -238,8 +238,8 @@ public interface PropertyMappingStep {
 	 */
 	IndexingDependencyOptionsStep indexingDependency();
 
-	PropertyMappingVectorFieldStep vectorField(int dimension);
+	PropertyMappingVectorOptionsFieldStep vectorField(int dimension);
 
-	PropertyMappingVectorFieldStep vectorField(int dimension, String relativeFieldName);
+	PropertyMappingVectorOptionsFieldStep vectorField(int dimension, String relativeFieldName);
 
 }

@@ -6,6 +6,8 @@
  */
 package org.hibernate.search.backend.lucene.types.dsl.impl;
 
+import static org.hibernate.search.backend.lucene.lowlevel.codec.impl.HibernateSearchKnnVectorsFormat.DEFAULT_MAX_DIMENSIONS;
+
 import java.lang.invoke.MethodHandles;
 
 import org.hibernate.search.backend.lucene.logging.impl.Log;
@@ -36,23 +38,26 @@ abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLucene
 	private static final int MAX_MAX_CONNECTIONS = 512;
 
 	protected VectorSimilarity vectorSimilarity = VectorSimilarity.DEFAULT;
-	protected int dimension;
-	protected Integer beamWidth = MAX_MAX_CONNECTIONS;
-	protected Integer maxConnections = 16;
+	protected int dimension = -1;
+	protected int beamWidth = MAX_MAX_CONNECTIONS;
+	protected int maxConnections = 16;
 	private Projectable projectable = Projectable.DEFAULT;
 	private F indexNullAsValue = null;
 
-	AbstractLuceneVectorFieldTypeOptionsStep(LuceneIndexFieldTypeBuildContext buildContext, Class<F> valueType, int dimension) {
+	AbstractLuceneVectorFieldTypeOptionsStep(LuceneIndexFieldTypeBuildContext buildContext, Class<F> valueType) {
 		super( buildContext, valueType );
-		this.dimension = dimension;
+	}
 
-		if ( this.dimension < 1 ) {
-			throw log.vectorPropertyUnsupportedValue( "dimension", this.dimension, MAX_BEAM_WIDTH );
+	@Override
+	public S dimension(int dimension) {
+		if ( dimension < 1 ) {
+			throw log.vectorPropertyUnsupportedValue( "dimension", dimension, DEFAULT_MAX_DIMENSIONS );
 		}
-		if ( this.dimension > HibernateSearchKnnVectorsFormat.DEFAULT_MAX_DIMENSIONS ) {
-			log.vectorPropertyOutOfRecommendedRange( "dimension", this.dimension, 1,
-					HibernateSearchKnnVectorsFormat.DEFAULT_MAX_DIMENSIONS );
+		if ( dimension > DEFAULT_MAX_DIMENSIONS ) {
+			log.vectorPropertyOutOfRecommendedRange( "dimension", dimension, 1, DEFAULT_MAX_DIMENSIONS );
 		}
+		this.dimension = dimension;
+		return thisAsS();
 	}
 
 	@Override
@@ -96,20 +101,27 @@ abstract class AbstractLuceneVectorFieldTypeOptionsStep<S extends AbstractLucene
 
 	@Override
 	public LuceneIndexValueFieldType<F> toIndexFieldType() {
+		if ( dimension < 0 ) {
+			// means we never called dimension(..)
+			throw log.vectorDimensionNotSpecified();
+		}
+
 		VectorSimilarity resolvedVectorSimilarity = resolveDefault( vectorSimilarity );
 		boolean resolvedProjectable = resolveDefault( projectable );
 
 		Storage storage = resolvedProjectable ? Storage.ENABLED : Storage.DISABLED;
 
 		AbstractLuceneVectorFieldCodec<F, ?> codec = createCodec( resolvedVectorSimilarity, dimension, storage,
-				indexNullAsValue, new HibernateSearchKnnVectorsFormat( maxConnections, beamWidth ) );
+				indexNullAsValue, new HibernateSearchKnnVectorsFormat( maxConnections, beamWidth )
+		);
 		builder.codec( codec );
 		builder.queryElementFactory( PredicateTypeKeys.EXISTS, new LuceneExistsPredicate.DocValuesOrNormsBasedFactory<>() );
 
 		return builder.build();
 	}
 
-	protected abstract AbstractLuceneVectorFieldCodec<F, ?> createCodec(VectorSimilarity vectorSimilarity, int dimension,
+	protected abstract AbstractLuceneVectorFieldCodec<F, ?> createCodec(VectorSimilarity vectorSimilarity,
+			int dimension,
 			Storage storage, F indexNullAsValue, KnnVectorsFormat knnVectorsFormat);
 
 	protected static VectorSimilarity resolveDefault(VectorSimilarity vectorSimilarity) {

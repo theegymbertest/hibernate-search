@@ -20,7 +20,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.Property
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingKeywordFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingScaledNumberFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
-import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingVectorFieldStep;
+import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingVectorOptionsFieldStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
 
@@ -123,12 +123,12 @@ class DelegatingPropertyMappingStep implements PropertyMappingStep {
 	}
 
 	@Override
-	public PropertyMappingVectorFieldStep vectorField(int dimension) {
+	public PropertyMappingVectorOptionsFieldStep vectorField(int dimension) {
 		return delegate.vectorField( dimension );
 	}
 
 	@Override
-	public PropertyMappingVectorFieldStep vectorField(int dimension, String relativeFieldName) {
+	public PropertyMappingVectorOptionsFieldStep vectorField(int dimension, String relativeFieldName) {
 		return delegate.vectorField( dimension, relativeFieldName );
 	}
 }

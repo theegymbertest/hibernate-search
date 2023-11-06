@@ -40,6 +40,8 @@ public interface IndexFieldTypeFactory {
 	 */
 	<F> StandardIndexFieldTypeOptionsStep<?, F> as(Class<F> valueType);
 
+	<F> VectorFieldTypeOptionsStep<?, F> asVector(Class<F> valueType);
+
 	/**
 	 * Define a field type whose values are represented as a {@link String} in Hibernate Search.
 	 * @return A DSL step where the index field type can be defined in more details.
@@ -172,14 +174,14 @@ public interface IndexFieldTypeFactory {
 	 * and whose values are represented as a {@code byte[]} in Hibernate Search.
 	 * @return A DSL step where the index field type can be defined in more details.
 	 */
-	VectorFieldTypeOptionsStep<?, byte[]> asByteVector(int dimension);
+	VectorFieldTypeOptionsStep<?, byte[]> asByteVector();
 
 	/**
 	 * Define a field type intended for use in vector search
 	 * and whose values are represented as a {@code float[]} in Hibernate Search.
 	 * @return A DSL step where the index field type can be defined in more details.
 	 */
-	VectorFieldTypeOptionsStep<?, float[]> asFloatVector(int dimension);
+	VectorFieldTypeOptionsStep<?, float[]> asFloatVector();
 
 	/**
 	 * Extend the current factory with the given extension,

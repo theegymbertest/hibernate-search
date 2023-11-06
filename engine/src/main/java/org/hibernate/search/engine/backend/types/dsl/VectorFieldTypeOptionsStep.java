@@ -18,6 +18,8 @@ import org.hibernate.search.engine.backend.types.VectorSimilarity;
 public interface VectorFieldTypeOptionsStep<S extends VectorFieldTypeOptionsStep<?, F>, F>
 		extends IndexFieldTypeOptionsStep<S, F> {
 
+	S dimension(int dimension);
+
 	S projectable(Projectable projectable);
 
 	S vectorSimilarity(VectorSimilarity vectorSimilarity);

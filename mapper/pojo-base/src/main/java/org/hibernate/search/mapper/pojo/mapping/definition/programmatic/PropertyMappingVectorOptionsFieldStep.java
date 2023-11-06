@@ -12,16 +12,16 @@ import org.hibernate.search.engine.backend.types.VectorSimilarity;
 /**
  * TODO: vector : docs
  */
-public interface PropertyMappingVectorFieldStep extends PropertyMappingStep {
+public interface PropertyMappingVectorOptionsFieldStep extends PropertyMappingStep {
 
-	PropertyMappingVectorFieldStep projectable(Projectable projectable);
+	PropertyMappingVectorOptionsFieldStep projectable(Projectable projectable);
 
-	PropertyMappingVectorFieldStep vectorSimilarity(VectorSimilarity vectorSimilarity);
+	PropertyMappingVectorOptionsFieldStep vectorSimilarity(VectorSimilarity vectorSimilarity);
 
-	PropertyMappingVectorFieldStep beamWidth(int beamWidth);
+	PropertyMappingVectorOptionsFieldStep beamWidth(int beamWidth);
 
-	PropertyMappingVectorFieldStep maxConnections(int maxConnections);
+	PropertyMappingVectorOptionsFieldStep maxConnections(int maxConnections);
 
-	PropertyMappingVectorFieldStep indexNullAs(String indexNullAs);
+	PropertyMappingVectorOptionsFieldStep indexNullAs(String indexNullAs);
 
 }

@@ -35,14 +35,14 @@ public class Author {
 	private byte[] embeddings;
 
 	@VectorField(dimension = 8)
-	private Float[] embeddingsFloat;
+	private float[] embeddingsFloat;
 
 	@ManyToMany(mappedBy = "authors")
 	private List<Book> books = new ArrayList<>();
 
 	public Author() {
 		embeddings = new byte[] { 1, 2, 3, 4 };
-		embeddingsFloat = new Float[] { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+		embeddingsFloat = new float[] { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 	}
 
 	public Integer getId() {

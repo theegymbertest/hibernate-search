@@ -714,4 +714,7 @@ public interface Log extends BasicLogger {
 	@Message(id = ID_OFFSET + 175,
 			value = "Vector field configuration property '%1$s' value '%2$s' is out of the recommended range [%3$d, %4$d]")
 	void vectorPropertyOutOfRecommendedRange(String property, Integer value, int min, int max);
+
+	@Message(id = ID_OFFSET + 176, value = "Vector dimension is a mandatory property.")
+	SearchException vectorDimensionNotSpecified();
 }

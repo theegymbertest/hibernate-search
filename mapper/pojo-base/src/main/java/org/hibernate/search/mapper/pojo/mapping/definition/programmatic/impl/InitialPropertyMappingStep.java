@@ -24,7 +24,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.Property
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingKeywordFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingScaledNumberFieldOptionsStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingStep;
-import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingVectorFieldStep;
+import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.PropertyMappingVectorOptionsFieldStep;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingStep;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
 import org.hibernate.search.mapper.pojo.model.path.PojoModelPathValueNode;
@@ -179,15 +179,17 @@ class InitialPropertyMappingStep
 	}
 
 	@Override
-	public PropertyMappingVectorFieldStep vectorField(int dimension) {
-		PropertyMappingVectorFieldStepImpl child = new PropertyMappingVectorFieldStepImpl( this, dimension, null );
+	public PropertyMappingVectorOptionsFieldStep vectorField(int dimension) {
+		PropertyMappingVectorOptionsFieldStepImpl child =
+				new PropertyMappingVectorOptionsFieldStepImpl( this, dimension, null );
 		children.add( child );
 		return child;
 	}
 
 	@Override
-	public PropertyMappingVectorFieldStep vectorField(int dimension, String relativeFieldName) {
-		PropertyMappingVectorFieldStepImpl child = new PropertyMappingVectorFieldStepImpl( this, dimension, relativeFieldName );
+	public PropertyMappingVectorOptionsFieldStep vectorField(int dimension, String relativeFieldName) {
+		PropertyMappingVectorOptionsFieldStepImpl child =
+				new PropertyMappingVectorOptionsFieldStepImpl( this, dimension, relativeFieldName );
 		children.add( child );
 		return child;
 	}

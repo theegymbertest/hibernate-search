@@ -16,8 +16,8 @@ import org.apache.lucene.codecs.KnnVectorsFormat;
 class LuceneFloatVectorFieldTypeOptionsStep
 		extends AbstractLuceneVectorFieldTypeOptionsStep<LuceneFloatVectorFieldTypeOptionsStep, float[]> {
 
-	LuceneFloatVectorFieldTypeOptionsStep(LuceneIndexFieldTypeBuildContext buildContext, int dimension) {
-		super( buildContext, float[].class, dimension );
+	LuceneFloatVectorFieldTypeOptionsStep(LuceneIndexFieldTypeBuildContext buildContext) {
+		super( buildContext, float[].class );
 	}
 
 	@Override
