@@ -14,7 +14,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.hibernate.search.engine.backend.types.Projectable;
-import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.engine.backend.types.VectorSimilarity;
 import org.hibernate.search.engine.environment.bean.BeanRetrieval;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing.PropertyMapping;
@@ -24,9 +23,12 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing
 /**
  * Maps an entity property to a vector field in the index.
  * <p>
- * This annotation will work for any {@code float/byte} array/list.
+ * This annotation will work for any {@code float/byte} array.
  * <p>
- * TODO: vector : docs
+ * Vector fields are to be used in k-NN search, when the distance between a queried and stored vectors is computed
+ * and k nearest vectors are selected as the results.
+ *
+ * TODO : vector : add `see some predicate once search part is ready`
  */
 @Documented
 @Target({ ElementType.METHOD, ElementType.FIELD })
@@ -43,10 +45,13 @@ public @interface VectorField {
 
 	/**
 	 * @return Whether this field should be projectable.
-	 * @see Searchable
+	 * @see Projectable
 	 */
 	Projectable projectable() default Projectable.DEFAULT;
 
+	/**
+	 * @return The size of the vector.
+	 */
 	int dimension();
 
 	/**
@@ -56,29 +61,24 @@ public @interface VectorField {
 	VectorSimilarity vectorSimilarity() default VectorSimilarity.DEFAULT;
 
 	/**
-	 * Open Search has more parameters ...
-	 * https://opensearch.org/docs/latest/search-plugins/knn/knn-index/#hnsw-parameters-1
-	 */
-
-	/**
 	 * @return A value used instead of null values when indexing.
 	 */
 	String indexNullAs() default AnnotationDefaultValues.DO_NOT_INDEX_NULL;
 
 	/**
-	 * The number of candidates to track while assembling the list of nearest neighbors for each new node. Defaults to 100 in Elasticsearch.
-	 * The size of the dynamic list used during k-NN graph creation. Higher values lead to a more accurate graph but slower indexing speed. Defaults to 512 in Open Search.
-	 * @return
+	 * @return The size of the dynamic list used during k-NN graph creation.
+	 * Higher values lead to a more accurate graph but slower indexing speed.
+	 * Default value is backend-specific.
 	 */
 	int beamWidth() default AnnotationDefaultValues.DEFAULT_BEAM_WIDTH;
 
 	/**
-	 * The number of neighbors each node will be connected to in the HNSW graph. Defaults to 16 ES.
-	 * The number of bidirectional links that the plugin creates for each new element. Increasing and decreasing this value can have a large impact on memory consumption. Keep this value between 2 and 100.
-	 * @return
+	 * @return The number of neighbors each node will be connected to in the HNSW graph.
+	 * Modifying this value will have an impact on memory consumption.
+	 * It is recommended to keep this value between 2 and 100.
+	 * Default value is backend-specific.
 	 */
 	int maxConnections() default AnnotationDefaultValues.DEFAULT_MAX_CONNECTIONS;
-
 
 	@Documented
 	@Target({ ElementType.METHOD, ElementType.FIELD })
