@@ -276,6 +276,16 @@ public interface SearchPredicateFactory {
 	NamedPredicateOptionsStep named(String path);
 
 	/**
+	 * Match {@code k} nearest documents to the given vector.
+	 *
+	 * @param k The number of nearest neighbors to look for.
+	 * @return The initial step of a DSL where knn predicate options can be defined.
+	 * @see KnnPredicateVectorStep
+	 * @see KnnPredicateOptionsStep
+	 */
+	KnnPredicateFieldStep knn(int k);
+
+	/**
 	 * Extend the current factory with the given extension,
 	 * resulting in an extended factory offering different types of predicates.
 	 *
