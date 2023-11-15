@@ -115,7 +115,7 @@ public abstract class AbstractPredicateMultiFieldIT<V extends AbstractPredicateT
 		private final SimpleFieldModelsByType field1;
 		private final SimpleFieldModelsByType field2;
 
-		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field0 = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field0_" );
 			field1 = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field1_" );
 			field2 = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field2_" );

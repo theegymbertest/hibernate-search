@@ -23,7 +23,7 @@ public abstract class AbstractPredicateArgumentCheckingIT {
 
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("params")
-	void nullMatchingParam(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?> fieldType) {
+	void nullMatchingParam(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?, ?> fieldType) {
 		SearchPredicateFactory f = index.createScope().predicate();
 
 		assertThatThrownBy( () -> tryPredicateWithNullMatchingParam( f, fieldPath( index, fieldType ) ) )
@@ -33,14 +33,14 @@ public abstract class AbstractPredicateArgumentCheckingIT {
 
 	protected abstract void tryPredicateWithNullMatchingParam(SearchPredicateFactory f, String fieldPath);
 
-	protected String fieldPath(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?> fieldType) {
+	protected String fieldPath(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?, ?> fieldType) {
 		return index.binding().field.get( fieldType ).relativeFieldName;
 	}
 
 	public static final class IndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "" );
 		}
 	}

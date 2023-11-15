@@ -44,7 +44,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class DocumentElementStaticFieldNameIT<F> {
 
-	private static List<FieldTypeDescriptor<?>> supportedTypeDescriptors() {
+	private static List<FieldTypeDescriptor<?, ?>> supportedTypeDescriptors() {
 		return FieldTypeDescriptor.getAll();
 	}
 
@@ -69,7 +69,7 @@ class DocumentElementStaticFieldNameIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_nonNull(FieldTypeDescriptor<F> fieldType) {
+	void addValue_nonNull(FieldTypeDescriptor<F, ?> fieldType) {
 		executeAdd( "1", document -> {
 			setNonNullValue( document, fieldType );
 		} );
@@ -80,7 +80,7 @@ class DocumentElementStaticFieldNameIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_null(FieldTypeDescriptor<F> fieldType) {
+	void addValue_null(FieldTypeDescriptor<F, ?> fieldType) {
 		executeAdd( "1", document -> {
 			setNullValue( document, fieldType );
 		} );
@@ -92,7 +92,7 @@ class DocumentElementStaticFieldNameIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addObject(FieldTypeDescriptor<F> fieldType) {
+	void addObject(FieldTypeDescriptor<F, ?> fieldType) {
 		executeAdd( "1", document -> {
 			setNullValue( document, fieldType );
 
@@ -123,7 +123,7 @@ class DocumentElementStaticFieldNameIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addNullObject(FieldTypeDescriptor<F> fieldType) {
+	void addNullObject(FieldTypeDescriptor<F, ?> fieldType) {
 		executeAdd( "1", document -> {
 			setNullValue( document, fieldType );
 
@@ -150,7 +150,7 @@ class DocumentElementStaticFieldNameIT<F> {
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void add_excludedFields(FieldTypeDescriptor<F> fieldType) {
+	void add_excludedFields(FieldTypeDescriptor<F, ?> fieldType) {
 		executeAdd( "1", document -> {
 			DocumentElement excludingObject = document.addObject( "excludingObject" );
 			setNonNullValue( excludingObject, fieldType );
@@ -172,7 +172,7 @@ class DocumentElementStaticFieldNameIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_unknownField(FieldTypeDescriptor<F> fieldType) {
+	void addValue_unknownField(FieldTypeDescriptor<F, ?> fieldType) {
 		assertThatThrownBy( () -> executeAdd( "1", document -> {
 			document.addValue( "unknownField", null );
 		} ) )
@@ -185,7 +185,7 @@ class DocumentElementStaticFieldNameIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addObject_unknownField(FieldTypeDescriptor<F> fieldType) {
+	void addObject_unknownField(FieldTypeDescriptor<F, ?> fieldType) {
 		assertThatThrownBy( () -> executeAdd( "1", document -> {
 			document.addObject( "unknownField" );
 		} ) )
@@ -198,7 +198,7 @@ class DocumentElementStaticFieldNameIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addNullObject_unknownField(FieldTypeDescriptor<F> fieldType) {
+	void addNullObject_unknownField(FieldTypeDescriptor<F, ?> fieldType) {
 		assertThatThrownBy( () -> executeAdd( "1", document -> {
 			document.addNullObject( "unknownField" );
 		} ) )
@@ -211,8 +211,8 @@ class DocumentElementStaticFieldNameIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_invalidValueType(FieldTypeDescriptor<F> fieldType) {
-		FieldTypeDescriptor<?> invalidType = FieldTypeDescriptor.getIncompatible( fieldType );
+	void addValue_invalidValueType(FieldTypeDescriptor<F, ?> fieldType) {
+		FieldTypeDescriptor<?, ?> invalidType = FieldTypeDescriptor.getIncompatible( fieldType );
 		Object valueWithInvalidType = invalidType.getIndexableValues().getSingle().get( 0 );
 
 		SimpleFieldModel<F> fieldModel = index.binding().fieldModels.get( fieldType );
@@ -229,11 +229,11 @@ class DocumentElementStaticFieldNameIT<F> {
 				);
 	}
 
-	private void setNonNullValue(DocumentElement document, FieldTypeDescriptor<F> fieldType) {
+	private void setNonNullValue(DocumentElement document, FieldTypeDescriptor<F, ?> fieldType) {
 		document.addValue( getRelativeFieldName( fieldType ), fieldType.getIndexableValues().getSingle().get( 0 ) );
 	}
 
-	private void setNullValue(DocumentElement document, FieldTypeDescriptor<F> fieldType) {
+	private void setNullValue(DocumentElement document, FieldTypeDescriptor<F, ?> fieldType) {
 		document.addValue( getRelativeFieldName( fieldType ), null );
 	}
 
@@ -241,7 +241,7 @@ class DocumentElementStaticFieldNameIT<F> {
 		index.index( id, documentContributor::accept );
 	}
 
-	private String getRelativeFieldName(FieldTypeDescriptor<F> fieldType) {
+	private String getRelativeFieldName(FieldTypeDescriptor<F, ?> fieldType) {
 		// Matches the name defined in AbstractObjectBinding
 		return fieldType.getUniqueName();
 	}

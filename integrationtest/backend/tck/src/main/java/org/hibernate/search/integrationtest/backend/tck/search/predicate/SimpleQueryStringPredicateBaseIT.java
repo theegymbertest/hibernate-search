@@ -26,13 +26,13 @@ import org.junit.jupiter.params.provider.Arguments;
 class SimpleQueryStringPredicateBaseIT {
 	//CHECKSTYLE:ON
 
-	private static final List<FieldTypeDescriptor<String>> supportedFieldTypes = new ArrayList<>();
-	private static final List<FieldTypeDescriptor<?>> unsupportedFieldTypes = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<String, ?>> supportedFieldTypes = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<?, ?>> unsupportedFieldTypes = new ArrayList<>();
 	static {
-		for ( FieldTypeDescriptor<?> fieldType : FieldTypeDescriptor.getAll() ) {
+		for ( FieldTypeDescriptor<?, ?> fieldType : FieldTypeDescriptor.getAll() ) {
 			if ( String.class.equals( fieldType.getJavaType() ) ) {
 				@SuppressWarnings("unchecked")
-				FieldTypeDescriptor<String> casted = (FieldTypeDescriptor<String>) fieldType;
+				FieldTypeDescriptor<String, ?> casted = (FieldTypeDescriptor<String, ?>) fieldType;
 				supportedFieldTypes.add( casted );
 			}
 			else {
@@ -104,7 +104,7 @@ class SimpleQueryStringPredicateBaseIT {
 		);
 	}
 
-	private static SimpleQueryStringPredicateTestValues testValues(FieldTypeDescriptor<String> fieldType) {
+	private static SimpleQueryStringPredicateTestValues testValues(FieldTypeDescriptor<String, ?> fieldType) {
 		return new SimpleQueryStringPredicateTestValues( fieldType );
 	}
 
@@ -121,7 +121,7 @@ class SimpleQueryStringPredicateBaseIT {
 		private static final List<DataSet<String, SimpleQueryStringPredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, SimpleQueryStringPredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -152,7 +152,7 @@ class SimpleQueryStringPredicateBaseIT {
 		private static final List<DataSet<String, SimpleQueryStringPredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, SimpleQueryStringPredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -202,7 +202,7 @@ class SimpleQueryStringPredicateBaseIT {
 		private static final List<DataSet<?, ?>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( mainIndex, missingFieldIndex, dataSet ) );
@@ -270,7 +270,7 @@ class SimpleQueryStringPredicateBaseIT {
 		private static final List<DataSet<String, SimpleQueryStringPredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, SimpleQueryStringPredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -389,7 +389,7 @@ class SimpleQueryStringPredicateBaseIT {
 
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : unsupportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : unsupportedFieldTypes ) {
 				parameters.add( Arguments.of( index, fieldType ) );
 			}
 		}
@@ -425,7 +425,7 @@ class SimpleQueryStringPredicateBaseIT {
 
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				parameters.add( Arguments.of( searchableYesIndex, searchableNoIndex, fieldType ) );
 			}
 		}
@@ -435,7 +435,7 @@ class SimpleQueryStringPredicateBaseIT {
 		}
 
 		@Override
-		protected void tryPredicate(SearchPredicateFactory f, String fieldPath) {
+		protected void tryPredicate(SearchPredicateFactory f, String fieldPath, FieldTypeDescriptor<?, ?> fieldType) {
 			f.simpleQueryString().field( fieldPath );
 		}
 
@@ -457,7 +457,7 @@ class SimpleQueryStringPredicateBaseIT {
 
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				parameters.add( Arguments.of( index, fieldType ) );
 			}
 		}
@@ -498,7 +498,7 @@ class SimpleQueryStringPredicateBaseIT {
 		private static final List<DataSet<String, SimpleQueryStringPredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, SimpleQueryStringPredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, compatibleIndex, rawFieldCompatibleIndex, missingFieldIndex,

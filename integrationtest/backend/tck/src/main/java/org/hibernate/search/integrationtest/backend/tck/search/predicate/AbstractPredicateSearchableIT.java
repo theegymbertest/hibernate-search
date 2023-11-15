@@ -27,12 +27,12 @@ public abstract class AbstractPredicateSearchableIT {
 	@MethodSource("params")
 	void unsearchable(SimpleMappedIndex<SearchableYesIndexBinding> searchableYesIndex,
 			SimpleMappedIndex<SearchableNoIndexBinding> searchableNoIndex,
-			FieldTypeDescriptor<?> fieldType) {
+			FieldTypeDescriptor<?, ?> fieldType) {
 		SearchPredicateFactory f = searchableNoIndex.createScope().predicate();
 
 		String fieldPath = searchableNoIndex.binding().field.get( fieldType ).relativeFieldName;
 
-		assertThatThrownBy( () -> tryPredicate( f, fieldPath ) )
+		assertThatThrownBy( () -> tryPredicate( f, fieldPath, fieldType ) )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(
 						"Cannot use '" + predicateNameInErrorMessage() + "' on field '" + fieldPath + "'",
@@ -44,12 +44,12 @@ public abstract class AbstractPredicateSearchableIT {
 	@MethodSource("params")
 	void multiIndex_incompatibleSearchable(SimpleMappedIndex<SearchableYesIndexBinding> searchableYesIndex,
 			SimpleMappedIndex<SearchableNoIndexBinding> searchableNoIndex,
-			FieldTypeDescriptor<?> fieldType) {
+			FieldTypeDescriptor<?, ?> fieldType) {
 		SearchPredicateFactory f = searchableYesIndex.createScope( searchableNoIndex ).predicate();
 
 		String fieldPath = searchableYesIndex.binding().field.get( fieldType ).relativeFieldName;
 
-		assertThatThrownBy( () -> tryPredicate( f, fieldPath ) )
+		assertThatThrownBy( () -> tryPredicate( f, fieldPath, fieldType ) )
 				.isInstanceOf( SearchException.class )
 				.hasMessageContainingAll(
 						"Inconsistent configuration for field '" + fieldPath + "' in a search query across multiple indexes",
@@ -57,14 +57,15 @@ public abstract class AbstractPredicateSearchableIT {
 				);
 	}
 
-	protected abstract void tryPredicate(SearchPredicateFactory f, String fieldPath);
+	protected abstract void tryPredicate(SearchPredicateFactory f, String fieldPath,
+			FieldTypeDescriptor<?, ?> fieldType);
 
 	protected abstract String predicateNameInErrorMessage();
 
 	public static final class SearchableYesIndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public SearchableYesIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public SearchableYesIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "", c -> c.searchable( Searchable.YES ) );
 		}
 	}
@@ -72,7 +73,7 @@ public abstract class AbstractPredicateSearchableIT {
 	public static final class SearchableNoIndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public SearchableNoIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public SearchableNoIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "", c -> c.searchable( Searchable.NO ) );
 		}
 	}

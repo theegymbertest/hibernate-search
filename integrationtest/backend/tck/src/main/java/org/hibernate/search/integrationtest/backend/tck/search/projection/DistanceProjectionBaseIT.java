@@ -78,7 +78,7 @@ class DistanceProjectionBaseIT {
 
 	abstract static class InObjectProjectionConfigured
 			extends AbstractProjectionInObjectProjectionIT<GeoPoint, Double, DistanceProjectionTestValues> {
-		private static final List<FieldTypeDescriptor<?>> supportedFieldTypes =
+		private static final List<FieldTypeDescriptor<?, ?>> supportedFieldTypes =
 				Arrays.asList( GeoPointFieldTypeDescriptor.INSTANCE );
 		private static final SimpleMappedIndex<IndexBinding> mainIndex =
 				SimpleMappedIndex.of( root -> new IndexBinding( root, supportedFieldTypes ) )

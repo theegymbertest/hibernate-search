@@ -77,7 +77,9 @@ public class SearchHitsAssert<H> {
 
 	@SafeVarargs
 	public final SearchHitsAssert<H> hasHitsAnyOrder(H... hits) {
-		asIs().containsExactlyInAnyOrder( hits );
+		// note we can have a hit that is a list of arrays,
+		// and a1.equals(a2) == false even if elements of the array are the same, hence `usingRecursiveFieldByFieldElementComparator`:
+		asIs().usingRecursiveFieldByFieldElementComparator().containsExactlyInAnyOrder( hits );
 		return this;
 	}
 

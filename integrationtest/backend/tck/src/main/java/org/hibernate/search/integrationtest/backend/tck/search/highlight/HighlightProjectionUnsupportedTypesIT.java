@@ -37,7 +37,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class HighlightProjectionUnsupportedTypesIT<F> {
 
-	private static Stream<FieldTypeDescriptor<?>> unsupportedTypeDescriptors() {
+	private static Stream<FieldTypeDescriptor<?, ?>> unsupportedTypeDescriptors() {
 		return FieldTypeDescriptor.getAll().stream()
 				.filter( typeDescriptor -> !AnalyzedStringFieldTypeDescriptor.INSTANCE.equals( typeDescriptor ) );
 	}
@@ -61,7 +61,7 @@ class HighlightProjectionUnsupportedTypesIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void notSupported(FieldTypeDescriptor<F> fieldTypeDescriptor) {
+	void notSupported(FieldTypeDescriptor<F, ?> fieldTypeDescriptor) {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = getFieldPath( fieldTypeDescriptor );
 
@@ -75,7 +75,7 @@ class HighlightProjectionUnsupportedTypesIT<F> {
 				);
 	}
 
-	private String getFieldPath(FieldTypeDescriptor<F> fieldTypeDescriptor) {
+	private String getFieldPath(FieldTypeDescriptor<F, ?> fieldTypeDescriptor) {
 		return index.binding().fieldModels.get( fieldTypeDescriptor ).relativeFieldName;
 	}
 
