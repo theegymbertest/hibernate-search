@@ -43,12 +43,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class SingleFieldAggregationUnsupportedTypesIT<F> {
 
-	private static final Set<FieldTypeDescriptor<?>> unsupportedFieldTypes = new LinkedHashSet<>();
+	private static final Set<FieldTypeDescriptor<?, ?>> unsupportedFieldTypes = new LinkedHashSet<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 
 	static {
 		for ( AggregationDescriptor aggregationDescriptor : AggregationDescriptor.getAll() ) {
-			for ( FieldTypeDescriptor<?> fieldTypeDescriptor : FieldTypeDescriptor.getAll() ) {
+			for ( FieldTypeDescriptor<?, ?> fieldTypeDescriptor : FieldTypeDescriptor.getAll() ) {
 				Optional<? extends UnsupportedSingleFieldAggregationExpectations> expectations =
 						aggregationDescriptor.getSingleFieldAggregationExpectations( fieldTypeDescriptor ).getUnsupported();
 				if ( expectations.isPresent() ) {
@@ -77,7 +77,7 @@ class SingleFieldAggregationUnsupportedTypesIT<F> {
 	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-1748")
 	@PortedFromSearch5(original = "org.hibernate.search.test.query.facet.RangeFacetingTest.testRangeQueryWithUnsupportedType")
-	void simple(FieldTypeDescriptor<F> fieldType, UnsupportedSingleFieldAggregationExpectations expectations) {
+	void simple(FieldTypeDescriptor<F, ?> fieldType, UnsupportedSingleFieldAggregationExpectations expectations) {
 		SimpleFieldModel<F> model = index.binding().fieldModels.get( fieldType );
 		String fieldPath = model.relativeFieldName;
 
@@ -96,7 +96,7 @@ class SingleFieldAggregationUnsupportedTypesIT<F> {
 	}
 
 	private SimpleFieldModel<F> mapField(IndexSchemaElement parent, String prefix,
-			Consumer<StandardIndexFieldTypeOptionsStep<?, F>> additionalConfiguration, FieldTypeDescriptor<F> fieldType) {
+			Consumer<StandardIndexFieldTypeOptionsStep<?, F>> additionalConfiguration, FieldTypeDescriptor<F, ?> fieldType) {
 		return SimpleFieldModel.mapper( fieldType, additionalConfiguration )
 				.map( parent, prefix + fieldType.getUniqueName() );
 	}

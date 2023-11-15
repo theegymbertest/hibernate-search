@@ -39,7 +39,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class IndexingFieldTypesIT<F> {
 
-	private static final List<FieldTypeDescriptor<?>> supportedTypeDescriptors = FieldTypeDescriptor.getAll();
+	private static final List<FieldTypeDescriptor<?, ?>> supportedTypeDescriptors = FieldTypeDescriptor.getAll();
 
 	public static List<? extends Arguments> params() {
 		return supportedTypeDescriptors.stream()
@@ -52,7 +52,7 @@ class IndexingFieldTypesIT<F> {
 
 	private SimpleMappedIndex<IndexBinding> index;
 
-	public void init(FieldTypeDescriptor<F> typeDescriptor) {
+	public void init(FieldTypeDescriptor<F, ?> typeDescriptor) {
 		index = SimpleMappedIndex.of(
 				root -> new IndexBinding( root, typeDescriptor ) );
 		setupHelper.start().withIndex( index ).setup();
@@ -60,7 +60,7 @@ class IndexingFieldTypesIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void withReference(FieldTypeDescriptor<F> typeDescriptor) {
+	void withReference(FieldTypeDescriptor<F, ?> typeDescriptor) {
 		init( typeDescriptor );
 		List<F> values = new ArrayList<>( typeDescriptor.getIndexableValues().getSingle() );
 		values.add( null ); // Also test null
@@ -99,7 +99,7 @@ class IndexingFieldTypesIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void withPath(FieldTypeDescriptor<F> typeDescriptor) {
+	void withPath(FieldTypeDescriptor<F, ?> typeDescriptor) {
 		init( typeDescriptor );
 		List<F> values = new ArrayList<>( typeDescriptor.getIndexableValues().getSingle() );
 		values.add( null ); // Also test null
@@ -138,7 +138,7 @@ class IndexingFieldTypesIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void dynamic_withPath(FieldTypeDescriptor<F> typeDescriptor) {
+	void dynamic_withPath(FieldTypeDescriptor<F, ?> typeDescriptor) {
 		init( typeDescriptor );
 		List<F> values = new ArrayList<>( typeDescriptor.getIndexableValues().getSingle() );
 		values.add( null ); // Also test null
@@ -179,7 +179,7 @@ class IndexingFieldTypesIT<F> {
 	private class IndexBinding {
 		final SimpleFieldModel<F> fieldModel;
 
-		IndexBinding(IndexSchemaElement root, FieldTypeDescriptor<F> typeDescriptor) {
+		IndexBinding(IndexSchemaElement root, FieldTypeDescriptor<F, ?> typeDescriptor) {
 			this.fieldModel = SimpleFieldModel.mapper( typeDescriptor, c -> c.projectable( Projectable.YES ) )
 					.map( root, "field" );
 			supportedTypeDescriptors.forEach( fieldType -> {

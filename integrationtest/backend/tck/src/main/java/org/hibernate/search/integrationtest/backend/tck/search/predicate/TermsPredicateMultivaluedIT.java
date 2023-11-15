@@ -31,14 +31,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class TermsPredicateMultivaluedIT<F> {
 
-	private static final List<FieldTypeDescriptor<?>> types = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<?, ?>> types = new ArrayList<>();
 	private static final List<TypeValues<?>> typeValuesSet = new ArrayList<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 
 	private static final String DOC_ID = "my_only_document";
 
 	static {
-		for ( FieldTypeDescriptor<?> type : FieldTypeDescriptor.getAll() ) {
+		for ( FieldTypeDescriptor<?, ?> type : FieldTypeDescriptor.getAll() ) {
 			if ( GeoPointFieldTypeDescriptor.INSTANCE.equals( type ) ) {
 				continue;
 			}
@@ -163,7 +163,7 @@ class TermsPredicateMultivaluedIT<F> {
 	public static final class IndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAllMultiValued( fieldTypes, root, "field0_" );
 		}
 	}
@@ -171,7 +171,7 @@ class TermsPredicateMultivaluedIT<F> {
 	public static final class TypeValues<T> {
 		private final TermsPredicateTestValues<T> values;
 
-		public TypeValues(FieldTypeDescriptor<T> type) {
+		public TypeValues(FieldTypeDescriptor<T, ?> type) {
 			this.values = new TermsPredicateTestValues<>( type );
 		}
 

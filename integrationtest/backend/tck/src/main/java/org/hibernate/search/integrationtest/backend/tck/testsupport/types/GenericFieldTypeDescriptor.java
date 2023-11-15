@@ -14,7 +14,7 @@ import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeFactory;
 import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeOptionsStep;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.expectations.IndexNullAsMatchPredicateExpectactions;
 
-public abstract class AbstractFieldTypeDescriptor<F> {
+public abstract class GenericFieldTypeDescriptor<F, S extends IndexFieldTypeOptionsStep<?, F>> {
 
 	protected final Class<F> javaType;
 	protected final String uniqueName;
@@ -23,11 +23,11 @@ public abstract class AbstractFieldTypeDescriptor<F> {
 
 	private final List<F> nonMatchingValues = Collections.unmodifiableList( createNonMatchingValues() );
 
-	protected AbstractFieldTypeDescriptor(Class<F> javaType) {
+	protected GenericFieldTypeDescriptor(Class<F> javaType) {
 		this( javaType, javaType.getSimpleName() );
 	}
 
-	protected AbstractFieldTypeDescriptor(Class<F> javaType, String uniqueName) {
+	protected GenericFieldTypeDescriptor(Class<F> javaType, String uniqueName) {
 		this.javaType = javaType;
 		this.uniqueName = uniqueName;
 	}
@@ -45,9 +45,7 @@ public abstract class AbstractFieldTypeDescriptor<F> {
 		return uniqueName;
 	}
 
-	public IndexFieldTypeOptionsStep<?, F> configure(IndexFieldTypeFactory fieldContext) {
-		return fieldContext.as( javaType );
-	}
+	public abstract S configure(IndexFieldTypeFactory fieldContext);
 
 	/**
 	 * @param indexed The value that was indexed.

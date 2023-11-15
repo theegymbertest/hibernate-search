@@ -41,7 +41,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class MatchPredicateFuzzyIT {
 
-	private static final List<FieldTypeDescriptor<?>> unsupportedFieldTypes = FieldTypeDescriptor.getAll().stream()
+	private static final List<FieldTypeDescriptor<?, ?>> unsupportedFieldTypes = FieldTypeDescriptor.getAll().stream()
 			.filter( fieldType -> !String.class.equals( fieldType.getJavaType() )
 					// GeoPoints don't support the match predicate to begin with, let alone fuzzy().
 					&& !GeoPointFieldTypeDescriptor.INSTANCE.equals( fieldType ) )
@@ -221,7 +221,7 @@ class MatchPredicateFuzzyIT {
 	void unsupportedFieldType() {
 		SearchPredicateFactory f = index.createScope().predicate();
 
-		for ( FieldTypeDescriptor<?> fieldType : unsupportedFieldTypes ) {
+		for ( FieldTypeDescriptor<?, ?> fieldType : unsupportedFieldTypes ) {
 			SimpleFieldModel<?> fieldModel = index.binding().unsupportedTypeFields.get( fieldType );
 			String absoluteFieldPath = fieldModel.relativeFieldName;
 			Object valueToMatch = fieldType.getUniquelyMatchableValues().get( 0 );

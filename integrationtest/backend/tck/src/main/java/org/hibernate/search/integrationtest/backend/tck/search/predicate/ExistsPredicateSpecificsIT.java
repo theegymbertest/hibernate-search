@@ -38,12 +38,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class ExistsPredicateSpecificsIT<F> {
-	private static final List<FieldTypeDescriptor<?>> supportedFieldTypes = FieldTypeDescriptor.getAll();
-	private static final List<FieldTypeDescriptor<?>> supportedFieldTypesWithDocValues = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<?, ?>> supportedFieldTypes = FieldTypeDescriptor.getAll();
+	private static final List<FieldTypeDescriptor<?, ?>> supportedFieldTypesWithDocValues = new ArrayList<>();
 	private static final List<DataSet<?>> dataSets = new ArrayList<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 	static {
-		for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+		for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 			if ( fieldType.isFieldSortSupported() ) {
 				supportedFieldTypesWithDocValues.add( fieldType );
 			}
@@ -244,18 +244,20 @@ class ExistsPredicateSpecificsIT<F> {
 	}
 
 	private static class DifferentTypeIndexBinding {
-		private final Map<FieldTypeDescriptor<?>, SimpleFieldModel<?>> fieldWithDefaultsByOriginalType = new LinkedHashMap<>();
-		private final Map<FieldTypeDescriptor<?>, SimpleFieldModel<?>> fieldWithDocValuesByOriginalType = new LinkedHashMap<>();
+		private final Map<FieldTypeDescriptor<?, ?>, SimpleFieldModel<?>> fieldWithDefaultsByOriginalType =
+				new LinkedHashMap<>();
+		private final Map<FieldTypeDescriptor<?, ?>, SimpleFieldModel<?>> fieldWithDocValuesByOriginalType =
+				new LinkedHashMap<>();
 
 		DifferentTypeIndexBinding(IndexSchemaElement root) {
 			supportedFieldTypes.forEach( fieldType -> {
-				FieldTypeDescriptor<?> replacingType = FieldTypeDescriptor.getIncompatible( fieldType );
+				FieldTypeDescriptor<?, ?> replacingType = FieldTypeDescriptor.getIncompatible( fieldType );
 				fieldWithDefaultsByOriginalType.put( fieldType, SimpleFieldModel.mapper( replacingType )
 						.map( root, "fieldWithDefaults_" + fieldType.getUniqueName() ) );
 			} );
 			supportedFieldTypesWithDocValues.forEach( fieldType -> {
-				FieldTypeDescriptor<?> replacingType = null;
-				for ( FieldTypeDescriptor<?> candidate : supportedFieldTypesWithDocValues ) {
+				FieldTypeDescriptor<?, ?> replacingType = null;
+				for ( FieldTypeDescriptor<?, ?> candidate : supportedFieldTypesWithDocValues ) {
 					if ( !fieldType.equals( candidate ) ) {
 						replacingType = candidate;
 					}
@@ -268,9 +270,9 @@ class ExistsPredicateSpecificsIT<F> {
 	}
 
 	private static final class DataSet<F> extends AbstractPredicateDataSet {
-		protected final FieldTypeDescriptor<F> fieldType;
+		protected final FieldTypeDescriptor<F, ?> fieldType;
 
-		public DataSet(FieldTypeDescriptor<F> fieldType) {
+		public DataSet(FieldTypeDescriptor<F, ?> fieldType) {
 			super( fieldType.getUniqueName() );
 			this.fieldType = fieldType;
 		}

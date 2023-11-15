@@ -31,13 +31,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 class PhrasePredicateBaseIT {
 	//CHECKSTYLE:ON
 
-	private static final List<FieldTypeDescriptor<String>> supportedFieldTypes = new ArrayList<>();
-	private static final List<FieldTypeDescriptor<?>> unsupportedFieldTypes = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<String, ?>> supportedFieldTypes = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<?, ?>> unsupportedFieldTypes = new ArrayList<>();
 	static {
-		for ( FieldTypeDescriptor<?> fieldType : FieldTypeDescriptor.getAll() ) {
+		for ( FieldTypeDescriptor<?, ?> fieldType : FieldTypeDescriptor.getAll() ) {
 			if ( String.class.equals( fieldType.getJavaType() ) ) {
 				@SuppressWarnings("unchecked")
-				FieldTypeDescriptor<String> casted = (FieldTypeDescriptor<String>) fieldType;
+				FieldTypeDescriptor<String, ?> casted = (FieldTypeDescriptor<String, ?>) fieldType;
 				supportedFieldTypes.add( casted );
 			}
 			else {
@@ -109,7 +109,7 @@ class PhrasePredicateBaseIT {
 		);
 	}
 
-	private static PhrasePredicateTestValues testValues(FieldTypeDescriptor<String> fieldType) {
+	private static PhrasePredicateTestValues testValues(FieldTypeDescriptor<String, ?> fieldType) {
 		return new PhrasePredicateTestValues( fieldType );
 	}
 
@@ -126,7 +126,7 @@ class PhrasePredicateBaseIT {
 		private static final List<DataSet<String, PhrasePredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, PhrasePredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -157,7 +157,7 @@ class PhrasePredicateBaseIT {
 		private static final List<DataSet<String, PhrasePredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, PhrasePredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -206,7 +206,7 @@ class PhrasePredicateBaseIT {
 		private static final List<DataSet<?, ?>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( mainIndex, missingFieldIndex, dataSet ) );
@@ -286,7 +286,7 @@ class PhrasePredicateBaseIT {
 		private static final List<DataSet<String, PhrasePredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, PhrasePredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -384,7 +384,7 @@ class PhrasePredicateBaseIT {
 
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : unsupportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : unsupportedFieldTypes ) {
 				parameters.add( Arguments.of( index, fieldType ) );
 			}
 		}
@@ -420,7 +420,7 @@ class PhrasePredicateBaseIT {
 
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				parameters.add( Arguments.of( searchableYesIndex, searchableNoIndex, fieldType ) );
 			}
 		}
@@ -452,7 +452,7 @@ class PhrasePredicateBaseIT {
 
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				parameters.add( Arguments.of( index, fieldType ) );
 			}
 		}
@@ -463,7 +463,7 @@ class PhrasePredicateBaseIT {
 
 		@ParameterizedTest(name = "{1}")
 		@MethodSource("params")
-		void invalidSlop(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?> fieldType) {
+		void invalidSlop(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?, ?> fieldType) {
 			SearchPredicateFactory f = index.createScope().predicate();
 
 			assertThatThrownBy( () -> f.phrase().field( fieldPath( index, fieldType ) )
@@ -511,7 +511,7 @@ class PhrasePredicateBaseIT {
 		private static final List<DataSet<String, PhrasePredicateTestValues>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<String> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<String, ?> fieldType : supportedFieldTypes ) {
 				DataSet<String, PhrasePredicateTestValues> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, compatibleIndex, rawFieldCompatibleIndex, missingFieldIndex,

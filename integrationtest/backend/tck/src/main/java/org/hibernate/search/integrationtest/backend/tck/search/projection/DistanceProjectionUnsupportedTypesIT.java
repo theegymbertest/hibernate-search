@@ -34,7 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class DistanceProjectionUnsupportedTypesIT<F> {
 
-	private static Stream<FieldTypeDescriptor<?>> unsupportedTypeDescriptors() {
+	private static Stream<FieldTypeDescriptor<?, ?>> unsupportedTypeDescriptors() {
 		return FieldTypeDescriptor.getAll().stream()
 				.filter( typeDescriptor -> !GeoPoint.class.isAssignableFrom( typeDescriptor.getJavaType() ) );
 	}
@@ -59,7 +59,7 @@ class DistanceProjectionUnsupportedTypesIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void notSupported(FieldTypeDescriptor<F> fieldTypeDescriptor) {
+	void notSupported(FieldTypeDescriptor<F, ?> fieldTypeDescriptor) {
 		StubMappingScope scope = index.createScope();
 		String absoluteFieldPath = getFieldPath( fieldTypeDescriptor );
 
@@ -73,7 +73,7 @@ class DistanceProjectionUnsupportedTypesIT<F> {
 				);
 	}
 
-	private String getFieldPath(FieldTypeDescriptor<F> fieldTypeDescriptor) {
+	private String getFieldPath(FieldTypeDescriptor<F, ?> fieldTypeDescriptor) {
 		return index.binding().fieldModels.get( fieldTypeDescriptor ).relativeFieldName;
 	}
 

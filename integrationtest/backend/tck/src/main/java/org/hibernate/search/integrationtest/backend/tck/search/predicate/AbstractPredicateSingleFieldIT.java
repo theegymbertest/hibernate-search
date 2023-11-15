@@ -48,7 +48,7 @@ public abstract class AbstractPredicateSingleFieldIT<V extends AbstractPredicate
 	public static final class IndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field0_" );
 		}
 	}

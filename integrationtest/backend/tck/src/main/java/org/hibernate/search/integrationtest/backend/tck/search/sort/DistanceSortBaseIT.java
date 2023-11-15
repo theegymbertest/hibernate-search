@@ -56,7 +56,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class DistanceSortBaseIT {
 
 	private static final GeoPointFieldTypeDescriptor fieldType = GeoPointFieldTypeDescriptor.INSTANCE;
-	private static final Set<FieldTypeDescriptor<GeoPoint>> supportedFieldTypes = Collections.singleton( fieldType );
+	private static final Set<FieldTypeDescriptor<GeoPoint, ?>> supportedFieldTypes = Collections.singleton( fieldType );
 	private static final List<DataSet> dataSets = new ArrayList<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 

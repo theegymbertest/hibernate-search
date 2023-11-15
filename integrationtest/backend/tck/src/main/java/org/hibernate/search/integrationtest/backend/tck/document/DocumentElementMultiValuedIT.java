@@ -37,7 +37,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class DocumentElementMultiValuedIT<F> {
 
-	private static List<FieldTypeDescriptor<?>> supportedTypeDescriptors() {
+	private static List<FieldTypeDescriptor<?, ?>> supportedTypeDescriptors() {
 		return FieldTypeDescriptor.getAll();
 	}
 
@@ -59,7 +59,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_root(FieldTypeDescriptor<F> fieldType) {
+	void addValue_root(FieldTypeDescriptor<F, ?> fieldType) {
 		SimpleFieldModel<F> singleValuedFieldModel = getSingleValuedField( index.binding(), fieldType );
 		SimpleFieldModel<F> multiValuedFieldModel = getMultiValuedField( index.binding(), fieldType );
 		expectSuccess( "1", document -> {
@@ -81,7 +81,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addObject_flattened(FieldTypeDescriptor<F> fieldType) {
+	void addObject_flattened(FieldTypeDescriptor<F, ?> fieldType) {
 		expectSuccess( "1", document -> {
 			document.addObject( index.binding().singleValuedFlattenedObject.self );
 		} );
@@ -101,7 +101,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addObject_nested(FieldTypeDescriptor<F> fieldType) {
+	void addObject_nested(FieldTypeDescriptor<F, ?> fieldType) {
 		expectSuccess( "1", document -> {
 			document.addObject( index.binding().singleValuedNestedObject.self );
 		} );
@@ -121,7 +121,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addNullObject_flattened(FieldTypeDescriptor<F> fieldType) {
+	void addNullObject_flattened(FieldTypeDescriptor<F, ?> fieldType) {
 		expectSuccess( "1", document -> {
 			document.addObject( index.binding().singleValuedFlattenedObject.self );
 		} );
@@ -159,7 +159,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addNullObject_nested(FieldTypeDescriptor<F> fieldType) {
+	void addNullObject_nested(FieldTypeDescriptor<F, ?> fieldType) {
 		expectSuccess( "1", document -> {
 			document.addObject( index.binding().singleValuedNestedObject.self );
 		} );
@@ -197,7 +197,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_inSingleValuedFlattenedObject(FieldTypeDescriptor<F> fieldType) {
+	void addValue_inSingleValuedFlattenedObject(FieldTypeDescriptor<F, ?> fieldType) {
 		SimpleFieldModel<F> singleValuedFieldModel = getSingleValuedField( index.binding().singleValuedFlattenedObject,
 				fieldType
 		);
@@ -228,7 +228,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_inMultiValuedFlattenedObject(FieldTypeDescriptor<F> fieldType) {
+	void addValue_inMultiValuedFlattenedObject(FieldTypeDescriptor<F, ?> fieldType) {
 		SimpleFieldModel<F> singleValuedFieldModel = getSingleValuedField( index.binding().multiValuedFlattenedObject,
 				fieldType
 		);
@@ -259,7 +259,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_inSingleValuedNestedObject(FieldTypeDescriptor<F> fieldType) {
+	void addValue_inSingleValuedNestedObject(FieldTypeDescriptor<F, ?> fieldType) {
 		SimpleFieldModel<F> singleValuedFieldModel = getSingleValuedField( index.binding().singleValuedNestedObject,
 				fieldType
 		);
@@ -289,7 +289,7 @@ class DocumentElementMultiValuedIT<F> {
 
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("params")
-	void addValue_inMultiValuedNestedObject(FieldTypeDescriptor<F> fieldType) {
+	void addValue_inMultiValuedNestedObject(FieldTypeDescriptor<F, ?> fieldType) {
 		SimpleFieldModel<F> singleValuedFieldModel = getSingleValuedField( index.binding().multiValuedNestedObject,
 				fieldType
 		);
@@ -339,15 +339,15 @@ class DocumentElementMultiValuedIT<F> {
 		index.index( id, documentContributor::accept );
 	}
 
-	private F getValue(int ordinal, FieldTypeDescriptor<F> fieldType) {
+	private F getValue(int ordinal, FieldTypeDescriptor<F, ?> fieldType) {
 		return fieldType.getIndexableValues().getSingle().get( ordinal );
 	}
 
-	private SimpleFieldModel<F> getSingleValuedField(AbstractObjectBinding binding, FieldTypeDescriptor<F> fieldType) {
+	private SimpleFieldModel<F> getSingleValuedField(AbstractObjectBinding binding, FieldTypeDescriptor<F, ?> fieldType) {
 		return binding.singleValuedFieldModels.get( fieldType );
 	}
 
-	private SimpleFieldModel<F> getMultiValuedField(AbstractObjectBinding binding, FieldTypeDescriptor<F> fieldType) {
+	private SimpleFieldModel<F> getMultiValuedField(AbstractObjectBinding binding, FieldTypeDescriptor<F, ?> fieldType) {
 		return binding.multiValuedFieldModels.get( fieldType );
 	}
 

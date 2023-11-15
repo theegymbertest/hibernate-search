@@ -6,7 +6,6 @@
  */
 package org.hibernate.search.integrationtest.backend.tck.search.projection;
 
-import static org.hibernate.search.integrationtest.backend.tck.testsupport.model.singlefield.SingleFieldIndexBinding.NO_ADDITIONAL_CONFIGURATION;
 import static org.hibernate.search.util.impl.integrationtest.common.assertion.SearchResultAssert.assertThatQuery;
 import static org.hibernate.search.util.impl.integrationtest.mapper.stub.StubMapperUtils.documentProvider;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -22,6 +21,7 @@ import org.hibernate.search.engine.backend.types.Projectable;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.model.singlefield.AbstractObjectBinding;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.model.singlefield.SingleFieldIndexBinding;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.FieldTypeDescriptor;
+import org.hibernate.search.integrationtest.backend.tck.testsupport.types.StandardFieldTypeDescriptor;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TckConfiguration;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TestedFieldStructure;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.extension.SearchSetupHelper;
@@ -44,12 +44,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class FieldProjectionSingleValuedBaseIT<F> {
 
-	private static final List<FieldTypeDescriptor<?>> supportedFieldTypes = FieldTypeDescriptor.getAll();
+	private static final List<StandardFieldTypeDescriptor<?>> supportedFieldTypes = FieldTypeDescriptor.getAllStandard();
 	private static final List<DataSet<?>> dataSets = new ArrayList<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 
 	static {
-		for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+		for ( StandardFieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
 			for ( TestedFieldStructure fieldStructure : TestedFieldStructure.all() ) {
 				if ( fieldStructure.isMultiValued() ) {
 					continue;
@@ -73,7 +73,7 @@ class FieldProjectionSingleValuedBaseIT<F> {
 					root,
 					supportedFieldTypes,
 					TckConfiguration.get().getBackendFeatures().fieldsProjectableByDefault()
-							? NO_ADDITIONAL_CONFIGURATION
+							? c -> {}
 							: c -> c.projectable( Projectable.YES )
 			);
 
@@ -93,7 +93,7 @@ class FieldProjectionSingleValuedBaseIT<F> {
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("params")
 	void simple(TestedFieldStructure fieldStructure,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		StubMappingScope scope = index.createScope();
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -114,7 +114,7 @@ class FieldProjectionSingleValuedBaseIT<F> {
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("params")
 	void noClass(TestedFieldStructure fieldStructure,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		StubMappingScope scope = index.createScope();
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -139,7 +139,7 @@ class FieldProjectionSingleValuedBaseIT<F> {
 	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-3391")
 	void multi(TestedFieldStructure fieldStructure,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		StubMappingScope scope = index.createScope();
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -166,7 +166,7 @@ class FieldProjectionSingleValuedBaseIT<F> {
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("params")
 	void duplicated(TestedFieldStructure fieldStructure,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		StubMappingScope scope = index.createScope();
 
 		String fieldPath = getFieldPath( fieldStructure, fieldType );
@@ -192,7 +192,7 @@ class FieldProjectionSingleValuedBaseIT<F> {
 	@MethodSource("params")
 	@TestForIssue(jiraKey = "HSEARCH-4162")
 	void factoryWithRoot(TestedFieldStructure fieldStructure,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		AbstractObjectBinding parentObjectBinding = index.binding().getParentObject( fieldStructure );
 
 		assumeTrue(
@@ -215,16 +215,16 @@ class FieldProjectionSingleValuedBaseIT<F> {
 				);
 	}
 
-	private String getFieldPath(TestedFieldStructure fieldStructure, FieldTypeDescriptor<F> fieldType) {
+	private String getFieldPath(TestedFieldStructure fieldStructure, FieldTypeDescriptor<F, ?> fieldType) {
 		return index.binding().getFieldPath( fieldStructure, fieldType );
 	}
 
 	private static class DataSet<F> {
 		private final TestedFieldStructure fieldStructure;
-		private final FieldTypeDescriptor<F> fieldType;
+		private final FieldTypeDescriptor<F, ?> fieldType;
 		private final String routingKey;
 
-		private DataSet(TestedFieldStructure fieldStructure, FieldTypeDescriptor<F> fieldType) {
+		private DataSet(TestedFieldStructure fieldStructure, FieldTypeDescriptor<F, ?> fieldType) {
 			this.fieldStructure = fieldStructure;
 			this.fieldType = fieldType;
 			this.routingKey = fieldType.getUniqueName() + "_" + fieldStructure.getUniqueName();

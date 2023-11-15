@@ -44,7 +44,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ExistsPredicateObjectsBaseIT {
 	//CHECKSTYLE:ON
 
-	private static final FieldTypeDescriptor<String> innerFieldType = AnalyzedStringFieldTypeDescriptor.INSTANCE;
+	private static final FieldTypeDescriptor<String, ?> innerFieldType = AnalyzedStringFieldTypeDescriptor.INSTANCE;
 
 	@RegisterExtension
 	public static SearchSetupHelper setupHelper = SearchSetupHelper.create();

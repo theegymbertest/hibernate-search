@@ -45,12 +45,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class SingleFieldAggregationFilteringSpecificsIT<F> {
 
-	private static final Set<FieldTypeDescriptor<?>> supportedFieldTypes = new LinkedHashSet<>();
+	private static final Set<FieldTypeDescriptor<?, ?>> supportedFieldTypes = new LinkedHashSet<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 
 	static {
 		for ( AggregationDescriptor aggregationDescriptor : AggregationDescriptor.getAll() ) {
-			for ( FieldTypeDescriptor<?> fieldType : FieldTypeDescriptor.getAll() ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : FieldTypeDescriptor.getAll() ) {
 				Optional<? extends SupportedSingleFieldAggregationExpectations<?>> expectations =
 						aggregationDescriptor.getSingleFieldAggregationExpectations( fieldType ).getSupported();
 				if ( expectations.isPresent() ) {

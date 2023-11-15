@@ -210,7 +210,7 @@ public abstract class AbstractPredicateFieldScoreIT<V extends AbstractPredicateT
 		private final SimpleFieldModelsByType field0;
 		private final SimpleFieldModelsByType field1;
 
-		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field0 = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field0_" );
 			field1 = SimpleFieldModelsByType.mapAll( fieldTypes, root, "field1_" );
 		}

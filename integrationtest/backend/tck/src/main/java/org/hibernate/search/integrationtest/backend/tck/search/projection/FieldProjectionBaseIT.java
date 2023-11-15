@@ -35,7 +35,7 @@ class FieldProjectionBaseIT {
 	@RegisterExtension
 	public static final SearchSetupHelper setupHelper = SearchSetupHelper.create();
 
-	private static <F> FieldProjectionTestValues<F> testValues(FieldTypeDescriptor<F> fieldType) {
+	private static <F> FieldProjectionTestValues<F> testValues(FieldTypeDescriptor<F, ?> fieldType) {
 		return new FieldProjectionTestValues<>( fieldType );
 	}
 
@@ -76,7 +76,7 @@ class FieldProjectionBaseIT {
 
 	abstract static class InObjectProjectionConfigured<F>
 			extends AbstractProjectionInObjectProjectionIT<F, F, FieldProjectionTestValues<F>> {
-		private static final List<FieldTypeDescriptor<?>> supportedFieldTypes = FieldTypeDescriptor.getAll();
+		private static final List<FieldTypeDescriptor<?, ?>> supportedFieldTypes = FieldTypeDescriptor.getAll();
 		private static final SimpleMappedIndex<IndexBinding> mainIndex =
 				SimpleMappedIndex.of( root -> new IndexBinding( root, supportedFieldTypes ) )
 						.name( "main" );
@@ -96,7 +96,7 @@ class FieldProjectionBaseIT {
 		private static final List<DataSet<?, ?, ?>> dataSets = new ArrayList<>();
 		private static final List<Arguments> parameters = new ArrayList<>();
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				for ( ObjectStructure singleValuedObjectStructure : new ObjectStructure[] {
 						ObjectStructure.FLATTENED,
 						ObjectStructure.NESTED } ) {

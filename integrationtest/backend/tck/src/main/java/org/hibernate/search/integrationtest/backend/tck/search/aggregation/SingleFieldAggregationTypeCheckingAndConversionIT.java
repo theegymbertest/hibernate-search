@@ -70,13 +70,13 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 
 	private static final String AGGREGATION_NAME = "aggregationName";
 
-	private static final Set<FieldTypeDescriptor<?>> supportedFieldTypes = new LinkedHashSet<>();
+	private static final Set<FieldTypeDescriptor<?, ?>> supportedFieldTypes = new LinkedHashSet<>();
 	private static final List<DataSet<?>> dataSets = new ArrayList<>();
 	private static final List<Arguments> parameters = new ArrayList<>();
 
 	static {
 		for ( AggregationDescriptor aggregationDescriptor : AggregationDescriptor.getAll() ) {
-			for ( FieldTypeDescriptor<?> fieldTypeDescriptor : FieldTypeDescriptor.getAll() ) {
+			for ( FieldTypeDescriptor<?, ?> fieldTypeDescriptor : FieldTypeDescriptor.getAll() ) {
 				Optional<? extends SupportedSingleFieldAggregationExpectations<?>> expectations =
 						aggregationDescriptor.getSingleFieldAggregationExpectations( fieldTypeDescriptor ).getSupported();
 				if ( expectations.isPresent() ) {
@@ -130,7 +130,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 	}
 
 	private <A> void doTest_aggregationObject_reuse_onScopeTargetingSameIndexes(AggregationScenario<A> scenario,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		StubMappingScope scope = mainIndex.createScope();
 		String fieldPath = mainIndex.binding().fieldModels.get( fieldType ).relativeFieldName;
 		AggregationKey<A> aggregationKey = AggregationKey.of( AGGREGATION_NAME );
@@ -188,7 +188,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 	}
 
 	private <A> void doTest_aggregationObject_reuse_onScopeTargetingDifferentIndexes(AggregationScenario<A> scenario,
-			FieldTypeDescriptor<F> fieldType, DataSet<F> dataSet) {
+			FieldTypeDescriptor<F, ?> fieldType, DataSet<F> dataSet) {
 		StubMappingScope scope = mainIndex.createScope();
 		String fieldPath = mainIndex.binding().fieldModels.get( fieldType ).relativeFieldName;
 		AggregationKey<A> aggregationKey = AggregationKey.of( AGGREGATION_NAME );
@@ -228,7 +228,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 			DataSet<F> dataSet) {
 		String fieldPath = mainIndex.binding().fieldModels.get( expectations.fieldType() ).relativeFieldName;
 
-		FieldTypeDescriptor<?> wrongType = FieldTypeDescriptor.getIncompatible( expectations.fieldType() );
+		FieldTypeDescriptor<?, ?> wrongType = FieldTypeDescriptor.getIncompatible( expectations.fieldType() );
 
 		AggregationScenario<?> scenario = expectations.withFieldType( TypeAssertionHelper.wrongType( wrongType ) );
 
@@ -247,7 +247,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 			DataSet<F> dataSet) {
 		String fieldPath = mainIndex.binding().fieldModels.get( expectations.fieldType() ).relativeFieldName;
 
-		FieldTypeDescriptor<?> wrongType = FieldTypeDescriptor.getIncompatible( expectations.fieldType() );
+		FieldTypeDescriptor<?, ?> wrongType = FieldTypeDescriptor.getIncompatible( expectations.fieldType() );
 
 		AggregationScenario<?> scenario = expectations.withFieldType( TypeAssertionHelper.wrongType( wrongType ) );
 
@@ -547,7 +547,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 
 	private static class DataSet<F> {
 		final SupportedSingleFieldAggregationExpectations<F> expectations;
-		final FieldTypeDescriptor<F> fieldType;
+		final FieldTypeDescriptor<F, ?> fieldType;
 		final String name;
 
 		private DataSet(SupportedSingleFieldAggregationExpectations<F> expectations) {
@@ -557,7 +557,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 		}
 
 		private void init() {
-			FieldTypeDescriptor<F> fieldType = expectations.fieldType();
+			FieldTypeDescriptor<F, ?> fieldType = expectations.fieldType();
 
 			List<F> mainIndexDocumentFieldValues = expectations.getMainIndexDocumentFieldValues();
 			List<F> otherIndexDocumentFieldValues = expectations.getOtherIndexDocumentFieldValues();
@@ -645,7 +645,7 @@ class SingleFieldAggregationTypeCheckingAndConversionIT<F> {
 		}
 
 		// See HSEARCH-3307: this checks that irrelevant options are ignored when checking cross-index field compatibility
-		protected void addIrrelevantOptions(FieldTypeDescriptor<?> fieldType, StandardIndexFieldTypeOptionsStep<?, ?> c) {
+		protected void addIrrelevantOptions(FieldTypeDescriptor<?, ?> fieldType, StandardIndexFieldTypeOptionsStep<?, ?> c) {
 			c.searchable( Searchable.NO );
 			c.projectable( Projectable.YES );
 			if ( fieldType.isFieldSortSupported() ) {

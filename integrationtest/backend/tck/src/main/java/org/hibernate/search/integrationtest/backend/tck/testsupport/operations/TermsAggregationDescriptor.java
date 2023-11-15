@@ -45,7 +45,7 @@ public class TermsAggregationDescriptor extends AggregationDescriptor {
 	public <F> ExpectationsAlternative<
 			SupportedSingleFieldAggregationExpectations<F>,
 			UnsupportedSingleFieldAggregationExpectations> getSingleFieldAggregationExpectations(
-					FieldTypeDescriptor<F> typeDescriptor) {
+					FieldTypeDescriptor<F, ?> typeDescriptor) {
 		if ( AnalyzedStringFieldTypeDescriptor.class.equals( typeDescriptor.getClass() )
 				|| GeoPoint.class.equals( typeDescriptor.getJavaType() ) ) {
 			// Terms aggregations are not supported on analyzed or GeoPoint fields
@@ -177,7 +177,8 @@ public class TermsAggregationDescriptor extends AggregationDescriptor {
 		} );
 	}
 
-	private <F> UnsupportedSingleFieldAggregationExpectations unsupportedExpectations(FieldTypeDescriptor<F> typeDescriptor) {
+	private <
+			F> UnsupportedSingleFieldAggregationExpectations unsupportedExpectations(FieldTypeDescriptor<F, ?> typeDescriptor) {
 		return new UnsupportedSingleFieldAggregationExpectations() {
 			@Override
 			public String aggregationName() {

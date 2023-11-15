@@ -43,7 +43,7 @@ public class RangeAggregationDescriptor extends AggregationDescriptor {
 	public <F> ExpectationsAlternative<
 			SupportedSingleFieldAggregationExpectations<F>,
 			UnsupportedSingleFieldAggregationExpectations> getSingleFieldAggregationExpectations(
-					FieldTypeDescriptor<F> typeDescriptor) {
+					FieldTypeDescriptor<F, ?> typeDescriptor) {
 		if ( String.class.equals( typeDescriptor.getJavaType() )
 				|| GeoPoint.class.equals( typeDescriptor.getJavaType() )
 				|| Boolean.class.equals( typeDescriptor.getJavaType() ) ) {
@@ -183,7 +183,8 @@ public class RangeAggregationDescriptor extends AggregationDescriptor {
 		} );
 	}
 
-	private <F> UnsupportedSingleFieldAggregationExpectations unsupportedExpectations(FieldTypeDescriptor<F> typeDescriptor) {
+	private <
+			F> UnsupportedSingleFieldAggregationExpectations unsupportedExpectations(FieldTypeDescriptor<F, ?> typeDescriptor) {
 		return new UnsupportedSingleFieldAggregationExpectations() {
 			@Override
 			public String aggregationName() {

@@ -27,7 +27,7 @@ public abstract class AbstractPredicateSearchableIT {
 	@MethodSource("params")
 	void unsearchable(SimpleMappedIndex<SearchableYesIndexBinding> searchableYesIndex,
 			SimpleMappedIndex<SearchableNoIndexBinding> searchableNoIndex,
-			FieldTypeDescriptor<?> fieldType) {
+			FieldTypeDescriptor<?, ?> fieldType) {
 		SearchPredicateFactory f = searchableNoIndex.createScope().predicate();
 
 		String fieldPath = searchableNoIndex.binding().field.get( fieldType ).relativeFieldName;
@@ -44,7 +44,7 @@ public abstract class AbstractPredicateSearchableIT {
 	@MethodSource("params")
 	void multiIndex_incompatibleSearchable(SimpleMappedIndex<SearchableYesIndexBinding> searchableYesIndex,
 			SimpleMappedIndex<SearchableNoIndexBinding> searchableNoIndex,
-			FieldTypeDescriptor<?> fieldType) {
+			FieldTypeDescriptor<?, ?> fieldType) {
 		SearchPredicateFactory f = searchableYesIndex.createScope( searchableNoIndex ).predicate();
 
 		String fieldPath = searchableYesIndex.binding().field.get( fieldType ).relativeFieldName;
@@ -64,7 +64,7 @@ public abstract class AbstractPredicateSearchableIT {
 	public static final class SearchableYesIndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public SearchableYesIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public SearchableYesIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "", c -> c.searchable( Searchable.YES ) );
 		}
 	}
@@ -72,7 +72,7 @@ public abstract class AbstractPredicateSearchableIT {
 	public static final class SearchableNoIndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public SearchableNoIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public SearchableNoIndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "", c -> c.searchable( Searchable.NO ) );
 		}
 	}

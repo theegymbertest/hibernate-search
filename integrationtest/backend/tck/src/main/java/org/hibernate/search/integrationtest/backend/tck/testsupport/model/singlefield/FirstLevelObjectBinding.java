@@ -14,7 +14,7 @@ import org.hibernate.search.engine.backend.document.IndexObjectFieldReference;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaObjectField;
 import org.hibernate.search.engine.backend.types.ObjectStructure;
-import org.hibernate.search.engine.backend.types.dsl.StandardIndexFieldTypeOptionsStep;
+import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeOptionsStep;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.FieldTypeDescriptor;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.IndexObjectFieldCardinality;
 
@@ -25,10 +25,12 @@ public class FirstLevelObjectBinding extends AbstractObjectBinding {
 
 	public final SecondLevelObjectBinding nestedObject;
 
-	public static FirstLevelObjectBinding create(AbstractObjectBinding parentBinding, String relativeFieldName,
+	public static <S extends IndexFieldTypeOptionsStep<?, ?>> FirstLevelObjectBinding create(
+			AbstractObjectBinding parentBinding, String relativeFieldName,
 			IndexSchemaElement parent,
-			ObjectStructure structure, Collection<? extends FieldTypeDescriptor<?>> supportedFieldTypes,
-			Consumer<StandardIndexFieldTypeOptionsStep<?, ?>> additionalConfiguration,
+			ObjectStructure structure,
+			Collection<? extends FieldTypeDescriptor<?, ? extends S>> supportedFieldTypes,
+			Consumer<S> additionalConfiguration,
 			IndexObjectFieldCardinality nestedFieldCardinality) {
 		IndexSchemaObjectField objectField = parent.objectField( relativeFieldName, structure );
 		if ( ObjectStructure.NESTED.equals( structure )
@@ -39,10 +41,11 @@ public class FirstLevelObjectBinding extends AbstractObjectBinding {
 				additionalConfiguration, nestedFieldCardinality );
 	}
 
-	FirstLevelObjectBinding(AbstractObjectBinding parentBinding, String relativeFieldName,
+	<S extends IndexFieldTypeOptionsStep<?, ?>> FirstLevelObjectBinding(AbstractObjectBinding parentBinding,
+			String relativeFieldName,
 			IndexSchemaObjectField objectField,
-			Collection<? extends FieldTypeDescriptor<?>> supportedFieldTypes,
-			Consumer<StandardIndexFieldTypeOptionsStep<?, ?>> additionalConfiguration,
+			Collection<? extends FieldTypeDescriptor<?, ? extends S>> supportedFieldTypes,
+			Consumer<S> additionalConfiguration,
 			IndexObjectFieldCardinality nestedFieldCardinality) {
 		super( parentBinding, relativeFieldName, objectField, supportedFieldTypes, additionalConfiguration );
 		self = objectField.toReference();

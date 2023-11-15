@@ -31,11 +31,11 @@ import org.junit.jupiter.params.provider.Arguments;
 class TermsPredicateBaseIT {
 	//CHECKSTYLE:ON
 
-	private static final List<FieldTypeDescriptor<?>> supportedFieldTypes = new ArrayList<>();
-	private static final List<FieldTypeDescriptor<?>> unsupportedFieldTypes = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<?, ?>> supportedFieldTypes = new ArrayList<>();
+	private static final List<FieldTypeDescriptor<?, ?>> unsupportedFieldTypes = new ArrayList<>();
 
 	static {
-		for ( FieldTypeDescriptor<?> fieldType : FieldTypeDescriptor.getAll() ) {
+		for ( FieldTypeDescriptor<?, ?> fieldType : FieldTypeDescriptor.getAll() ) {
 			if ( GeoPointFieldTypeDescriptor.INSTANCE.equals( fieldType ) ) {
 				unsupportedFieldTypes.add( fieldType );
 			}
@@ -115,7 +115,7 @@ class TermsPredicateBaseIT {
 		);
 	}
 
-	private static <F> TermsPredicateTestValues<F> testValues(FieldTypeDescriptor<F> fieldType) {
+	private static <F> TermsPredicateTestValues<F> testValues(FieldTypeDescriptor<F, ?> fieldType) {
 		return new TermsPredicateTestValues<>( fieldType );
 	}
 
@@ -133,7 +133,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -165,7 +165,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -204,7 +204,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -255,7 +255,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( mainIndex, missingFieldIndex, dataSet ) );
@@ -287,7 +287,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, dataSet ) );
@@ -386,7 +386,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : unsupportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : unsupportedFieldTypes ) {
 				parameters.add( Arguments.of( index, fieldType ) );
 			}
 		}
@@ -423,7 +423,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				parameters.add( Arguments.of( searchableYesIndex, searchableNoIndex, fieldType ) );
 			}
 		}
@@ -456,7 +456,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				parameters.add( Arguments.of( index, fieldType ) );
 			}
 		}
@@ -498,7 +498,7 @@ class TermsPredicateBaseIT {
 		private static final List<Arguments> parameters = new ArrayList<>();
 
 		static {
-			for ( FieldTypeDescriptor<?> fieldType : supportedFieldTypes ) {
+			for ( FieldTypeDescriptor<?, ?> fieldType : supportedFieldTypes ) {
 				DataSet<?, ?> dataSet = new DataSet<>( testValues( fieldType ) );
 				dataSets.add( dataSet );
 				parameters.add( Arguments.of( index, compatibleIndex, rawFieldCompatibleIndex, missingFieldIndex,

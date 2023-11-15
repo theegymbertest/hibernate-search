@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 import org.hibernate.search.engine.backend.common.spi.FieldPaths;
 import org.hibernate.search.engine.backend.document.model.dsl.IndexSchemaElement;
-import org.hibernate.search.engine.backend.types.dsl.StandardIndexFieldTypeOptionsStep;
+import org.hibernate.search.engine.backend.types.dsl.IndexFieldTypeOptionsStep;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.types.FieldTypeDescriptor;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.SimpleFieldModelsByType;
 import org.hibernate.search.integrationtest.backend.tck.testsupport.util.TestedFieldStructure;
@@ -25,9 +25,10 @@ public class AbstractObjectBinding {
 	public final SimpleFieldModelsByType fieldWithSingleValueModels;
 	public final SimpleFieldModelsByType fieldWithMultipleValuesModels;
 
-	AbstractObjectBinding(AbstractObjectBinding parentBinding, String relativeFieldName, IndexSchemaElement self,
-			Collection<? extends FieldTypeDescriptor<?>> supportedFieldTypes,
-			Consumer<StandardIndexFieldTypeOptionsStep<?, ?>> additionalConfiguration) {
+	<S extends IndexFieldTypeOptionsStep<?, ?>> AbstractObjectBinding(AbstractObjectBinding parentBinding,
+			String relativeFieldName, IndexSchemaElement self,
+			Collection<? extends FieldTypeDescriptor<?, ? extends S>> supportedFieldTypes,
+			Consumer<? super S> additionalConfiguration) {
 		this.absolutePath = FieldPaths.compose( parentBinding == null ? null : parentBinding.absolutePath,
 				relativeFieldName );
 		this.relativeFieldName = relativeFieldName;
@@ -37,7 +38,7 @@ public class AbstractObjectBinding {
 				"multiValued_", additionalConfiguration );
 	}
 
-	public final String getRelativeFieldName(TestedFieldStructure fieldStructure, FieldTypeDescriptor<?> fieldType) {
+	public final String getRelativeFieldName(TestedFieldStructure fieldStructure, FieldTypeDescriptor<?, ?> fieldType) {
 		SimpleFieldModelsByType fieldModelsByType;
 		if ( fieldStructure.isSingleValued() ) {
 			fieldModelsByType = fieldWithSingleValueModels;
@@ -48,7 +49,7 @@ public class AbstractObjectBinding {
 		return fieldModelsByType.get( fieldType ).relativeFieldName;
 	}
 
-	protected final String getAbsoluteFieldPath(TestedFieldStructure fieldStructure, FieldTypeDescriptor<?> fieldType) {
+	protected final String getAbsoluteFieldPath(TestedFieldStructure fieldStructure, FieldTypeDescriptor<?, ?> fieldType) {
 		return FieldPaths.compose( absolutePath, getRelativeFieldName( fieldStructure, fieldType ) );
 	}
 

@@ -26,7 +26,7 @@ public abstract class AbstractPredicateUnsupportedTypeIT {
 
 	@ParameterizedTest(name = "{1}")
 	@MethodSource("params")
-	void unsupported(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?> fieldType) {
+	void unsupported(SimpleMappedIndex<IndexBinding> index, FieldTypeDescriptor<?, ?> fieldType) {
 		SearchPredicateFactory f = index.createScope().predicate();
 
 		String fieldPath = index.binding().field.get( fieldType ).relativeFieldName;
@@ -49,7 +49,7 @@ public abstract class AbstractPredicateUnsupportedTypeIT {
 	public static final class IndexBinding {
 		private final SimpleFieldModelsByType field;
 
-		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?>> fieldTypes) {
+		public IndexBinding(IndexSchemaElement root, Collection<? extends FieldTypeDescriptor<?, ?>> fieldTypes) {
 			field = SimpleFieldModelsByType.mapAll( fieldTypes, root, "" );
 		}
 	}
