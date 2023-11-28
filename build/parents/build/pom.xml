@@ -861,6 +861,15 @@
                 <version>${version.jsoup}</version>
             </dependency>
 
+            <!-- The version is used to generate a link to the WildFly documentation -->
+            <!-- This simply makes sure dependabot will automatically bump the version -->
+            <dependency>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly</artifactId>
+                <version>${version.org.wildfly}</version>
+                <type>pom</type>
+            </dependency>
+
             <!-- We only need these two libs here for testing utils -->
             <dependency>
                 <groupId>com.google.guava</groupId>
