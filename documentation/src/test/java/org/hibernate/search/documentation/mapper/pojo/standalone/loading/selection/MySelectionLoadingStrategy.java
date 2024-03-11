@@ -10,10 +10,10 @@ import java.util.List;
 
 import org.hibernate.search.documentation.mapper.pojo.standalone.loading.mydatastore.MyDatastoreConnection;
 import org.hibernate.search.engine.common.timing.Deadline;
-import org.hibernate.search.mapper.pojo.standalone.loading.LoadingTypeGroup;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.LoadingTypeGroup;
+import org.hibernate.search.mapper.pojo.loading.SelectionEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
 
 // tag::include[]
 public class MySelectionLoadingStrategy<E>

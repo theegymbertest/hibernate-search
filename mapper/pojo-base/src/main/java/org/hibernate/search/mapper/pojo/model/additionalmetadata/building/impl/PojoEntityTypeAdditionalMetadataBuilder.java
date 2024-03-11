@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 
 import org.hibernate.search.engine.environment.bean.spi.ParameterizedBeanReference;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorEntityTypeNode;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.impl.PojoEntityTypeAdditionalMetadata;
@@ -64,7 +65,7 @@ class PojoEntityTypeAdditionalMetadataBuilder implements PojoAdditionalMetadataC
 	}
 
 	@Override
-	public void loadingBinder(ParameterizedBeanReference<?> binderRef) {
+	public void loadingBinder(ParameterizedBeanReference<? extends EntityLoadingBinder> binderRef) {
 		this.loadingBinderRef = binderRef;
 	}
 

@@ -12,13 +12,13 @@ import java.util.List;
 import org.hibernate.search.documentation.mapper.pojo.standalone.loading.mydatastore.MyDatastore;
 import org.hibernate.search.documentation.mapper.pojo.standalone.loading.mydatastore.MyDatastoreConnection;
 import org.hibernate.search.documentation.mapper.pojo.standalone.loading.mydatastore.MyDatastoreCursor;
-import org.hibernate.search.mapper.pojo.standalone.loading.LoadingTypeGroup;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassEntitySink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierSink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.LoadingTypeGroup;
+import org.hibernate.search.mapper.pojo.loading.MassEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.MassEntitySink;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierLoader;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierSink;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingStrategy;
 
 // tag::include[]
 public class MyMassLoadingStrategy<E>

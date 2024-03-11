@@ -9,7 +9,7 @@ package org.hibernate.search.mapper.pojo.standalone.loading.impl;
 import java.util.List;
 
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassEntitySink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassEntitySink;
+import org.hibernate.search.mapper.pojo.loading.MassEntitySink;
 
 public class StandalonePojoMassEntitySink<E> implements MassEntitySink<E> {
 

@@ -22,8 +22,8 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.SearchEntity;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.mapper.pojo.standalone.session.SearchSession;
 import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategy;

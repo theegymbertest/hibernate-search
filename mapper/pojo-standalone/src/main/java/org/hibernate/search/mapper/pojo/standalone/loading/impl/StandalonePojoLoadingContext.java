@@ -12,9 +12,9 @@ import java.util.Map;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionLoadingContext;
 import org.hibernate.search.mapper.pojo.massindexing.spi.PojoMassIndexingContext;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRuntimeIntrospector;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.dsl.SelectionLoadingOptionsStep;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.dsl.SelectionLoadingOptionsStep;
 import org.hibernate.search.mapper.pojo.standalone.massindexing.impl.StandalonePojoMassIndexingMappingContext;
 
 public final class StandalonePojoLoadingContext

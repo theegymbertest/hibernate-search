@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.search.engine.environment.bean.BeanReference;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.loading.mapping.annotation.EntityLoadingBinderRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.SearchEntity;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.processing.TypeMappingAnnotationProcessor;
@@ -25,8 +26,8 @@ public class SearchEntityProcessor implements TypeMappingAnnotationProcessor<Sea
 		TypeMappingSearchEntityStep entityStep = mappingContext.searchEntity().name( entityName );
 
 		EntityLoadingBinderRef loadingBinderRefAnnotation = annotation.loadingBinder();
-		Optional<BeanReference<?>> binderReference = context.toBeanReference(
-				Object.class,
+		Optional<BeanReference<? extends EntityLoadingBinder>> binderReference = context.toBeanReference(
+				EntityLoadingBinder.class,
 				EntityLoadingBinderRef.UndefinedImplementationType.class,
 				loadingBinderRefAnnotation.type(), loadingBinderRefAnnotation.name(),
 				loadingBinderRefAnnotation.retrieval()

@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.search.integrationtest.java.modules.pojo.standalone.elasticsearch.entity.Author;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBindingContext;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBindingContext;
 
 public final class SimulatedDatastore {
 

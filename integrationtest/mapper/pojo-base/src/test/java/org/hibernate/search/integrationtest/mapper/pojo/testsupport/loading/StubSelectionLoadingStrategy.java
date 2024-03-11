@@ -6,10 +6,10 @@
  */
 package org.hibernate.search.integrationtest.mapper.pojo.testsupport.loading;
 
-import org.hibernate.search.mapper.pojo.standalone.loading.LoadingTypeGroup;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.LoadingTypeGroup;
+import org.hibernate.search.mapper.pojo.loading.SelectionEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
 
 class StubSelectionLoadingStrategy<E, I> implements SelectionLoadingStrategy<E> {
 	private final PersistenceTypeKey<E, I> key;

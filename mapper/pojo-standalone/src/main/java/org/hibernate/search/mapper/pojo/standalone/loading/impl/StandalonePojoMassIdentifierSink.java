@@ -9,7 +9,7 @@ package org.hibernate.search.mapper.pojo.standalone.loading.impl;
 import java.util.List;
 
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassIdentifierSink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierSink;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierSink;
 
 public class StandalonePojoMassIdentifierSink<I> implements MassIdentifierSink<I> {
 

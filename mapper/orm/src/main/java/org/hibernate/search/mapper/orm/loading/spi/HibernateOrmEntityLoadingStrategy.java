@@ -21,6 +21,8 @@ import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionLoadingStrategy
 public interface HibernateOrmEntityLoadingStrategy<E, I>
 		extends PojoSelectionLoadingStrategy<E>, PojoMassLoadingStrategy<E, I> {
 
+	Class<E> rootEntityClass();
+
 	HibernateOrmQueryLoader<E, I> createQueryLoader(SessionFactoryImplementor sessionFactory,
 			Set<? extends PojoLoadingTypeContext<? extends E>> typeContexts,
 			List<ConditionalExpression> conditionalExpressions);

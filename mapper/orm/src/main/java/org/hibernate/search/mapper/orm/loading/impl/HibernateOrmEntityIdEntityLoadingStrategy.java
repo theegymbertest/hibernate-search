@@ -37,12 +37,9 @@ public class HibernateOrmEntityIdEntityLoadingStrategy<E, I> extends AbstractHib
 				idProperty.getType().getReturnedClass(), idProperty.getName(), groupingAllowed );
 	}
 
-	private final Class<E> rootEntityClass;
-
 	HibernateOrmEntityIdEntityLoadingStrategy(Class<E> rootEntityClass, String rootEntityName,
 			Class<I> uniquePropertyType, String uniquePropertyName, GroupingAllowed groupingAllowed) {
-		super( rootEntityName, uniquePropertyType, uniquePropertyName, groupingAllowed );
-		this.rootEntityClass = rootEntityClass;
+		super( rootEntityClass, rootEntityName, uniquePropertyType, uniquePropertyName, groupingAllowed );
 	}
 
 	@Override

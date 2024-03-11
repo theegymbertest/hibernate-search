@@ -14,10 +14,10 @@ import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeExtendedMap
 import org.hibernate.search.mapper.pojo.model.PojoModelElement;
 import org.hibernate.search.mapper.pojo.model.path.spi.PojoPathFilter;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeIdentifier;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBindingContext;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBindingContext;
 import org.hibernate.search.mapper.pojo.standalone.loading.impl.StandalonePojoMassLoadingStrategy;
 import org.hibernate.search.mapper.pojo.standalone.loading.impl.StandalonePojoSelectionLoadingStrategy;
 import org.hibernate.search.mapper.pojo.standalone.work.impl.SearchIndexingPlanTypeContext;

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoLoadingTypeContext;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRawTypeIdentifier;
 import org.hibernate.search.mapper.pojo.model.spi.PojoRuntimeIntrospector;
-import org.hibernate.search.mapper.pojo.standalone.loading.LoadingTypeGroup;
+import org.hibernate.search.mapper.pojo.loading.LoadingTypeGroup;
 
 public final class StandalonePojoLoadingTypeGroup<E> implements LoadingTypeGroup<E> {
 

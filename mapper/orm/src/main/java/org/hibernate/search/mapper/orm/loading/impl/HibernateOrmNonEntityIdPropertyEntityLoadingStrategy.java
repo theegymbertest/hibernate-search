@@ -37,12 +37,13 @@ public class HibernateOrmNonEntityIdPropertyEntityLoadingStrategy<E, I>
 				documentIdSourceProperty.handle );
 	}
 
-	private static <E, I> HibernateOrmNonEntityIdPropertyEntityLoadingStrategy<E, I> create(
+	private static <I> HibernateOrmNonEntityIdPropertyEntityLoadingStrategy<?, I> create(
 			PersistentClass persistentClass,
 			Class<I> documentIdSourcePropertyClass, String documentIdSourcePropertyName,
 			ValueReadHandle<? extends I> documentIdSourceHandle) {
 		var idProperty = persistentClass.getIdentifierProperty();
 		return new HibernateOrmNonEntityIdPropertyEntityLoadingStrategy<>(
+				HibernateOrmUtils.entityClass( persistentClass ),
 				persistentClass.getRootClass().getEntityName(),
 				persistentClass.getEntityName(),
 				GroupingAllowed.determine( persistentClass ),
@@ -57,13 +58,14 @@ public class HibernateOrmNonEntityIdPropertyEntityLoadingStrategy<E, I>
 	private final ValueReadHandle<? extends I> documentIdSourceHandle;
 	private final boolean uniquePropertyIsTheEntityId;
 
-	private HibernateOrmNonEntityIdPropertyEntityLoadingStrategy(String rootEntityName, String entityName,
+	private HibernateOrmNonEntityIdPropertyEntityLoadingStrategy(Class<E> rootEntityClass,
+			String rootEntityName, String entityName,
 			GroupingAllowed groupingAllowed,
 			Class<I> documentIdSourcePropertyType,
 			String documentIdSourcePropertyName,
 			boolean uniquePropertyIsTheEntityId,
 			ValueReadHandle<? extends I> documentIdSourceHandle) {
-		super( rootEntityName, documentIdSourcePropertyType, documentIdSourcePropertyName, groupingAllowed );
+		super( rootEntityClass, rootEntityName, documentIdSourcePropertyType, documentIdSourcePropertyName, groupingAllowed );
 		this.entityName = entityName;
 		this.documentIdSourcePropertyName = documentIdSourcePropertyName;
 		this.documentIdSourceHandle = documentIdSourceHandle;

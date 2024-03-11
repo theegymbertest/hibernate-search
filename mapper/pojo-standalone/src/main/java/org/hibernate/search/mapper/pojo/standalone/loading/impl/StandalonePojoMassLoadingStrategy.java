@@ -15,9 +15,9 @@ import org.hibernate.search.mapper.pojo.loading.spi.PojoMassIdentifierLoader;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassIdentifierLoadingContext;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassLoadingContext;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassEntitySink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierSink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.MassEntitySink;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierSink;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingStrategy;
 import org.hibernate.search.mapper.pojo.standalone.massindexing.impl.StandalonePojoMassIndexingSessionContext;
 import org.hibernate.search.util.common.impl.SuppressingCloser;
 

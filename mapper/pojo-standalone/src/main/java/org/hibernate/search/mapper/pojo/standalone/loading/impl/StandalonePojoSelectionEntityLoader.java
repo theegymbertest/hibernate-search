@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.hibernate.search.engine.common.timing.Deadline;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.SelectionEntityLoader;
 
 public class StandalonePojoSelectionEntityLoader<E> implements PojoSelectionEntityLoader<E> {
 

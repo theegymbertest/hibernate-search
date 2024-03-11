@@ -8,8 +8,8 @@ package org.hibernate.search.documentation.mapper.pojo.standalone.loading.select
 
 import jakarta.inject.Singleton;
 
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBindingContext;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBindingContext;
 
 // tag::include[]
 @Singleton

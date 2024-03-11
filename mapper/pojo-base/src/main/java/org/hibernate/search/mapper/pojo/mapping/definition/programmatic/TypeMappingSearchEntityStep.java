@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.search.engine.environment.bean.BeanReference;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.loading.mapping.annotation.EntityLoadingBinderRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.SearchEntity;
 import org.hibernate.search.util.common.annotation.Incubating;
@@ -42,7 +43,7 @@ public interface TypeMappingSearchEntityStep {
 	 * @return {@code this}, for method chaining.
 	 * @see SearchEntity#loadingBinder()
 	 */
-	default TypeMappingSearchEntityStep loadingBinder(Object binder) {
+	default TypeMappingSearchEntityStep loadingBinder(EntityLoadingBinder binder) {
 		return loadingBinder( BeanReference.ofInstance( binder ), Collections.emptyMap() );
 	}
 
@@ -59,7 +60,7 @@ public interface TypeMappingSearchEntityStep {
 	 * @return {@code this}, for method chaining.
 	 * @see SearchEntity#loadingBinder()
 	 */
-	default TypeMappingSearchEntityStep loadingBinder(BeanReference<?> binderRef) {
+	default TypeMappingSearchEntityStep loadingBinder(BeanReference<? extends EntityLoadingBinder> binderRef) {
 		return loadingBinder( binderRef, Collections.emptyMap() );
 	}
 
@@ -77,6 +78,7 @@ public interface TypeMappingSearchEntityStep {
 	 * @see SearchEntity#loadingBinder()
 	 * @see EntityLoadingBinderRef#params()
 	 */
-	TypeMappingSearchEntityStep loadingBinder(BeanReference<?> binderRef, Map<String, Object> params);
+	TypeMappingSearchEntityStep loadingBinder(BeanReference<? extends EntityLoadingBinder> binderRef,
+			Map<String, Object> params);
 
 }

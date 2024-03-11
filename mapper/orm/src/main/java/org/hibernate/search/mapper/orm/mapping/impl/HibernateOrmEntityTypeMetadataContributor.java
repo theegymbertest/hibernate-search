@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.search.engine.environment.bean.BeanReference;
 import org.hibernate.search.engine.environment.bean.spi.ParameterizedBeanReference;
+import org.hibernate.search.mapper.orm.loading.binding.impl.HibernateOrmEntityLoadingBinder;
 import org.hibernate.search.mapper.orm.model.impl.HibernateOrmPathDefinitionProvider;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;

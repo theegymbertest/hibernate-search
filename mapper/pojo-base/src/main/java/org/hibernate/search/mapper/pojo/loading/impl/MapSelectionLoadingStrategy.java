@@ -4,17 +4,17 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.mapper.pojo.standalone.loading.impl;
+package org.hibernate.search.mapper.pojo.loading.impl;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.hibernate.search.engine.common.timing.Deadline;
-import org.hibernate.search.mapper.pojo.standalone.loading.LoadingTypeGroup;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.LoadingTypeGroup;
+import org.hibernate.search.mapper.pojo.loading.SelectionEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
 
 public final class MapSelectionLoadingStrategy<E, I> implements SelectionLoadingStrategy<E> {
 

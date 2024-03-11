@@ -32,6 +32,7 @@ import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeToIndexedValue
 import org.hibernate.search.mapper.pojo.bridge.runtime.ValueBridgeToIndexedValueContextExtension;
 import org.hibernate.search.mapper.pojo.bridge.runtime.spi.BridgeMappingContext;
 import org.hibernate.search.mapper.pojo.bridge.runtime.spi.BridgeSessionContext;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBindingContextExtension;
 
 /**
  * An extension for the Hibernate ORM mapper, giving access to Hibernate ORM-specific contexts.
@@ -56,7 +57,8 @@ public final class HibernateOrmExtension
 		ToDocumentValueConvertContextExtension<HibernateOrmMappingContext>,
 		org.hibernate.search.engine.backend.types.converter.runtime.FromDocumentFieldValueConvertContextExtension<
 				HibernateOrmSessionContext>,
-		FromDocumentValueConvertContextExtension<HibernateOrmSessionContext> {
+		FromDocumentValueConvertContextExtension<HibernateOrmSessionContext>,
+		EntityLoadingBindingContextExtension<HibernateOrmEntityLoadingBindingContext> {
 
 	private static final HibernateOrmExtension INSTANCE = new HibernateOrmExtension();
 

@@ -12,7 +12,7 @@ import org.hibernate.search.mapper.pojo.loading.spi.PojoLoadingTypeContext;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionEntityLoader;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionLoadingContext;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
 
 public class StandalonePojoSelectionLoadingStrategy<E> implements PojoSelectionLoadingStrategy<E> {
 

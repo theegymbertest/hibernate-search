@@ -6,10 +6,10 @@
  */
 package org.hibernate.search.mapper.pojo.standalone.mapping.metadata;
 
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBindingContext;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBindingContext;
 import org.hibernate.search.util.common.annotation.Incubating;
 
 /**

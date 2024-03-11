@@ -4,14 +4,14 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.mapper.pojo.standalone.loading.binding;
+package org.hibernate.search.mapper.pojo.loading.binding;
 
 import java.util.Optional;
 
 import org.hibernate.search.engine.environment.bean.BeanResolver;
 import org.hibernate.search.mapper.pojo.model.PojoModelElement;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.SelectionLoadingStrategy;
 import org.hibernate.search.util.common.SearchException;
 import org.hibernate.search.util.common.annotation.Incubating;
 

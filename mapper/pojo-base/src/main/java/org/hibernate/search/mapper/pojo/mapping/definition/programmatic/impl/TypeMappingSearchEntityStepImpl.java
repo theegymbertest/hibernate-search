@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.hibernate.search.engine.environment.bean.BeanReference;
 import org.hibernate.search.engine.environment.bean.spi.ParameterizedBeanReference;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeMetadataContributor;
 import org.hibernate.search.mapper.pojo.mapping.definition.programmatic.TypeMappingSearchEntityStep;
 import org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorTypeNode;
@@ -20,7 +21,7 @@ class TypeMappingSearchEntityStepImpl implements TypeMappingSearchEntityStep, Po
 	private final PojoRawTypeIdentifier<?> typeIdentifier;
 
 	private String entityName;
-	private ParameterizedBeanReference<?> loadingBinderRef;
+	private ParameterizedBeanReference<? extends EntityLoadingBinder> loadingBinderRef;
 
 	TypeMappingSearchEntityStepImpl(PojoRawTypeIdentifier<?> typeIdentifier) {
 		this.typeIdentifier = typeIdentifier;
@@ -33,7 +34,7 @@ class TypeMappingSearchEntityStepImpl implements TypeMappingSearchEntityStep, Po
 	}
 
 	@Override
-	public TypeMappingSearchEntityStep loadingBinder(BeanReference<?> binderRef, Map<String, Object> params) {
+	public TypeMappingSearchEntityStep loadingBinder(BeanReference<? extends EntityLoadingBinder> binderRef, Map<String, Object> params) {
 		this.loadingBinderRef = ParameterizedBeanReference.of( binderRef, params );
 		return this;
 	}

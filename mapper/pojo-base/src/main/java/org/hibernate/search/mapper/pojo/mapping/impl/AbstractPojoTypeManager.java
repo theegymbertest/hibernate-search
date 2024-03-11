@@ -24,12 +24,12 @@ import org.hibernate.search.mapper.pojo.identity.impl.BoundIdentifierMapping;
 import org.hibernate.search.mapper.pojo.identity.impl.IdentifierMappingImplementor;
 import org.hibernate.search.mapper.pojo.identity.impl.IdentityMappingMode;
 import org.hibernate.search.mapper.pojo.identity.impl.PojoRootIdentityMappingCollector;
-import org.hibernate.search.mapper.pojo.loading.definition.spi.PojoEntityLoadingBindingContext;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.binding.spi.AbstractEntityLoadingBindingContext;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassLoadingStrategy;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoSelectionLoadingStrategy;
 import org.hibernate.search.mapper.pojo.logging.impl.Log;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeExtendedMappingCollector;
-import org.hibernate.search.mapper.pojo.model.PojoModelElement;
 import org.hibernate.search.mapper.pojo.model.impl.PojoModelValueElement;
 import org.hibernate.search.mapper.pojo.model.path.impl.PojoPathOrdinals;
 import org.hibernate.search.mapper.pojo.model.spi.PojoBootstrapIntrospector;
@@ -42,7 +42,6 @@ import org.hibernate.search.mapper.pojo.work.impl.PojoWorkTypeContext;
 import org.hibernate.search.mapper.pojo.work.spi.PojoWorkSessionContext;
 import org.hibernate.search.util.common.AssertionFailure;
 import org.hibernate.search.util.common.impl.Closer;
-import org.hibernate.search.util.common.impl.Contracts;
 import org.hibernate.search.util.common.logging.impl.LoggerFactory;
 import org.hibernate.search.util.common.spi.ToStringTreeAppendable;
 import org.hibernate.search.util.common.spi.ToStringTreeAppender;
@@ -315,82 +314,25 @@ public abstract class AbstractPojoTypeManager<I, E>
 		public void preBuildOtherMetadata(BeanResolver beanResolver, PojoBootstrapIntrospector introspector,
 				boolean singleConcreteTypeInEntityHierarchy,
 				PojoPathOrdinals pathOrdinals,
-				Optional<? extends ParameterizedBeanReference<?>> loadingBinderRefOptional) {
+				Optional<? extends ParameterizedBeanReference<? extends EntityLoadingBinder>> loadingBinderRefOptional) {
 			this.singleConcreteTypeInEntityHierarchy = singleConcreteTypeInEntityHierarchy;
 			this.pathOrdinals = pathOrdinals;
 			preBuildLoadingConfiguration( beanResolver, introspector, loadingBinderRefOptional );
 		}
 
 		private void preBuildLoadingConfiguration(BeanResolver beanResolver, PojoBootstrapIntrospector introspector,
-				Optional<? extends ParameterizedBeanReference<?>> loadingBinderRefOptional) {
+				Optional<? extends ParameterizedBeanReference<? extends EntityLoadingBinder>> loadingBinderRefOptional) {
 			if ( loadingBinderRefOptional.isEmpty() ) {
 				return;
 			}
 			var entityType = new PojoModelValueElement<>( introspector, typeModel );
 			var identifierType = new PojoModelValueElement<>( introspector, identifierMapping.identifierType );
-			try ( BeanHolder<?> loadingBinderHolder = loadingBinderRefOptional.get().reference().resolve( beanResolver ) ) {
+			try ( BeanHolder<? extends EntityLoadingBinder> loadingBinderHolder = loadingBinderRefOptional.get().reference().resolve( beanResolver ) ) {
 				Map<String, ?> params = loadingBinderRefOptional.get().params();
 				extendedMappingCollector().applyLoadingBinder(
 						loadingBinderHolder.get(),
-						new PojoEntityLoadingBindingContext() {
-							@Override
-							public PojoModelElement entityType() {
-								return entityType;
-							}
-
-							@Override
-							public PojoModelElement identifierType() {
-								return identifierType;
-							}
-
-							@Override
-							@SuppressWarnings("unchecked") // Checked using reflection
-							public <E2> void selectionLoadingStrategy(Class<E2> expectedEntitySuperType,
-									PojoSelectionLoadingStrategy<? super E2> strategy) {
-								checkEntitySuperType( expectedEntitySuperType );
-								selectionLoadingStrategy = (PojoSelectionLoadingStrategy<? super E>) strategy;
-							}
-
-							@Override
-							@SuppressWarnings("unchecked") // Checked using reflection
-							public <E2> void massLoadingStrategy(Class<E2> expectedEntitySuperType,
-									PojoMassLoadingStrategy<? super E2, ?> strategy) {
-								checkEntitySuperType( expectedEntitySuperType );
-								massLoadingStrategy = (PojoMassLoadingStrategy<? super E, ?>) strategy;
-							}
-
-							private <E2> void checkEntitySuperType(Class<E2> expectedEntitySuperType) {
-								if ( !expectedEntitySuperType.isAssignableFrom( typeModel.typeIdentifier().javaClass() ) ) {
-									throw log.loadingConfigurationTypeMismatch( typeModel, expectedEntitySuperType );
-								}
-							}
-
-							@Override
-							public BeanResolver beanResolver() {
-								return beanResolver;
-							}
-
-							@Override
-							public <T> T param(String name, Class<T> paramType) {
-								Contracts.assertNotNull( name, "name" );
-								Contracts.assertNotNull( paramType, "paramType" );
-
-								Object value = params.get( name );
-								if ( value == null ) {
-									throw log.paramNotDefined( name );
-								}
-
-								return paramType.cast( value );
-							}
-
-							@Override
-							public <T> Optional<T> paramOptional(String name, Class<T> paramType) {
-								Contracts.assertNotNull( name, "name" );
-								Contracts.assertNotNull( paramType, "paramType" );
-
-								return Optional.ofNullable( params.get( name ) ).map( paramType::cast );
-							}
-						} );
+						new AbstractEntityLoadingBindingContext( entityType, identifierType, beanResolver, params )
+				);
 			}
 		}
 
@@ -401,4 +343,5 @@ public abstract class AbstractPojoTypeManager<I, E>
 		public abstract AbstractPojoTypeManager<?, E> build();
 
 	}
+
 }

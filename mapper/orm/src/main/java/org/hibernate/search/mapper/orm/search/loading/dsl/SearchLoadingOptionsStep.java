@@ -13,13 +13,14 @@ import jakarta.persistence.EntityGraph;
 import org.hibernate.graph.GraphSemantic;
 import org.hibernate.query.Query;
 import org.hibernate.search.mapper.orm.search.loading.EntityLoadingCacheLookupStrategy;
+import org.hibernate.search.mapper.pojo.loading.dsl.SelectionLoadingOptionsStep;
 
 /**
  * The DSL entry point passed to consumers in
  * {@link org.hibernate.search.engine.search.query.dsl.SearchQueryOptionsStep#loading(Consumer)},
  * allowing the definition of loading options (fetch size, cache lookups, ...).
  */
-public interface SearchLoadingOptionsStep {
+public interface SearchLoadingOptionsStep extends SelectionLoadingOptionsStep {
 
 	/**
 	 * Set the fetch size for this query,

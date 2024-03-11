@@ -7,7 +7,7 @@
 package org.hibernate.search.mapper.pojo.standalone.loading.impl;
 
 import org.hibernate.search.mapper.pojo.loading.spi.PojoMassIdentifierLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierLoader;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierLoader;
 
 public class StandalonePojoMassIdentifierLoader implements PojoMassIdentifierLoader {
 

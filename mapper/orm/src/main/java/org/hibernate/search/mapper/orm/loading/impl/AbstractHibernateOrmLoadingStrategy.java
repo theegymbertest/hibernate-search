@@ -82,17 +82,25 @@ public abstract class AbstractHibernateOrmLoadingStrategy<E, I>
 		public abstract boolean allowed(boolean hasNonIndexedConcreteSubtypes);
 	}
 
+	protected final Class<E> rootEntityClass;
 	protected final String rootEntityName;
 	protected final Class<I> uniquePropertyType;
 	protected final String uniquePropertyName;
 	private final GroupingAllowed groupingAllowed;
 
-	AbstractHibernateOrmLoadingStrategy(String rootEntityName, Class<I> uniquePropertyType, String uniquePropertyName,
+	AbstractHibernateOrmLoadingStrategy(Class<E> rootEntityClass, String rootEntityName,
+			Class<I> uniquePropertyType, String uniquePropertyName,
 			GroupingAllowed groupingAllowed) {
+		this.rootEntityClass = rootEntityClass;
 		this.rootEntityName = rootEntityName;
 		this.uniquePropertyType = uniquePropertyType;
 		this.uniquePropertyName = uniquePropertyName;
 		this.groupingAllowed = groupingAllowed;
+	}
+
+	@Override
+	public Class<E> rootEntityClass() {
+		return rootEntityClass;
 	}
 
 	@Override

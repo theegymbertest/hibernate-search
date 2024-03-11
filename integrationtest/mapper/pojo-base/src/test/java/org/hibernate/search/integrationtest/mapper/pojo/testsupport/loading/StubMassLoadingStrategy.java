@@ -8,13 +8,13 @@ package org.hibernate.search.integrationtest.mapper.pojo.testsupport.loading;
 
 import java.util.List;
 
-import org.hibernate.search.mapper.pojo.standalone.loading.LoadingTypeGroup;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassEntitySink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassIdentifierSink;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingOptions;
-import org.hibernate.search.mapper.pojo.standalone.loading.MassLoadingStrategy;
+import org.hibernate.search.mapper.pojo.loading.LoadingTypeGroup;
+import org.hibernate.search.mapper.pojo.loading.MassEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.MassEntitySink;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierLoader;
+import org.hibernate.search.mapper.pojo.loading.MassIdentifierSink;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingOptions;
+import org.hibernate.search.mapper.pojo.loading.MassLoadingStrategy;
 
 public class StubMassLoadingStrategy<E, I> implements MassLoadingStrategy<E, I> {
 	private final PersistenceTypeKey<E, I> key;

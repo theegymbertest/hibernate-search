@@ -19,8 +19,8 @@ import java.util.function.Consumer;
 
 import org.hibernate.search.engine.backend.work.execution.DocumentCommitStrategy;
 import org.hibernate.search.engine.backend.work.execution.DocumentRefreshStrategy;
-import org.hibernate.search.mapper.pojo.standalone.loading.SelectionEntityLoader;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.SelectionEntityLoader;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.standalone.mapping.SearchMapping;
 import org.hibernate.search.mapper.pojo.standalone.session.SearchSession;
 import org.hibernate.search.mapper.pojo.work.IndexingPlanSynchronizationStrategy;

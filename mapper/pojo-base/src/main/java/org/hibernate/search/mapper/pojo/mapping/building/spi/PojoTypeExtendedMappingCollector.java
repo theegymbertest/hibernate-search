@@ -8,6 +8,7 @@ package org.hibernate.search.mapper.pojo.mapping.building.spi;
 
 import org.hibernate.search.engine.environment.bean.spi.ParameterizedBeanReference;
 import org.hibernate.search.mapper.pojo.identity.spi.IdentifierMapping;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.loading.definition.spi.PojoEntityLoadingBindingContext;
 import org.hibernate.search.mapper.pojo.model.path.spi.PojoPathFilter;
 import org.hibernate.search.mapper.pojo.model.spi.PojoPropertyModel;
@@ -46,6 +47,6 @@ public interface PojoTypeExtendedMappingCollector {
 	 * {@link org.hibernate.search.mapper.pojo.model.additionalmetadata.building.spi.PojoAdditionalMetadataCollectorEntityTypeNode#loadingBinder(ParameterizedBeanReference)}.
 	 * @param context A context to get information and bind loading, e.g. set loading strategies.
 	 */
-	void applyLoadingBinder(Object binder, PojoEntityLoadingBindingContext context);
+	void applyLoadingBinder(EntityLoadingBinder binder, PojoEntityLoadingBindingContext context);
 
 }

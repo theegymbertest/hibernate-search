@@ -11,10 +11,12 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metamodel.MappingMetamodel;
 import org.hibernate.metamodel.mapping.EntityMappingType;
 import org.hibernate.search.mapper.orm.event.impl.HibernateOrmListenerTypeContext;
+import org.hibernate.search.mapper.orm.loading.impl.HibernateOrmEntityLoadingBindingContext;
 import org.hibernate.search.mapper.orm.loading.spi.HibernateOrmEntityLoadingStrategy;
 import org.hibernate.search.mapper.orm.loading.spi.HibernateOrmLoadingTypeContext;
 import org.hibernate.search.mapper.orm.model.impl.DocumentIdSourceProperty;
 import org.hibernate.search.mapper.orm.session.impl.HibernateOrmSessionTypeContext;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.loading.definition.spi.PojoEntityLoadingBindingContext;
 import org.hibernate.search.mapper.pojo.loading.spi.PojoLoadingTypeContext;
 import org.hibernate.search.mapper.pojo.mapping.building.spi.PojoTypeExtendedMappingCollector;
@@ -141,14 +143,8 @@ abstract class AbstractHibernateOrmTypeContext<E>
 
 		@Override
 		@SuppressWarnings("unchecked") // The binder uses reflection to create a strategy of the appropriate type
-		public void applyLoadingBinder(Object binder, PojoEntityLoadingBindingContext context) {
-			var castBinder = (HibernateOrmEntityLoadingBinder) binder;
-			this.loadingStrategy = (HibernateOrmEntityLoadingStrategy<? super E, ?>) castBinder
-					.createLoadingStrategy( persistentClass, documentIdSourceProperty );
-			if ( this.loadingStrategy != null ) {
-				context.selectionLoadingStrategy( typeIdentifier.javaClass(), this.loadingStrategy );
-				context.massLoadingStrategy( typeIdentifier.javaClass(), this.loadingStrategy );
-			}
+		public void applyLoadingBinder(EntityLoadingBinder binder, PojoEntityLoadingBindingContext context) {
+			binder.bind( new HibernateOrmEntityLoadingBindingContext( context ) );
 		}
 	}
 

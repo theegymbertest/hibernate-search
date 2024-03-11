@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
 
 import org.hibernate.search.engine.environment.bean.BeanRetrieval;
 import org.hibernate.search.mapper.pojo.common.annotation.Param;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.SearchEntity;
 
 /**
@@ -33,7 +34,7 @@ public @interface EntityLoadingBinderRef {
 	 * Reference a binder by its type.
 	 * @return The type of the binder.
 	 */
-	Class<?> type() default UndefinedImplementationType.class;
+	Class<? extends EntityLoadingBinder> type() default UndefinedImplementationType.class;
 
 	/**
 	 * @return How to retrieve the binder. See {@link BeanRetrieval}.
@@ -48,7 +49,7 @@ public @interface EntityLoadingBinderRef {
 	/**
 	 * Class used as a marker for the default value of the {@link #type()} attribute.
 	 */
-	abstract class UndefinedImplementationType {
+	abstract class UndefinedImplementationType implements EntityLoadingBinder {
 		private UndefinedImplementationType() {
 		}
 	}

@@ -8,8 +8,8 @@ package org.hibernate.search.integrationtest.mapper.pojo.testsupport.loading;
 
 import java.util.Locale;
 
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBinder;
-import org.hibernate.search.mapper.pojo.standalone.loading.binding.EntityLoadingBindingContext;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBinder;
+import org.hibernate.search.mapper.pojo.loading.binding.EntityLoadingBindingContext;
 
 public class StubEntityLoadingBinder implements EntityLoadingBinder {
 	public StubEntityLoadingBinder() {

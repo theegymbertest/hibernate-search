@@ -4,27 +4,18 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.search.mapper.pojo.standalone.loading;
+package org.hibernate.search.mapper.pojo.loading;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-import org.hibernate.search.mapper.pojo.standalone.massindexing.MassIndexer;
 import org.hibernate.search.util.common.annotation.Incubating;
 
 @Incubating
-public interface MassLoadingOptions {
+public interface SelectionLoadingOptions {
 
 	/**
-	 * @return How many entities to load and index in each batch.
-	 * Defines the maximum expected size of each list of IDs
-	 * loaded by {@link MassIdentifierLoader#loadNext()}
-	 * and passed to {@link MassEntityLoader#load(List)}.
-	 */
-	int batchSize();
-
-	/**
-	 * Gets context previously passed to
-	 * {@link MassIndexer#context(Class, Object)}.
+	 * Gets context previously passed to the session
+	 * or {@link org.hibernate.search.engine.search.query.dsl.SearchQueryOptionsStep#loading(Consumer) query}.
 	 *
 	 * @param <T> The context type.
 	 * @param contextType The context type.
