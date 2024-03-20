@@ -26,6 +26,8 @@ import org.hibernate.graph.GraphSemantic;
 import org.hibernate.graph.RootGraph;
 import org.hibernate.graph.spi.AppliedGraph;
 import org.hibernate.graph.spi.RootGraphImplementor;
+import org.hibernate.query.KeyedPage;
+import org.hibernate.query.KeyedResultList;
 import org.hibernate.query.ResultListTransformer;
 import org.hibernate.query.TupleTransformer;
 import org.hibernate.query.spi.AbstractQuery;
@@ -132,7 +134,13 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 
 	@Override
 	public HibernateOrmSearchQueryAdapter<R> setTimeout(int timeout) {
-		delegate.failAfter( timeout, TimeUnit.SECONDS );
+		delegate.failAfter( Long.valueOf( timeout ), TimeUnit.SECONDS );
+		return this;
+	}
+
+	@Override
+	public HibernateOrmSearchQueryAdapter<R> setTimeout(Integer timeout) {
+		delegate.failAfter( timeout == null ? null : timeout.longValue(), TimeUnit.SECONDS );
 		return this;
 	}
 
@@ -148,8 +156,18 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 		return scroll( ScrollMode.FORWARD_ONLY );
 	}
 
+	@Override
 	public long getResultCount() {
 		return delegate.fetchTotalHitCount();
+	}
+
+	@Override
+	public KeyedResultList<R> getKeyedResultList(KeyedPage<R> page) {
+		throw keyedResultListNoSupported();
+	}
+
+	private UnsupportedOperationException keyedResultListNoSupported() {
+		return new UnsupportedOperationException( "Keyed result lists are not supported in Hibernate Search queries" );
 	}
 
 	@Override
@@ -186,7 +204,7 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 		}
 		Integer queryTimeout = queryOptions.getTimeout();
 		if ( queryTimeout != null ) {
-			delegate.failAfter( queryTimeout, TimeUnit.SECONDS );
+			delegate.failAfter( Long.valueOf( queryTimeout ), TimeUnit.SECONDS );
 		}
 		EntityGraphHint<?> entityGraphHint = null;
 		if ( isGraphApplied( queryOptions ) ) {
@@ -303,7 +321,10 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 		throw lockOptionsNotSupported();
 	}
 
-	private static long hintValueToLong(Object value) {
+	private static Long hintValueToLong(Object value) {
+		if ( value == null ) {
+			return null;
+		}
 		if ( value instanceof Number ) {
 			return ( (Number) value ).longValue();
 		}
@@ -312,7 +333,10 @@ public final class HibernateOrmSearchQueryAdapter<R> extends AbstractQuery<R> {
 		}
 	}
 
-	private static int hintValueToInteger(Object value) {
+	private static Integer hintValueToInteger(Object value) {
+		if ( value == null ) {
+			return null;
+		}
 		if ( value instanceof Number ) {
 			return ( (Number) value ).intValue();
 		}

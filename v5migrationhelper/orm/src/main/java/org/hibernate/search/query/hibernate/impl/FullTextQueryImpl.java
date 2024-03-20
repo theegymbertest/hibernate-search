@@ -30,6 +30,8 @@ import org.hibernate.graph.GraphSemantic;
 import org.hibernate.graph.RootGraph;
 import org.hibernate.graph.spi.RootGraphImplementor;
 import org.hibernate.query.IllegalQueryOperationException;
+import org.hibernate.query.KeyedPage;
+import org.hibernate.query.KeyedResultList;
 import org.hibernate.query.spi.AbstractQuery;
 import org.hibernate.query.spi.MutableQueryOptions;
 import org.hibernate.query.spi.ParameterMetadataImplementor;
@@ -125,6 +127,20 @@ public class FullTextQueryImpl extends AbstractQuery implements FullTextQuery {
 		return new HibernateOrmSearchScrollableResultsAdapter<>( scroll,
 				maxResults != null ? maxResults : Integer.MAX_VALUE,
 				Search5ScrollHitExtractor.INSTANCE );
+	}
+
+	@Override
+	public long getResultCount() {
+		return hSearchQuery.getResultSize();
+	}
+
+	@Override
+	public KeyedResultList getKeyedResultList(KeyedPage page) {
+		throw keyedResultListNoSupported();
+	}
+
+	private UnsupportedOperationException keyedResultListNoSupported() {
+		return new UnsupportedOperationException( "Keyed result lists are not supported in Hibernate Search queries" );
 	}
 
 	@Override
@@ -285,22 +301,22 @@ public class FullTextQueryImpl extends AbstractQuery implements FullTextQuery {
 	}
 
 	@Override
-	protected QueryParameterBinding locateBinding(String name) {
+	protected <P> QueryParameterBinding<P> locateBinding(String name) {
 		throw parametersNoSupported();
 	}
 
 	@Override
-	protected QueryParameterBinding locateBinding(int position) {
+	protected <P> QueryParameterBinding<P> locateBinding(int position) {
 		throw parametersNoSupported();
 	}
 
 	@Override
-	protected QueryParameterBinding locateBinding(Parameter parameter) {
+	protected <P> QueryParameterBinding<P> locateBinding(Parameter<P> parameter) {
 		throw parametersNoSupported();
 	}
 
 	@Override
-	protected QueryParameterBinding locateBinding(QueryParameterImplementor parameter) {
+	protected <P> QueryParameterBinding<P> locateBinding(QueryParameterImplementor<P> parameter) {
 		throw parametersNoSupported();
 	}
 
@@ -401,6 +417,12 @@ public class FullTextQueryImpl extends AbstractQuery implements FullTextQuery {
 	}
 
 	@Override
+	public FullTextQueryImpl setTimeout(Integer timeout) {
+		hSearchQuery.failAfter( timeout == null ? null : Long.valueOf( timeout ), TimeUnit.SECONDS );
+		return this;
+	}
+
+	@Override
 	public FullTextQueryImpl setTimeout(int timeout) {
 		return setTimeout( timeout, TimeUnit.SECONDS );
 	}
@@ -464,7 +486,10 @@ public class FullTextQueryImpl extends AbstractQuery implements FullTextQuery {
 		}
 	}
 
-	private static int hintValueToInteger(Object value) {
+	private static Integer hintValueToInteger(Object value) {
+		if ( value == null ) {
+			return null;
+		}
 		if ( value instanceof Number ) {
 			return ( (Number) value ).intValue();
 		}
