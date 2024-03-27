@@ -181,6 +181,12 @@ stage('Configure') {
 											 Change the branch name and open a new Pull Request.
 										   """)
 	}
+
+	// Require approval before running builds on PRs from external contributors
+	if (helper.scmSource.pullRequest && !User.getById(userName, false)?.getAuthorities()?.contains('hibernate')) {
+		input message: 'Does the code seem safe to build? (No attempt to inspect secrets, etc.)', submitter: 'hibernate'
+	}
+
 	this.environments = AlternativeMultiMap.create([
 			jdk: [
 					// This should not include every JDK; in particular let's not care too much about EOL'd JDKs like version 9
